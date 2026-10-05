@@ -225,5 +225,5 @@ function applyRoute(){const isAdmin=location.hash.toLowerCase()==='#admin';const
 window.addEventListener('hashchange',applyRoute);
 document.addEventListener('DOMContentLoaded',()=>{document.getElementById('ghToken').value=sessionStorage.getItem('gh_token')||'';document.getElementById('ghToken').addEventListener('input',e=>sessionStorage.setItem('gh_token',e.target.value));applyRoute();loadData()});
 </script>
-</body>
+</body> 
 </html>
