@@ -1,4 +1,6 @@
 [
-  "abc@gmail.com_upload.json",
-  "abc@gmail.com.json"
+  {
+    "mail": "abc@gmail.com",
+    "path": "data/abc@gmail.com.json"
+  }
 ]
