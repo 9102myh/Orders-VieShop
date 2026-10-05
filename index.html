@@ -165,26 +165,52 @@ async function uploadJsonBatch(){
      if(Array.isArray(old))oldEntries=old.map(indexEntry).filter(Boolean);
    }
 
-   // Xóa bộ dữ liệu cũ. Nếu file đã biến mất thì bỏ qua.
+   /*
+    * CLEAR INDEX TRƯỚC khi xóa/upload file.
+    * Web sẽ không còn trỏ vào bộ cũ trong lúc thay dataset.
+    */
+   const cleared=await ghPut(
+     owner,repo,'index.json',token,'[]',idxObj?.sha,
+     'Clear index before replacing dataset'
+   );
+
+   // Xóa toàn bộ file dữ liệu được index cũ liệt kê.
    let deleted=0;
    for(const e of oldEntries){
      if(!e.path||e.path==='index.json')continue;
      const oldFile=await ghGet(owner,repo,e.path,token);
-     if(oldFile?.sha){await ghDelete(owner,repo,e.path,token,oldFile.sha,'Clear old dataset: '+e.path);deleted++;}
+     if(oldFile?.sha){
+       await ghDelete(owner,repo,e.path,token,oldFile.sha,'Clear old dataset: '+e.path);
+       deleted++;
+     }
    }
 
-   // Upload toàn bộ bộ dữ liệu mới.
-   for(let i=0;i<prepared.length;i++){
-     const x=prepared[i];
+   // Upload ĐÚNG bộ dữ liệu mới.
+   for(const x of prepared){
      const existing=await ghGet(owner,repo,x.path,token);
-     await ghPut(owner,repo,x.path,token,x.text,existing?.sha,'Upload dataset: '+x.path);
+     await ghPut(owner,repo,x.path,token,x.text,existing?.sha,'Upload new dataset: '+x.path);
    }
 
-   // Thay index cũ bằng đúng bộ mới, không giữ entry cũ.
+   // Ghi index chỉ gồm các file của batch mới.
    const newEntries=prepared.map(x=>({mail:x.mail,path:x.path}));
-   await ghPut(owner,repo,'index.json',token,JSON.stringify(newEntries,null,2),idxObj?.sha,'Replace index.json dataset');
+   const indexNow=await ghGet(owner,repo,'index.json',token);
+   await ghPut(
+     owner,repo,'index.json',token,
+     JSON.stringify(newEntries,null,2),
+     indexNow?.sha || cleared?.content?.sha,
+     'Write new dataset index'
+   );
 
-   showAdmin('✅ Đã upload '+prepared.length+' file và thay toàn bộ bộ dữ liệu cũ. Đã xóa '+deleted+' file cũ. Web sẽ đọc lại dữ liệu mới.',true);
+   // Xác minh index trên GitHub thực sự đã là bộ mới.
+   const verify=await ghGet(owner,repo,'index.json',token);
+   if(!verify?.content)throw new Error('Upload xong nhưng không đọc lại được index.json.');
+   const verifyText=decodeURIComponent(escape(atob(verify.content.replace(/\\n/g,''))));
+   const verifyEntries=JSON.parse(verifyText);
+   if(JSON.stringify(verifyEntries)!==JSON.stringify(newEntries)){
+     throw new Error('index.json sau upload không khớp bộ dữ liệu mới.');
+   }
+
+   showAdmin('✅ Đã thay bộ dữ liệu: '+prepared.length+' file mới, xóa '+deleted+' file cũ. index.json đã được kiểm tra lại.',true);
    document.getElementById('jsonFiles').value='';
    document.getElementById('uploadList').innerHTML='';
    await new Promise(r=>setTimeout(r,700));
