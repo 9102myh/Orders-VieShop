@@ -147,100 +147,74 @@ async function uploadJsonBatch(){
  const mailSet=new Set();
  for(const x of items){if(mailSet.has(x.mail))return showAdmin('❌ Mail bị trùng trong bộ upload: '+esc(x.mail),false);mailSet.add(x.mail)}
  try{
-   showAdmin('⏳ Đang chuẩn bị '+items.length+' file...',true);
+   showAdmin('⏳ Đang kiểm tra '+items.length+' file...',true);
    const prepared=[];
    for(const x of items){
      const text=await x.file.text();
      let parsed;try{parsed=JSON.parse(text)}catch(e){throw new Error('File '+x.file.name+' không phải JSON hợp lệ.')}
-     const orders=extractOrders(parsed);
-     if(!orders.length)throw new Error('File '+x.file.name+' không có orders hợp lệ (hoặc responses chứa orders).');
-     prepared.push({mail:x.mail,text,path:'data/'+x.mail+'.json',orders});
+     if(!extractOrders(parsed).length)throw new Error('File '+x.file.name+' không có orders hợp lệ (hoặc responses chứa orders).');
+     prepared.push({mail:x.mail,text,path:'data/'+x.mail+'.json'});
+   }
+
+   // Lấy index hiện tại trước khi xóa để biết toàn bộ file dữ liệu cũ.
+   const idxObj=await ghGet(owner,repo,'index.json',token);
+   let oldEntries=[];
+   if(idxObj?.content){
+     const decoded=decodeURIComponent(escape(atob(idxObj.content.replace(/\n/g,''))));
+     const old=JSON.parse(decoded);
+     if(Array.isArray(old))oldEntries=old.map(indexEntry).filter(Boolean);
    }
 
    /*
-    * Tạo MỘT Git commit duy nhất bằng Git Data API:
-    * - index.json = bộ mới
-    * - data/*.json = bộ mới
-    * - các file cũ được liệt kê trong index = xóa
-    * Nhờ vậy không phải PUT/DELETE từng file => nhanh hơn rất nhiều.
+    * CLEAR INDEX TRƯỚC khi xóa/upload file.
+    * Web sẽ không còn trỏ vào bộ cũ trong lúc thay dataset.
     */
-   const apiBase='https://api.github.com/repos/'+encodeURIComponent(owner)+'/'+encodeURIComponent(repo);
-   const headers=ghHeaders(token);
-   const api=async(path,opts={})=>{
-     const r=await fetch(apiBase+path,{...opts,headers:{...headers,...(opts.headers||{})}});
-     if(!r.ok)throw new Error('GitHub API '+path+' → '+r.status+' '+await r.text());
-     return r.json();
-   };
+   const cleared=await ghPut(
+     owner,repo,'index.json',token,'[]',idxObj?.sha,
+     'Clear index before replacing dataset'
+   );
 
-   // Đọc commit hiện tại của branch và index cũ.
-   const ref=await api('/git/ref/heads/'+encodeURIComponent(branch));
-   const parentSha=ref.object.sha;
-   const commit=await api('/git/commits/'+encodeURIComponent(parentSha));
-   const baseTreeSha=commit.tree.sha;
-
-   let oldEntries=[];
-   const oldIndex=await ghGet(owner,repo,'index.json',token);
-   if(oldIndex?.content){
-     try{
-       const decoded=decodeURIComponent(escape(atob(oldIndex.content.replace(/\n/g,''))));
-       const old=JSON.parse(decoded);
-       if(Array.isArray(old))oldEntries=old.map(indexEntry).filter(Boolean);
-     }catch(e){throw new Error('index.json cũ không hợp lệ: '+e.message)}
+   // Xóa toàn bộ file dữ liệu được index cũ liệt kê.
+   let deleted=0;
+   for(const e of oldEntries){
+     if(!e.path||e.path==='index.json')continue;
+     const oldFile=await ghGet(owner,repo,e.path,token);
+     if(oldFile?.sha){
+       await ghDelete(owner,repo,e.path,token,oldFile.sha,'Clear old dataset: '+e.path);
+       deleted++;
+     }
    }
 
+   // Upload ĐÚNG bộ dữ liệu mới.
+   for(const x of prepared){
+     const existing=await ghGet(owner,repo,x.path,token);
+     await ghPut(owner,repo,x.path,token,x.text,existing?.sha,'Upload new dataset: '+x.path);
+   }
+
+   // Ghi index chỉ gồm các file của batch mới.
    const newEntries=prepared.map(x=>({mail:x.mail,path:x.path}));
-   const newIndexText=JSON.stringify(newEntries,null,2);
+   const indexNow=await ghGet(owner,repo,'index.json',token);
+   await ghPut(
+     owner,repo,'index.json',token,
+     JSON.stringify(newEntries,null,2),
+     indexNow?.sha || cleared?.content?.sha,
+     'Write new dataset index'
+   );
 
-   showAdmin('⏳ Đang ghi toàn bộ bộ dữ liệu bằng 1 commit...',true);
+   // Xác minh index trên GitHub thực sự đã là bộ mới.
+   const verify=await ghGet(owner,repo,'index.json',token);
+   if(!verify?.content)throw new Error('Upload xong nhưng không đọc lại được index.json.');
+   const verifyText=decodeURIComponent(escape(atob(verify.content.replace(/\\n/g,''))));
+   const verifyEntries=JSON.parse(verifyText);
+   if(JSON.stringify(verifyEntries)!==JSON.stringify(newEntries)){
+     throw new Error('index.json sau upload không khớp bộ dữ liệu mới.');
+   }
 
-   // Tạo blobs song song cho các file mới.
-   const blobItems=await Promise.all(prepared.map(async x=>{
-     const b=await api('/git/blobs',{method:'POST',body:JSON.stringify({content:x.text,encoding:'utf-8'})});
-     return {path:x.path,mode:'100644',type:'blob',sha:b.sha};
-   }));
-   const indexBlob=await api('/git/blobs',{method:'POST',body:JSON.stringify({content:newIndexText,encoding:'utf-8'})});
-
-   // Tree mới: xóa file cũ, rồi ghi file mới + index mới.
-   const tree=[];
-   const newPaths=new Set(['index.json',...prepared.map(x=>x.path)]);
-   oldEntries.forEach(e=>{
-     if(e.path && !newPaths.has(e.path)){
-       tree.push({path:e.path,mode:'100644',type:'blob',sha:null});
-     }
-   });
-   tree.push({path:'index.json',mode:'100644',type:'blob',sha:indexBlob.sha});
-   blobItems.forEach(x=>tree.push(x));
-
-   const newTree=await api('/git/trees',{method:'POST',body:JSON.stringify({base_tree:baseTreeSha,tree})});
-   const newCommit=await api('/git/commits',{
-     method:'POST',
-     body:JSON.stringify({
-       message:'Replace order dataset',
-       tree:newTree.sha,
-       parents:[parentSha]
-     })
-   });
-   await api('/git/refs/heads/'+encodeURIComponent(branch),{
-     method:'PATCH',
-     body:JSON.stringify({sha:newCommit.sha,force:false})
-   });
-
-   // Cập nhật UI ngay từ batch vừa upload, không chờ raw.githubusercontent.com/CDN.
-   allOrders=[];
-   let mails=0;
-   prepared.forEach(x=>{
-     if(x.orders.length||x.mail)mails++;
-     x.orders.forEach(o=>{o.__mail=x.mail;allOrders.push(o)});
-   });
-   allOrders.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
-   document.getElementById('mailCount').textContent=mails;
-   document.getElementById('deliveredCount').textContent=allOrders.filter(o=>String(o.fulfillment_status||'').toLowerCase()==='fulfilled').length;
-   document.getElementById('paidCount').textContent=allOrders.filter(o=>String(o.financial_status||'').toLowerCase()==='paid').length;
-   buildProducts();applyFilters();
-
-   showAdmin('✅ Đã thay bộ dữ liệu: '+prepared.length+' file mới. Xóa '+oldEntries.filter(e=>e.path&&!newPaths.has(e.path)).length+' file cũ. GitHub đã ghi 1 commit duy nhất.',true);
+   showAdmin('✅ Đã thay bộ dữ liệu: '+prepared.length+' file mới, xóa '+deleted+' file cũ. index.json đã được kiểm tra lại.',true);
    document.getElementById('jsonFiles').value='';
    document.getElementById('uploadList').innerHTML='';
+   await new Promise(r=>setTimeout(r,700));
+   await loadData();
  }catch(e){showAdmin('❌ '+esc(e.message),false)}
 }
 function csvEsc(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}function downloadCSV(rows,name){const blob=new Blob(['\uFEFF'+rows.map(r=>r.map(csvEsc).join(',')).join('\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
