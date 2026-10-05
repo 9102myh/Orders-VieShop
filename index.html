@@ -1,37 +1,198 @@
-<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Order Analyzer</title><style>
-*{box-sizing:border-box}body{margin:0;background:#f1f5f9;font-family:Arial,sans-serif;color:#1e293b}.container{width:96%;max-width:1600px;margin:24px auto}.card{background:#fff;border-radius:12px;padding:20px;margin-bottom:18px;box-shadow:0 2px 10px #00000012}h1{margin:0 0 5px}.subtitle,.small{color:#64748b}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}.field{flex:1;min-width:180px}.field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}input,select{width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:7px;background:#fff}button{border:0;border-radius:7px;padding:10px 15px;cursor:pointer;font-weight:700}.primary{background:#2563eb;color:#fff}.green{background:#16a34a;color:#fff}.purple{background:#7c3aed;color:#fff}.gray{background:#64748b;color:#fff}.red{background:#dc2626;color:#fff}.notice{padding:11px;border-radius:7px;margin-top:12px;display:none}.ok{display:block;background:#dcfce7;color:#166534}.err{display:block;background:#fee2e2;color:#991b1b}.summary{display:flex;gap:12px;flex-wrap:wrap}.box{min-width:170px;padding:14px;border:1px solid #e2e8f0;border-radius:9px;background:#f8fafc}.num{font-size:26px;font-weight:700;color:#2563eb}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse}th{background:#2563eb;color:#fff;padding:10px;border:1px solid #1d4ed8;text-align:left;white-space:nowrap}td{padding:9px;border:1px solid #e2e8f0;vertical-align:top}tr:nth-child(even){background:#f8fafc}.badge{display:inline-block;padding:4px 9px;border-radius:20px;font-size:12px;font-weight:700}.paid{background:#dcfce7;color:#166534}.pending{background:#fef3c7;color:#92400e}.fulfilled{background:#dcfce7;color:#166534}.unfulfilled{background:#fef3c7;color:#92400e}.dup{background:#fff1f2!important}.products{min-width:450px}.product-line{padding:5px 0;border-bottom:1px dashed #cbd5e1}.product-line:last-child{border-bottom:0}.product-title{font-weight:700}.variant{color:#64748b;margin-left:14px}.qty{color:#2563eb;font-weight:700}.filters{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;margin:12px 0}.countbar{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:10px 0;color:#475569}.pagination{display:flex;justify-content:center;align-items:center;gap:6px;flex-wrap:wrap;margin-top:15px}.pagebtn{min-width:38px;padding:8px 11px;background:#fff;border:1px solid #cbd5e1;color:#334155}.pagebtn.active{background:#2563eb;color:#fff;border-color:#2563eb}.pagebtn:disabled{opacity:.45;cursor:not-allowed}.hidden{display:none}@media(max-width:900px){.filters{grid-template-columns:1fr 1fr}}@media(max-width:600px){.filters{grid-template-columns:1fr}.countbar{align-items:flex-start;flex-direction:column}}
-</style></head><body><div class="container"><h1>📦 Order Analyzer</h1><div class="subtitle">Web tĩnh + nhiều file JSON · mỗi file = 1 Mail · mọi người đọc cùng dữ liệu mới nhất</div>
-<div id="adminPanel" class="card hidden"><h2>⚙️ Admin – cập nhật dữ liệu</h2><p class="small">Chỉ người có quyền repo mới cần dùng phần này. Mỗi file JSON là <b>1 Mail</b>; tên file (bỏ <code>.json</code>) được dùng làm Mail. Bên trong file có thể có nhiều Response.</p><div class="row"><div class="field"><label>GitHub Owner</label><input id="owner" placeholder="username hoặc organization"></div><div class="field"><label>Repository</label><input id="repo" placeholder="ten-repo"></div><div class="field"><label>Branch</label><input id="branch" value="main"></div></div><div class="row" style="margin-top:10px"><div class="field"><label>GitHub Token (chỉ giữ trong phiên)</label><input id="token" type="password" placeholder="github_pat_..."></div><div class="field"><label>Chọn file JSON</label><input id="jsonFile" type="file" accept=".json,application/json"></div><button class="primary" onclick="uploadJsonToGithub()">⬆️ Upload & cập nhật</button></div><div id="adminStatus" class="notice"></div></div>
-<div id="app" class="hidden"><div class="card"><h2>📊 Tổng quan</h2><div class="summary"><div class="box"><div id="totalMails" class="num">0</div><div class="small">Mail</div></div><div class="box"><div id="totalOrders" class="num">0</div><div class="small">Tổng bản ghi</div></div><div class="box"><div id="totalQuantity" class="num">0</div><div class="small">Tổng số lượng</div></div></div></div>
-<div class="card"><h2>📋 Danh sách Order</h2><div class="filters"><div><label class="small">Mã Order</label><input id="searchOrder" placeholder="Tìm mã Order..."></div><div><label class="small">Mail</label><input id="searchMail" placeholder="Tìm Mail..."></div><div><label class="small">Thanh toán</label><select id="paymentFilter"><option value="all">Tất cả</option><option value="paid">Đã thanh toán</option><option value="pending">Chờ thanh toán</option></select></div><div><label class="small">Giao hàng</label><select id="fulfillmentFilter"><option value="all">Tất cả</option><option value="fulfilled">Đã giao hàng</option><option value="unfulfilled">Chưa giao hàng</option></select></div></div><div class="countbar"><span id="recordCount">0 bản ghi</span><button class="purple" onclick="exportOrders()">📥 Export Order</button></div><div class="table-wrap"><table id="ordersTable"><thead><tr><th>STT</th><th>Mã Order</th><th>Mail</th><th>Ngày giờ</th><th>Thanh toán</th><th>Giao hàng</th><th>Sản phẩm</th></tr></thead><tbody></tbody></table></div><div id="pagination" class="pagination"></div></div>
-<div class="card"><h2>📦 Tổng hợp sản phẩm</h2><p class="small">Chỉ tính các Order đã thanh toán.</p><div class="countbar"><span id="productCount">0 nhóm sản phẩm</span><button class="purple" onclick="exportProducts()">📥 Export sản phẩm</button></div><div class="table-wrap"><table id="productsTable"><thead><tr><th>STT</th><th>Tên sản phẩm</th><th>Loại sản phẩm</th><th>Số lượng</th></tr></thead><tbody></tbody></table></div></div></div></div>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SFC ORDERS VIESHOP</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f1f5f9;font-family:Arial,sans-serif;color:#1e293b}.container{width:96%;max-width:1600px;margin:25px auto}h1{margin:0 0 5px;color:#17395f}h2{margin-top:0}.card{background:#fff;border-radius:10px;padding:20px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,.08)}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:13px;font-weight:bold}.field input,.field select{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:7px;background:#fff}.actions{display:flex;gap:8px;align-items:end;flex-wrap:wrap}.button{border:0;border-radius:7px;padding:10px 15px;cursor:pointer;font-weight:bold}.primary{background:#2563eb;color:#fff}.success{background:#16a34a;color:#fff}.secondary{background:#64748b;color:#fff}.danger{background:#dc2626;color:#fff}.export{background:#7c3aed;color:#fff}..status{display:none;margin-top:12px;padding:11px;border-radius:7px}.status.show{display:block}.status.ok{background:#dcfce7;color:#166534}.status.err{background:#fee2e2;color:#991b1b}.small{font-size:12px;color:#64748b}.upload-list{margin-top:10px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden}.upload-row{display:grid;grid-template-columns:1.4fr 1fr;gap:10px;padding:10px;border-bottom:1px solid #e2e8f0;background:#f8fafc}.upload-row:last-child{border-bottom:0}.upload-file{padding:10px;background:#fff;border:1px solid #cbd5e1;border-radius:7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.upload-row input{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:7px}.upload-head{padding:9px 10px;background:#e2e8f0;font-weight:bold}@media(max-width:900px){.upload-row{grid-template-columns:1fr}}.summary{display:flex;gap:12px;flex-wrap:wrap}.summary-box{min-width:180px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px}.summary-number{font-size:27px;font-weight:bold;color:#2563eb}.summary-label{color:#64748b;margin-top:4px}.filters{display:grid;grid-template-columns:2fr 2fr 1fr 1fr;gap:10px;margin-bottom:14px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse}th{background:#2563eb;color:#fff;padding:10px;border:1px solid #1d4ed8;text-align:left;white-space:nowrap}td{padding:9px;border:1px solid #e2e8f0;vertical-align:top}tr:nth-child(even){background:#f8fafc}.order-code{color:#2563eb;font-weight:bold}.badge{display:inline-block;padding:4px 9px;border-radius:20px;font-size:12px;font-weight:bold;white-space:nowrap}.green{background:#dcfce7;color:#166534}.yellow{background:#fef3c7;color:#92400e}.blue{background:#dbeafe;color:#1d4ed8}.red{background:#fee2e2;color:#991b1b}.products{min-width:480px}.product-line{padding:5px 0;border-bottom:1px dashed #cbd5e1}.product-line:last-child{border:0}.product-title{font-weight:bold}.variant{color:#64748b;margin-left:12px}.qty{color:#2563eb;font-weight:bold}.pagination{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:14px}.page-btn{border:1px solid #cbd5e1;background:#fff;padding:7px 11px;border-radius:6px;cursor:pointer}.page-btn.active{background:#2563eb;color:#fff}.total-row{background:#dbeafe!important;font-weight:bold}@media(max-width:900px){.grid,.grid2,.filters{grid-template-columns:1fr}.summary-box{min-width:140px}}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>SFC ORDERS VIESHOP</h1>
+
+<div class="card">
+<h2>⚙️ Admin – cập nhật dữ liệu</h2>
+<p class="small">Mail được nhập riêng trên web. Tên file JSON được chọn chỉ là file nguồn và <b>không dùng để xác định Mail</b>.</p>
+<div class="grid">
+<div class="field"><label>GitHub Owner</label><input id="ghOwner" value="9102myh"></div>
+<div class="field"><label>Repository</label><input id="ghRepo" value="Orders-VieShop"></div>
+<div class="field"><label>Branch</label><input id="ghBranch" value="main"></div>
+</div>
+<div class="field" style="margin-top:10px"><label>GitHub Token (chỉ giữ trong phiên)</label><input id="ghToken" type="password" placeholder="ghp_... hoặc fine-grained PAT"></div>
+<div class="field" style="margin-top:10px"><label>Chọn nhiều file JSON</label><input id="jsonFiles" type="file" accept=".json,application/json" multiple onchange="prepareUploadFiles()"></div>
+<p class="small">Mỗi lần upload là <b>một bộ dữ liệu mới</b>: dữ liệu cũ trong <code>index.json</code> sẽ bị clear và các file cũ được liệt kê trong index sẽ bị xóa. Mail phải nhập riêng cho từng file; tên file không được dùng để lấy Mail.</p>
+<div id="uploadList" class="upload-list"></div>
+<div class="actions" style="margin-top:10px">
+<button class="button primary" onclick="uploadJsonBatch()">⬆ Upload tất cả & thay bộ dữ liệu cũ</button>
+<button class="button secondary" onclick="loadData()">↻ Đọc lại dữ liệu</button>
+</div>
+<div id="adminStatus" class="status"></div>
+</div>
+
+<div class="card">
+<h2>📊 Tổng quan</h2>
+<div class="summary">
+<div class="summary-box"><div id="mailCount" class="summary-number">0</div><div class="summary-label">Mail</div></div>
+<div class="summary-box"><div id="orderCount" class="summary-number">0</div><div class="summary-label">Tổng bản ghi</div></div>
+<div class="summary-box"><div id="quantityCount" class="summary-number">0</div><div class="summary-label">Tổng số lượng</div></div>
+</div>
+</div>
+
+<div class="card">
+<h2>📦 Danh sách Order</h2>
+<div class="filters">
+<div class="field"><label>Search Order code</label><input id="searchOrder" placeholder="Nhập mã Order..." oninput="applyFilters()"></div>
+<div class="field"><label>Search Mail</label><input id="searchMail" placeholder="Nhập Mail..." oninput="applyFilters()"></div>
+<div class="field"><label>Payment status</label><select id="paymentFilter" onchange="applyFilters()"><option value="">Tất cả</option><option value="paid">Đã thanh toán</option><option value="pending">Chờ thanh toán</option></select></div>
+<div class="field"><label>Fulfillment status</label><select id="fulfillmentFilter" onchange="applyFilters()"><option value="">Tất cả</option><option value="fulfilled">Đã giao hàng</option><option value="notfulfilled">Chưa giao hàng</option></select></div>
+</div>
+<button class="button export" onclick="exportOrders()">📥 Export danh sách Order</button>
+<div class="table-wrap" style="margin-top:12px"><table id="ordersTable"><thead><tr><th>STT</th><th>Mã Order</th><th>Mail</th><th>Ngày giờ</th><th>Thanh toán</th><th>Giao hàng</th><th>Sản phẩm</th></tr></thead><tbody></tbody></table></div>
+<div id="pagination" class="pagination"></div>
+</div>
+
+<div class="card">
+<h2>🛍️ Tổng hợp sản phẩm</h2>
+<p class="small">Chỉ tổng hợp sản phẩm từ các Order có <b>financial_status = paid</b>.</p>
+<button class="button export" onclick="exportProducts()">📥 Export tổng hợp sản phẩm</button>
+<div class="table-wrap" style="margin-top:12px"><table id="productsTable"><thead><tr><th>STT</th><th>Tên sản phẩm</th><th>Loại sản phẩm</th><th>Số lượng</th></tr></thead><tbody></tbody></table></div>
+</div>
+</div>
+
 <script>
-const INDEX_URL='index.json'; const DATA_DIR='data/'; const PAGE_SIZE=20; let db={mails:[]}, allOrders=[], filteredOrders=[], productGroups=[], currentPage=1;
+const CONFIG={owner:'9102myh',repo:'Orders-VieShop',branch:'main',indexPath:'index.json'};
+let allOrders=[],filteredOrders=[],productGroups=[],currentPage=1;const PAGE_SIZE=50;
+
 function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}
-function statusPayment(v){return String(v||'').toLowerCase()==='paid'?'paid':'pending'}
-function statusFulfill(v){return String(v||'').toLowerCase()==='fulfilled'?'fulfilled':'unfulfilled'}
-function fmt(v){if(!v)return '';const d=new Date(v);return isNaN(d)?v:d.toLocaleString('vi-VN')}
-function key(o){return String(o.name??o.order_number??o.number??o.id??'')}
-function normalizeFile(mail,obj){let responses=[]; if(Array.isArray(obj)) responses=obj; else if(Array.isArray(obj.responses)) responses=obj.responses; else if(obj&&Array.isArray(obj.orders)) responses=[obj]; else throw Error('JSON không có responses[] hoặc orders[].'); return {mail,responses}}
-function rebuild(){allOrders=[];let responseCount=0;for(const f of db.mails||[]){for(const r of f.responses||[]){if(!Array.isArray(r.orders))continue;responseCount++;for(const o of r.orders){allOrders.push({...o,__mail:f.mail})}}}allOrders.sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0)); updateSummary(); applyFilters()}
-function updateSummary(){document.getElementById('totalMails').textContent=(db.mails||[]).length;document.getElementById('totalOrders').textContent=allOrders.length;let q=0;allOrders.forEach(o=>{if(statusPayment(o.financial_status)==='paid'&&Array.isArray(o.line_items))o.line_items.forEach(i=>q+=Number(i.quantity||0))});document.getElementById('totalQuantity').textContent=q}
-function applyFilters(){const s=(document.getElementById('searchOrder')?.value||'').toLowerCase().trim(),m=(document.getElementById('searchMail')?.value||'').toLowerCase().trim(),p=document.getElementById('paymentFilter')?.value||'all',f=document.getElementById('fulfillmentFilter')?.value||'all';filteredOrders=allOrders.filter(o=>(!s||key(o).toLowerCase().includes(s))&&(!m||String(o.__mail||'').toLowerCase().includes(m))&&(p==='all'||statusPayment(o.financial_status)===p)&&(f==='all'||statusFulfill(o.fulfillment_status)===f));currentPage=1;renderOrders();}
-function renderOrders(){const total=filteredOrders.length,pages=Math.max(1,Math.ceil(total/PAGE_SIZE));if(currentPage>pages)currentPage=pages;const start=(currentPage-1)*PAGE_SIZE,end=Math.min(start+PAGE_SIZE,total);document.getElementById('recordCount').textContent=total?`Hiển thị ${start+1}–${end} / ${total} bản ghi`:'0 bản ghi';const count={};allOrders.forEach(o=>count[key(o)]=(count[key(o)]||0)+1);const tb=document.querySelector('#ordersTable tbody');tb.innerHTML='';filteredOrders.slice(start,end).forEach((o,i)=>{const dup=count[key(o)]>1;const tr=document.createElement('tr');if(dup)tr.className='dup';tr.innerHTML=`<td>${start+i+1}</td><td><b style="color:#2563eb">${esc(key(o))}</b>${dup?'<br><span class="badge" style="background:#fee2e2;color:#991b1b">⚠️ TRÙNG</span>':''}</td><td>${esc(o.__mail||'')}</td><td>${esc(fmt(o.created_at))}</td><td><span class="badge ${statusPayment(o.financial_status)==='paid'?'paid':'pending'}">${statusPayment(o.financial_status)==='paid'?'Đã thanh toán':'Chờ thanh toán'}</span></td><td><span class="badge ${statusFulfill(o.fulfillment_status)==='fulfilled'?'fulfilled':'unfulfilled'}">${statusFulfill(o.fulfillment_status)==='fulfilled'?'Đã giao hàng':'Chưa giao hàng'}</span></td><td class="products">${renderItems(o)}</td>`;tb.appendChild(tr)});renderPagination(pages)}
-function renderItems(o){if(!Array.isArray(o.line_items)||!o.line_items.length)return '-';return o.line_items.map(i=>`<div class="product-line"><div class="product-title">${esc(i.title||'')}</div><div class="variant">${esc(i.variant_title||'Không có loại')} × <span class="qty">${Number(i.quantity||0)}</span></div></div>`).join('')}
-function renderPagination(pages){const el=document.getElementById('pagination');el.innerHTML='';const prev=document.createElement('button');prev.className='pagebtn';prev.textContent='‹';prev.disabled=currentPage===1;prev.onclick=()=>{currentPage--;renderOrders()};el.appendChild(prev);let nums=[];if(pages<=7)nums=Array.from({length:pages},(_,i)=>i+1);else{nums=[1];if(currentPage>4)nums.push('…');for(let n=Math.max(2,currentPage-1);n<=Math.min(pages-1,currentPage+1);n++)nums.push(n);if(currentPage<pages-3)nums.push('…');nums.push(pages)}nums.forEach(n=>{if(n==='…'){const s=document.createElement('span');s.textContent='…';s.style.padding='8px';el.appendChild(s)}else{const b=document.createElement('button');b.className='pagebtn'+(n===currentPage?' active':'');b.textContent=n;b.onclick=()=>{currentPage=n;renderOrders()};el.appendChild(b)}});const next=document.createElement('button');next.className='pagebtn';next.textContent='›';next.disabled=currentPage===pages;next.onclick=()=>{currentPage++;renderOrders()};el.appendChild(next)}
-function buildProducts(){const map=new Map();for(const o of allOrders){if(statusPayment(o.financial_status)!=='paid'||!Array.isArray(o.line_items))continue;for(const i of o.line_items){const n=String(i.title||'').trim();if(!n)continue;const v=String(i.variant_title||'').trim();if(!map.has(n))map.set(n,new Map());const vm=map.get(n);vm.set(v,(vm.get(v)||0)+Number(i.quantity||0))}}productGroups=[];for(const [name,vm] of map){let variants=[],total=0;for(const [v,q] of vm){variants.push({name:v,quantity:q});total+=q}productGroups.push({name,variants,total})}const tb=document.querySelector('#productsTable tbody');tb.innerHTML='';let stt=1,grand=0;for(const g of productGroups){g.variants.forEach((v,i)=>{const tr=document.createElement('tr');tr.innerHTML=i===0?`<td rowspan="${g.variants.length}">${stt}</td><td rowspan="${g.variants.length}"><b>${esc(g.name)}</b><div class="small">Tổng: ${g.total}</div></td><td>${esc(v.name||'Không có loại')}</td><td><b>${v.quantity}</b></td>`:`<td>${esc(v.name||'Không có loại')}</td><td><b>${v.quantity}</b></td>`;tb.appendChild(tr);grand+=v.quantity});stt++}const tr=document.createElement('tr');tr.innerHTML=`<td colspan="3"><b>TỔNG TẤT CẢ</b></td><td><b>${grand}</b></td>`;tb.appendChild(tr);document.getElementById('productCount').textContent=`${productGroups.length} nhóm sản phẩm`}
-function renderAll(){document.getElementById('app').classList.remove('hidden');buildProducts();applyFilters()}
-async function loadData(){try{const ir=await fetch(INDEX_URL+'?t='+Date.now(),{cache:'no-store'});if(!ir.ok)throw Error('Không đọc được index.json');const files=await ir.json();if(!Array.isArray(files))throw Error('index.json phải là mảng tên file.');const loaded=await Promise.all(files.map(async file=>{const r=await fetch(DATA_DIR+encodeURIComponent(file)+'?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('Không đọc được '+file);return await r.json()}));db={mails:loaded.map((obj,i)=>{const file=files[i];const mail=String(file).replace(/\.json$/i,'');return normalizeFile(mail,obj)})};renderAll()}catch(e){db={mails:[]};document.getElementById('app').classList.remove('hidden');renderAll();status('⚠️ '+e.message+' — đang hiển thị dữ liệu rỗng.',false)}}
-function status(msg,ok=false){const e=document.getElementById('adminStatus');e.className='notice '+(ok?'ok':'err');e.textContent=msg;e.style.display='block'}
-function b64utf8(str){return btoa(unescape(encodeURIComponent(str)))}
-async function gh(path,opts={}){const token=document.getElementById('token').value.trim();if(!token)throw Error('Nhập GitHub Token.');const r=await fetch('https://api.github.com/'+path,{...opts,headers:{Accept:'application/vnd.github+json',Authorization:'Bearer '+token,'X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json',...(opts.headers||{})}});const txt=await r.text();let j={};try{j=JSON.parse(txt)}catch{}if(!r.ok)throw Error(j.message||`GitHub API lỗi ${r.status}`);return j}
-async function getFileSha(path,branch){try{const old=await gh(`repos/${encodeURIComponent(document.getElementById('owner').value.trim())}/${encodeURIComponent(document.getElementById('repo').value.trim())}/contents/${path}?ref=${encodeURIComponent(branch)}`);return old.sha}catch(e){if(/Not Found/i.test(e.message))return null;throw e}}
-async function putRepoFile(path,content,branch,message,sha=null){const body={message,content:b64utf8(content),branch};if(sha)body.sha=sha;return await gh(`repos/${encodeURIComponent(document.getElementById('owner').value.trim())}/${encodeURIComponent(document.getElementById('repo').value.trim())}/contents/${path}`,{method:'PUT',body:JSON.stringify(body)})}
-async function uploadJsonToGithub(){try{const owner=document.getElementById('owner').value.trim(),repo=document.getElementById('repo').value.trim(),branch=document.getElementById('branch').value.trim()||'main',file=document.getElementById('jsonFile').files[0];if(!owner||!repo||!file)throw Error('Nhập Owner, Repository và chọn file JSON.');if(!file.name.toLowerCase().endsWith('.json'))throw Error('Chỉ nhận file .json.');const mail=file.name.replace(/\.json$/i,'').trim();if(!mail)throw Error('Không lấy được Mail từ tên file.');status('Đang đọc JSON...',true);const obj=JSON.parse(await file.text());normalizeFile(mail,obj);const path='data/'+file.name;const sha=await getFileSha(path,branch);await putRepoFile(path,JSON.stringify(obj,null,2),branch,`Update order data: ${mail}`,sha);let files=[];try{const raw=await gh(`repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/index.json?ref=${encodeURIComponent(branch)}`);const decoded=decodeURIComponent(escape(atob(raw.content.replace(/\n/g,''))));files=JSON.parse(decoded);if(!Array.isArray(files))files=[]}catch(e){if(!/Not Found/i.test(e.message))throw e}if(!files.some(x=>String(x).toLowerCase()===file.name.toLowerCase()))files.push(file.name);files.sort((a,b)=>String(a).localeCompare(String(b)));const indexSha=await getFileSha('index.json',branch);await putRepoFile('index.json',JSON.stringify(files,null,2),branch,`Update data index: ${mail}`,indexSha);status(`✅ Đã upload ${file.name} → Mail ${mail}. Đã cập nhật index.json; GitHub Pages sẽ dùng file riêng này.`,true);await loadData()}catch(e){status('❌ '+e.message,false)}}
-function initAdmin(){const panel=document.getElementById('adminPanel');const sync=()=>{panel.classList.toggle('hidden',location.hash.toLowerCase()!=='#admin')};window.addEventListener('hashchange',sync);sync();}
-function bind(){['searchOrder','searchMail','paymentFilter','fulfillmentFilter'].forEach(id=>document.getElementById(id).addEventListener('input',applyFilters));document.getElementById('paymentFilter').addEventListener('change',applyFilters);document.getElementById('fulfillmentFilter').addEventListener('change',applyFilters)}
-function csv(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}function download(rows,name){const b=new Blob(['﻿'+rows.map(r=>r.map(csv).join(',')).join('\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();URL.revokeObjectURL(a.href)}
-function exportOrders(){const rows=[['STT','Mã Order','Mail','Ngày giờ','Thanh toán','Giao hàng','Tên sản phẩm','Loại sản phẩm','Số lượng','Trùng Order']],count={};allOrders.forEach(o=>count[key(o)]=(count[key(o)]||0)+1);filteredOrders.forEach((o,i)=>(o.line_items||[]).forEach(x=>rows.push([i+1,key(o),o.__mail||'',fmt(o.created_at),statusPayment(o.financial_status)==='paid'?'Đã thanh toán':'Chờ thanh toán',statusFulfill(o.fulfillment_status)==='fulfilled'?'Đã giao hàng':'Chưa giao hàng',x.title||'',x.variant_title||'',x.quantity||0,count[key(o)]>1?'TRÙNG':'OK'])));download(rows,'orders-filtered.csv')}
-function exportProducts(){const rows=[['STT','Tên sản phẩm','Loại sản phẩm','Số lượng']];let n=1;productGroups.forEach(g=>g.variants.forEach((v,i)=>rows.push([i===0?n:'',i===0?g.name:'',v.name,v.quantity])));download(rows,'tong-hop-san-pham.csv')}
-bind();initAdmin();loadData();
-</script></body></html>
+function normMail(v){return String(v||'').trim().toLowerCase()}
+function orderKey(o){return String(o?.name??o?.order_number??o?.number??o?.id??'')}
+function dateFmt(v){if(!v)return '';const d=new Date(v);return isNaN(d)?String(v):d.toLocaleString('vi-VN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'})}
+function paymentBadge(v){const s=String(v||'').toLowerCase();if(s==='paid')return '<span class="badge green">Đã thanh toán</span>';if(s==='pending')return '<span class="badge yellow">Chờ thanh toán</span>';return '<span class="badge blue">'+esc(v||'-')+'</span>'}
+function fulfillmentBadge(v){const s=String(v||'').toLowerCase();if(s==='fulfilled')return '<span class="badge green">Đã giao hàng</span>';if(s==='notfulfilled')return '<span class="badge yellow">Chưa giao hàng</span>';return '<span class="badge blue">'+esc(v||'-')+'</span>'}
+function productHtml(o){if(!Array.isArray(o.line_items)||!o.line_items.length)return '-';return o.line_items.map(i=>'<div class="product-line"><div class="product-title">'+esc(i.title||'')+'</div><div class="variant">'+esc(i.variant_title||'Không có loại')+' × <span class="qty">'+Number(i.quantity||0)+'</span></div></div>').join('')}
+function showAdmin(msg,ok=true){const e=document.getElementById('adminStatus');e.innerHTML=msg;e.className='status show '+(ok?'ok':'err')}
+function extractOrders(data){if(data&&Array.isArray(data.orders))return data.orders;if(data&&Array.isArray(data.responses))return data.responses.flatMap(r=>Array.isArray(r?.orders)?r.orders:[]);if(Array.isArray(data))return data.flatMap(r=>Array.isArray(r?.orders)?r.orders:[]);return []}
+function indexEntry(e){if(typeof e==='string')return {path:e,mail:null};if(e&&typeof e==='object'&&e.path)return {path:e.path,mail:e.mail||null};return null}
+function rawUrl(owner,repo,branch,path){return 'https://raw.githubusercontent.com/'+encodeURIComponent(owner)+'/'+encodeURIComponent(repo)+'/'+encodeURIComponent(branch)+'/'+path.split('/').map(encodeURIComponent).join('/')+'?t='+Date.now()}
+async function loadData(){
+try{
+ const owner=CONFIG.owner,repo=CONFIG.repo,branch=CONFIG.branch;
+ const idxRes=await fetch(rawUrl(owner,repo,branch,'index.json'),{cache:'no-store'});
+ if(!idxRes.ok)throw new Error('Không đọc được index.json ('+idxRes.status+').');
+ const idx=await idxRes.json();
+ const entries=Array.isArray(idx)?idx.map(indexEntry).filter(Boolean):[];
+ const results=await Promise.all(entries.map(async e=>{try{const r=await fetch(rawUrl(owner,repo,branch,e.path),{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);const data=await r.json();return {mail:normMail(e.mail),orders:extractOrders(data)}}catch(err){console.warn('Không đọc được',e.path,err);return {mail:normMail(e.mail),orders:[]}}}));
+ allOrders=[];let mails=0;
+ results.forEach(r=>{if(r.orders.length||r.mail)mails++;r.orders.forEach(o=>{o.__mail=r.mail||'';allOrders.push(o)})});
+ allOrders.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+ document.getElementById('mailCount').textContent=mails;document.getElementById('orderCount').textContent=allOrders.length;
+ document.getElementById('quantityCount').textContent=allOrders.reduce((s,o)=>(s+(Array.isArray(o.line_items)?o.line_items.reduce((x,i)=>x+Number(i.quantity||0),0):0)),0);
+ buildProducts();applyFilters();
+ showAdmin('✅ Đã đọc '+mails+' Mail và '+allOrders.length+' Order từ index.json.',true);
+}catch(e){allOrders=[];applyFilters();showAdmin('❌ '+esc(e.message),false)}
+}
+function applyFilters(){const q1=String(document.getElementById('searchOrder').value||'').trim().toLowerCase(),q2=String(document.getElementById('searchMail').value||'').trim().toLowerCase(),p=document.getElementById('paymentFilter').value,f=document.getElementById('fulfillmentFilter').value;filteredOrders=allOrders.filter(o=>(!q1||orderKey(o).toLowerCase().includes(q1))&&(!q2||String(o.__mail||'').toLowerCase().includes(q2))&&(!p||String(o.financial_status||'').toLowerCase()===p)&&(!f||String(o.fulfillment_status||'').toLowerCase()===f));currentPage=1;renderOrders()}
+function renderOrders(){const tb=document.querySelector('#ordersTable tbody');tb.innerHTML='';const start=(currentPage-1)*PAGE_SIZE;const rows=filteredOrders.slice(start,start+PAGE_SIZE);const counts={};allOrders.forEach(o=>{const k=orderKey(o);counts[k]=(counts[k]||0)+1});rows.forEach((o,i)=>{const k=orderKey(o),tr=document.createElement('tr');tr.innerHTML='<td>'+(start+i+1)+'</td><td><div class="order-code">'+esc(k)+'</div>'+(counts[k]>1?'<span class="badge red">⚠️ TRÙNG ORDER</span>':'')+'</td><td>'+esc(o.__mail||'')+'</td><td>'+esc(dateFmt(o.created_at))+'</td><td>'+paymentBadge(o.financial_status)+'</td><td>'+fulfillmentBadge(o.fulfillment_status)+'</td><td class="products">'+productHtml(o)+'</td>';tb.appendChild(tr)});renderPagination()}
+function renderPagination(){const e=document.getElementById('pagination'),pages=Math.max(1,Math.ceil(filteredOrders.length/PAGE_SIZE));e.innerHTML='';if(pages<=1)return;const prev=document.createElement('button');prev.className='page-btn';prev.textContent='‹';prev.disabled=currentPage===1;prev.onclick=()=>{currentPage--;renderOrders()};e.appendChild(prev);const from=Math.max(1,currentPage-2),to=Math.min(pages,from+4);for(let n=from;n<=to;n++){const b=document.createElement('button');b.className='page-btn'+(n===currentPage?' active':'');b.textContent=n;b.onclick=()=>{currentPage=n;renderOrders()};e.appendChild(b)}const next=document.createElement('button');next.className='page-btn';next.textContent='›';next.disabled=currentPage===pages;next.onclick=()=>{currentPage++;renderOrders()};e.appendChild(next);const info=document.createElement('span');info.className='small';info.textContent=' '+filteredOrders.length+' Order';e.appendChild(info)}
+function buildProducts(){const m=new Map();allOrders.filter(o=>String(o.financial_status||'').toLowerCase()==='paid').forEach(o=>{(o.line_items||[]).forEach(i=>{const name=String(i.title||'').trim();if(!name)return;const variant=String(i.variant_title||'').trim();const q=Number(i.quantity||0);if(!m.has(name))m.set(name,new Map());const vm=m.get(name);vm.set(variant,(vm.get(variant)||0)+q)})});productGroups=[];m.forEach((vm,name)=>{const variants=[];let total=0;vm.forEach((q,v)=>{variants.push({name:v,quantity:q});total+=q});productGroups.push({name,variants,total})});renderProducts()}
+function renderProducts(){const tb=document.querySelector('#productsTable tbody');tb.innerHTML='';let stt=1,total=0;productGroups.forEach(g=>{g.variants.forEach((v,i)=>{const tr=document.createElement('tr');tr.innerHTML=(i===0?'<td rowspan="'+g.variants.length+'">'+stt+'</td><td rowspan="'+g.variants.length+'"><b>'+esc(g.name)+'</b><div class="small">Tổng: '+g.total+'</div></td>':'')+'<td>'+esc(v.name||'Không có loại')+'</td><td><b>'+v.quantity+'</b></td>';tb.appendChild(tr);total+=v.quantity});stt++});const tr=document.createElement('tr');tr.className='total-row';tr.innerHTML='<td colspan="3">TỔNG TẤT CẢ</td><td>'+total+'</td>';tb.appendChild(tr)}
+function ghHeaders(token){return {'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'}}
+async function ghGet(owner,repo,path,token){
+ const branch=document.getElementById('ghBranch').value.trim();
+ const r=await fetch('https://api.github.com/repos/'+encodeURIComponent(owner)+'/'+encodeURIComponent(repo)+'/contents/'+path.split('/').map(encodeURIComponent).join('/')+'?ref='+encodeURIComponent(branch),{headers:ghHeaders(token)});
+ if(!r.ok){if(r.status===404)return null;throw new Error('GitHub GET '+path+' → '+r.status+' '+await r.text())}
+ return r.json();
+}
+async function ghPut(owner,repo,path,token,body,sha,msg){
+ const branch=document.getElementById('ghBranch').value.trim();
+ const url='https://api.github.com/repos/'+encodeURIComponent(owner)+'/'+encodeURIComponent(repo)+'/contents/'+path.split('/').map(encodeURIComponent).join('/');
+ const payload={message:msg,content:btoa(unescape(encodeURIComponent(body))),branch};
+ if(sha)payload.sha=sha;
+ const r=await fetch(url,{method:'PUT',headers:ghHeaders(token),body:JSON.stringify(payload)});
+ if(!r.ok)throw new Error('GitHub PUT '+path+' → '+r.status+' '+await r.text());
+ return r.json();
+}
+async function ghDelete(owner,repo,path,token,sha,msg){
+ const branch=document.getElementById('ghBranch').value.trim();
+ const url='https://api.github.com/repos/'+encodeURIComponent(owner)+'/'+encodeURIComponent(repo)+'/contents/'+path.split('/').map(encodeURIComponent).join('/');
+ const payload={message:msg,sha,branch};
+ const r=await fetch(url,{method:'DELETE',headers:ghHeaders(token),body:JSON.stringify(payload)});
+ if(!r.ok)throw new Error('GitHub DELETE '+path+' → '+r.status+' '+await r.text());
+ return r.json();
+}
+function prepareUploadFiles(){
+ const files=Array.from(document.getElementById('jsonFiles').files||[]);
+ const list=document.getElementById('uploadList');
+ if(!files.length){list.innerHTML='';return;}
+ list.innerHTML='<div class="upload-head">'+files.length+' file đã chọn — nhập Mail tương ứng cho từng file</div>'+files.map((f,i)=>
+   '<div class="upload-row"><div class="upload-file" title="'+esc(f.name)+'">📄 '+esc(f.name)+'</div><input id="uploadMail_'+i+'" type="email" placeholder="Mail cho file này, ví dụ abc@gmail.com"></div>'
+ ).join('');
+}
+function getBatchItems(){
+ const files=Array.from(document.getElementById('jsonFiles').files||[]);
+ return files.map((file,i)=>({file,mail:normMail(document.getElementById('uploadMail_'+i)?.value||'')}));
+}
+async function uploadJsonBatch(){
+ const owner=document.getElementById('ghOwner').value.trim(),repo=document.getElementById('ghRepo').value.trim(),branch=document.getElementById('ghBranch').value.trim(),token=document.getElementById('ghToken').value.trim();
+ if(!owner||!repo||!branch||!token)return showAdmin('❌ Nhập đủ Owner, Repository, Branch và Token.',false);
+ const items=getBatchItems();
+ if(!items.length)return showAdmin('❌ Chưa chọn file JSON nào.',false);
+ const badMail=items.find(x=>!x.mail||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x.mail));
+ if(badMail)return showAdmin('❌ Mỗi file phải có một Mail hợp lệ. Tên file không được dùng để lấy Mail.',false);
+ const mailSet=new Set();
+ for(const x of items){if(mailSet.has(x.mail))return showAdmin('❌ Mail bị trùng trong bộ upload: '+esc(x.mail),false);mailSet.add(x.mail)}
+ try{
+   showAdmin('⏳ Đang kiểm tra '+items.length+' file...',true);
+   const prepared=[];
+   for(const x of items){
+     const text=await x.file.text();
+     let parsed;try{parsed=JSON.parse(text)}catch(e){throw new Error('File '+x.file.name+' không phải JSON hợp lệ.')}
+     if(!extractOrders(parsed).length)throw new Error('File '+x.file.name+' không có orders hợp lệ (hoặc responses chứa orders).');
+     prepared.push({mail:x.mail,text,path:'data/'+x.mail+'.json'});
+   }
+
+   // Lấy index hiện tại trước khi xóa để biết toàn bộ file dữ liệu cũ.
+   const idxObj=await ghGet(owner,repo,'index.json',token);
+   let oldEntries=[];
+   if(idxObj?.content){
+     const decoded=decodeURIComponent(escape(atob(idxObj.content.replace(/\n/g,''))));
+     const old=JSON.parse(decoded);
+     if(Array.isArray(old))oldEntries=old.map(indexEntry).filter(Boolean);
+   }
+
+   // Xóa bộ dữ liệu cũ. Nếu file đã biến mất thì bỏ qua.
+   let deleted=0;
+   for(const e of oldEntries){
+     if(!e.path||e.path==='index.json')continue;
+     const oldFile=await ghGet(owner,repo,e.path,token);
+     if(oldFile?.sha){await ghDelete(owner,repo,e.path,token,oldFile.sha,'Clear old dataset: '+e.path);deleted++;}
+   }
+
+   // Upload toàn bộ bộ dữ liệu mới.
+   for(let i=0;i<prepared.length;i++){
+     const x=prepared[i];
+     const existing=await ghGet(owner,repo,x.path,token);
+     await ghPut(owner,repo,x.path,token,x.text,existing?.sha,'Upload dataset: '+x.path);
+   }
+
+   // Thay index cũ bằng đúng bộ mới, không giữ entry cũ.
+   const newEntries=prepared.map(x=>({mail:x.mail,path:x.path}));
+   await ghPut(owner,repo,'index.json',token,JSON.stringify(newEntries,null,2),idxObj?.sha,'Replace index.json dataset');
+
+   showAdmin('✅ Đã upload '+prepared.length+' file và thay toàn bộ bộ dữ liệu cũ. Đã xóa '+deleted+' file cũ. Web sẽ đọc lại dữ liệu mới.',true);
+   document.getElementById('jsonFiles').value='';
+   document.getElementById('uploadList').innerHTML='';
+   await new Promise(r=>setTimeout(r,700));
+   await loadData();
+ }catch(e){showAdmin('❌ '+esc(e.message),false)}
+}
+function csvEsc(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}function downloadCSV(rows,name){const blob=new Blob(['\uFEFF'+rows.map(r=>r.map(csvEsc).join(',')).join('\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
+function exportOrders(){if(!filteredOrders.length)return alert('Chưa có dữ liệu phù hợp bộ lọc.');const rows=[['STT','Mã Order','Mail','Ngày giờ','Trạng thái thanh toán','Trạng thái giao hàng','Tên sản phẩm','Loại sản phẩm','Số lượng']];filteredOrders.forEach((o,i)=>(o.line_items||[{}]).forEach(it=>rows.push([i+1,orderKey(o),o.__mail,dateFmt(o.created_at),o.financial_status||'',o.fulfillment_status||'',it.title||'',it.variant_title||'',it.quantity||0])));downloadCSV(rows,'orders.csv')}
+function exportProducts(){if(!productGroups.length)return alert('Chưa có sản phẩm từ Order đã thanh toán.');const rows=[['STT','Tên sản phẩm','Loại sản phẩm','Số lượng']];let stt=1;productGroups.forEach(g=>{g.variants.forEach((v,i)=>rows.push([i===0?stt:'',i===0?g.name:'',v.name,v.quantity]));stt++});rows.push(['','','TỔNG',productGroups.reduce((s,g)=>s+g.total,0)]);downloadCSV(rows,'tong-hop-san-pham.csv')}
+
+document.addEventListener('DOMContentLoaded',()=>{document.getElementById('ghToken').value=sessionStorage.getItem('gh_token')||'';document.getElementById('ghToken').addEventListener('input',e=>sessionStorage.setItem('gh_token',e.target.value));loadData()});
+</script>
+</body>
+</html>
