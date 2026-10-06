@@ -7,82 +7,316 @@
 
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#f1f5f9;font-family:Arial,sans-serif;color:#1e293b}
-.container{width:96%;max-width:1600px;margin:25px auto}
-h1{margin:0 0 5px;color:#17395f}
-h2{margin-top:0}
-.card{background:#fff;border-radius:10px;padding:20px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.field{display:flex;flex-direction:column;gap:6px}
-.field label{font-size:13px;font-weight:bold}
-.field input,.field select{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:7px;background:#fff}
-.actions{display:flex;gap:8px;align-items:end;flex-wrap:wrap}
-.button{border:0;border-radius:7px;padding:10px 15px;cursor:pointer;font-weight:bold}
-.primary{background:#2563eb;color:#fff}
-.success{background:#16a34a;color:#fff}
-.secondary{background:#64748b;color:#fff}
-.danger{background:#dc2626;color:#fff}
-.export{background:#7c3aed;color:#fff}
-.status{display:none;margin-top:12px;padding:11px;border-radius:7px}
-.status.show{display:block}
-.status.ok{background:#dcfce7;color:#166534}
-.status.err{background:#fee2e2;color:#991b1b}
-.small{font-size:12px;color:#64748b}
-.upload-list{margin-top:10px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden}
-.upload-row{display:grid;grid-template-columns:1.4fr 1fr;gap:10px;padding:10px;border-bottom:1px solid #e2e8f0;background:#f8fafc}
-.upload-row:last-child{border-bottom:0}
-.upload-file{padding:10px;background:#fff;border:1px solid #cbd5e1;border-radius:7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.upload-row input{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:7px}
-.upload-head{padding:9px 10px;background:#e2e8f0;font-weight:bold}
-@media(max-width:900px){.upload-row{grid-template-columns:1fr}}
-.summary{display:flex;gap:12px;flex-wrap:wrap}
-.summary-box{min-width:180px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px}
-.summary-number{font-size:27px;font-weight:bold;color:#2563eb}
-.summary-label{color:#64748b;margin-top:4px}
-.filters{display:grid;grid-template-columns:2fr 2fr 1fr 1fr;gap:10px;margin-bottom:14px}
-.table-wrap{overflow:auto}
-table{width:100%;border-collapse:collapse}
-th{background:#2563eb;color:#fff;padding:10px;border:1px solid #1d4ed8;text-align:left;white-space:nowrap}
-td{padding:9px;border:1px solid #e2e8f0;vertical-align:top}
-tr:nth-child(even){background:#f8fafc}
-.order-code{color:#2563eb;font-weight:bold}
-.badge{display:inline-block;padding:4px 9px;border-radius:20px;font-size:12px;font-weight:bold;white-space:nowrap}
-.green{background:#dcfce7;color:#166534}
-.yellow{background:#fef3c7;color:#92400e}
-.blue{background:#dbeafe;color:#1d4ed8}
-.red{background:#fee2e2;color:#991b1b}
-.products{min-width:480px}
-.product-line{padding:5px 0;border-bottom:1px dashed #cbd5e1}
-.product-line:last-child{border:0}
-.product-title{font-weight:bold}
-.variant{color:#64748b;margin-left:12px}
-.qty{color:#2563eb;font-weight:bold}
-.qty-cell{min-width:70px;text-align:center}
-.order-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:-4px 0 12px;padding:10px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:7px}
-.pagination{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:14px}
-.page-btn{border:1px solid #cbd5e1;background:#fff;padding:7px 11px;border-radius:6px;cursor:pointer}
-.page-btn.active{background:#2563eb;color:#fff}
-.total-row{background:#dbeafe!important;font-weight:bold}
-.order-time{white-space:nowrap}
 
-/* CHECKBOX */
+body{
+  margin:0;
+  background:#f1f5f9;
+  font-family:Arial,sans-serif;
+  color:#1e293b;
+}
+
+.container{
+  width:96%;
+  max-width:1600px;
+  margin:25px auto;
+}
+
+h1{
+  margin:0 0 5px;
+  color:#17395f;
+}
+
+h2{
+  margin-top:0;
+}
+
+.card{
+  background:#fff;
+  border-radius:10px;
+  padding:20px;
+  margin-bottom:20px;
+  box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.field label{
+  font-size:13px;
+  font-weight:bold;
+}
+
+.field input,
+.field select{
+  width:100%;
+  padding:10px;
+  border:1px solid #cbd5e1;
+  border-radius:7px;
+  background:#fff;
+}
+
+.actions{
+  display:flex;
+  gap:8px;
+  align-items:end;
+  flex-wrap:wrap;
+}
+
+.button{
+  border:0;
+  border-radius:7px;
+  padding:10px 15px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.primary{
+  background:#2563eb;
+  color:#fff;
+}
+
+.secondary{
+  background:#64748b;
+  color:#fff;
+}
+
+.export{
+  background:#7c3aed;
+  color:#fff;
+}
+
+.status{
+  display:none;
+  margin-top:12px;
+  padding:11px;
+  border-radius:7px;
+}
+
+.status.show{
+  display:block;
+}
+
+.status.ok{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.status.err{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+.small{
+  font-size:12px;
+  color:#64748b;
+}
+
+.upload-list{
+  margin-top:10px;
+  border:1px solid #e2e8f0;
+  border-radius:8px;
+  overflow:hidden;
+}
+
+.upload-row{
+  display:grid;
+  grid-template-columns:1.4fr 1fr;
+  gap:10px;
+  padding:10px;
+  border-bottom:1px solid #e2e8f0;
+  background:#f8fafc;
+}
+
+.upload-row:last-child{
+  border-bottom:0;
+}
+
+.upload-file{
+  padding:10px;
+  background:#fff;
+  border:1px solid #cbd5e1;
+  border-radius:7px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.upload-row input{
+  width:100%;
+  padding:10px;
+  border:1px solid #cbd5e1;
+  border-radius:7px;
+}
+
+.upload-head{
+  padding:9px 10px;
+  background:#e2e8f0;
+  font-weight:bold;
+}
+
+.summary{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.summary-box{
+  min-width:180px;
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:8px;
+  padding:14px;
+}
+
+.summary-number{
+  font-size:27px;
+  font-weight:bold;
+  color:#2563eb;
+}
+
+.summary-label{
+  color:#64748b;
+  margin-top:4px;
+}
+
+.filters{
+  display:grid;
+  grid-template-columns:2fr 2fr 1fr 1fr;
+  gap:10px;
+  margin-bottom:14px;
+}
+
+.table-wrap{
+  overflow:auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+th{
+  background:#2563eb;
+  color:#fff;
+  padding:10px;
+  border:1px solid #1d4ed8;
+  text-align:left;
+  white-space:nowrap;
+}
+
+td{
+  padding:9px;
+  border:1px solid #e2e8f0;
+  vertical-align:top;
+}
+
+tr:nth-child(even){
+  background:#f8fafc;
+}
+
+.order-code{
+  color:#2563eb;
+  font-weight:bold;
+}
+
+.badge{
+  display:inline-block;
+  padding:4px 9px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:bold;
+  white-space:nowrap;
+}
+
+.green{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.yellow{
+  background:#fef3c7;
+  color:#92400e;
+}
+
+.blue{
+  background:#dbeafe;
+  color:#1d4ed8;
+}
+
+.red{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+.products{
+  min-width:480px;
+}
+
+.product-line{
+  padding:5px 0;
+  border-bottom:1px dashed #cbd5e1;
+}
+
+.product-line:last-child{
+  border:0;
+}
+
+.product-title{
+  font-weight:bold;
+}
+
+.qty-cell{
+  min-width:70px;
+  text-align:center;
+}
+
+.order-meta{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin:-4px 0 12px;
+  padding:10px 12px;
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:7px;
+}
+
+.order-time{
+  white-space:nowrap;
+}
+
+
+/* ================= CHECKBOX ================= */
+
 .check-cell{
   width:55px;
   min-width:55px;
   text-align:center;
   vertical-align:middle;
 }
+
 .order-check{
   width:20px;
   height:20px;
   cursor:pointer;
   accent-color:#16a34a;
 }
+
 .order-check:disabled{
   cursor:not-allowed;
-  opacity:.7;
+  opacity:.55;
 }
+
 .check-note{
   margin-top:8px;
   padding:9px 11px;
@@ -92,12 +326,73 @@ tr:nth-child(even){background:#f8fafc}
   font-size:12px;
 }
 
+
+/* ================= PAGINATION ================= */
+
+.pagination{
+  display:flex;
+  gap:6px;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin-top:16px;
+}
+
+.page-btn{
+  min-width:38px;
+  height:36px;
+  padding:6px 10px;
+  border:1px solid #cbd5e1;
+  background:#fff;
+  color:#1e293b;
+  border-radius:6px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.page-btn:hover:not(:disabled){
+  background:#eff6ff;
+  border-color:#2563eb;
+  color:#2563eb;
+}
+
+.page-btn.active{
+  background:#2563eb;
+  border-color:#2563eb;
+  color:#fff;
+}
+
+.page-btn:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+}
+
+.page-info{
+  margin:0 6px;
+  font-size:13px;
+  color:#64748b;
+}
+
+
 @media(max-width:900px){
-  .grid,.grid2,.filters{grid-template-columns:1fr}
-  .summary-box{min-width:140px}
+
+  .grid,
+  .filters{
+    grid-template-columns:1fr;
+  }
+
+  .upload-row{
+    grid-template-columns:1fr;
+  }
+
+  .summary-box{
+    min-width:140px;
+  }
+
 }
 </style>
 </head>
+
 
 <body>
 
@@ -106,33 +401,55 @@ tr:nth-child(even){background:#f8fafc}
 <h1>SFC ORDERS VIESHOP</h1>
 
 
-<!-- ================= ADMIN ================= -->
+<!-- =====================================================
+     ADMIN
+====================================================== -->
 
 <div class="card" id="adminCard">
 
 <h2>⚙️ Admin – cập nhật dữ liệu</h2>
 
 <p class="small">
-Mail được nhập riêng trên web. Tên file JSON được chọn chỉ là file nguồn và
-<b>không dùng để xác định Mail</b>.
+Mail được nhập riêng trên web. Tên file JSON chỉ là file nguồn
+và <b>không dùng để xác định Mail</b>.
 </p>
 
 
 <div class="grid">
 
 <div class="field">
+
 <label>GitHub Owner</label>
-<input id="ghOwner" value="9102myh">
+
+<input
+  id="ghOwner"
+  value="9102myh"
+>
+
 </div>
 
+
 <div class="field">
+
 <label>Repository</label>
-<input id="ghRepo" value="Orders-VieShop">
+
+<input
+  id="ghRepo"
+  value="Orders-VieShop"
+>
+
 </div>
 
+
 <div class="field">
+
 <label>Branch</label>
-<input id="ghBranch" value="main">
+
+<input
+  id="ghBranch"
+  value="main"
+>
+
 </div>
 
 </div>
@@ -140,12 +457,12 @@ Mail được nhập riêng trên web. Tên file JSON được chọn chỉ là 
 
 <div class="field" style="margin-top:10px">
 
-<label>GitHub Token (chỉ giữ trong phiên)</label>
+<label>GitHub Token</label>
 
 <input
   id="ghToken"
   type="password"
-  placeholder="ghp_... hoặc fine-grained PAT"
+  placeholder="Nhập GitHub Token để bật checkbox và upload"
 >
 
 </div>
@@ -168,12 +485,8 @@ Mail được nhập riêng trên web. Tên file JSON được chọn chỉ là 
 
 <p class="small">
 
-Mỗi lần upload là <b>một bộ dữ liệu mới</b>:
-dữ liệu cũ trong <code>index.json</code> sẽ bị clear và các file cũ
-được liệt kê trong index sẽ bị xóa.
-
-Mail phải nhập riêng cho từng file;
-tên file không được dùng để lấy Mail.
+Mỗi lần upload là một <b>bộ dữ liệu mới</b>.
+Dữ liệu cũ trong <code>index.json</code> sẽ được thay thế.
 
 </p>
 
@@ -190,6 +503,7 @@ tên file không được dùng để lấy Mail.
 ⬆ Upload tất cả & thay bộ dữ liệu cũ
 </button>
 
+
 <button
   class="button secondary"
   onclick="loadData()"
@@ -202,13 +516,23 @@ tên file không được dùng để lấy Mail.
 
 <div class="check-note">
 
-☑️ Checkbox được lưu tự động theo <b>mã Order</b> trong
+☑️ Checkbox được lưu tự động theo <b>mã Order</b> vào
 <code>order_checks.json</code>.
 
-Admin tick/un-tick xong hệ thống sẽ tự động lưu sau
-<b>800ms</b>.
+<br><br>
 
-Khi upload dataset mới, trạng thái checkbox vẫn được giữ theo mã Order.
+🔒 Chưa nhập GitHub Token:
+checkbox sẽ bị khóa.
+
+<br>
+
+⚡ Nhập Token:
+checkbox sẽ tự động được bật.
+
+<br>
+
+💾 Admin tick/un-tick:
+hệ thống tự lưu sau <b>800ms</b>.
 
 </div>
 
@@ -218,7 +542,10 @@ Khi upload dataset mới, trạng thái checkbox vẫn được giữ theo mã O
 </div>
 
 
-<!-- ================= SUMMARY ================= -->
+
+<!-- =====================================================
+     SUMMARY
+====================================================== -->
 
 <div class="card">
 
@@ -227,26 +554,61 @@ Khi upload dataset mới, trạng thái checkbox vẫn được giữ theo mã O
 <div class="summary">
 
 <div class="summary-box">
-<div id="mailCount" class="summary-number">0</div>
-<div class="summary-label">Mail</div>
+
+<div
+  id="mailCount"
+  class="summary-number"
+>
+0
 </div>
+
+<div class="summary-label">
+Mail
+</div>
+
+</div>
+
 
 <div class="summary-box">
-<div id="deliveredCount" class="summary-number">0</div>
-<div class="summary-label">Đã giao hàng</div>
+
+<div
+  id="deliveredCount"
+  class="summary-number"
+>
+0
 </div>
+
+<div class="summary-label">
+Đã giao hàng
+</div>
+
+</div>
+
 
 <div class="summary-box">
-<div id="paidCount" class="summary-number">0</div>
-<div class="summary-label">Đã thanh toán</div>
+
+<div
+  id="paidCount"
+  class="summary-number"
+>
+0
+</div>
+
+<div class="summary-label">
+Đã thanh toán
 </div>
 
 </div>
 
 </div>
 
+</div>
 
-<!-- ================= ORDERS ================= -->
+
+
+<!-- =====================================================
+     ORDERS
+====================================================== -->
 
 <div class="card">
 
@@ -268,6 +630,7 @@ Tổng bản ghi: 0
 
 
 <div class="filters">
+
 
 <div class="field">
 
@@ -366,6 +729,7 @@ Tổng bản ghi: 0
 
 </thead>
 
+
 <tbody></tbody>
 
 </table>
@@ -373,15 +737,21 @@ Tổng bản ghi: 0
 </div>
 
 
+<!-- PAGINATION -->
+
 <div
   id="pagination"
   class="pagination"
 ></div>
 
+
 </div>
 
 
-<!-- ================= PRODUCTS ================= -->
+
+<!-- =====================================================
+     PRODUCTS
+====================================================== -->
 
 <div class="card">
 
@@ -430,65 +800,71 @@ Chỉ tổng hợp sản phẩm từ các Order có
 </div>
 
 
+
 <script>
 
-
-/* =========================================================
+/* =====================================================
    CONFIG
-========================================================= */
+====================================================== */
 
 const CONFIG={
+
   owner:'9102myh',
+
   repo:'Orders-VieShop',
+
   branch:'main',
+
   indexPath:'index.json',
+
   checksPath:'order_checks.json'
+
 };
 
 
+/* =====================================================
+   GLOBAL
+====================================================== */
+
 let allOrders=[];
+
 let filteredOrders=[];
+
 let productGroups=[];
 
-/*
-  Chỉ lưu các Order đang được tick.
-
-  Ví dụ:
-
-  {
-    "#10001": true,
-    "#10003": true
-  }
-*/
 let orderChecks={};
 
+let currentPage=1;
+
 
 /*
-  Auto-save debounce.
+  Số Order mỗi trang.
+*/
+const PAGE_SIZE=10;
+
+
+/*
+  Auto-save checkbox.
 */
 let orderCheckSaveTimer=null;
 
 
 /*
-  Có request save đang chạy hay không.
+  Có request save đang chạy.
 */
 let orderCheckSaving=false;
 
 
 /*
-  Trong lúc save đang chạy có thay đổi mới hay không.
+  Có thay đổi mới trong lúc save.
 */
 let orderCheckSaveQueued=false;
 
 
-let currentPage=1;
 
-const PAGE_SIZE=10;
-
-
-/* =========================================================
+/* =====================================================
    HELPERS
-========================================================= */
+====================================================== */
 
 function esc(v){
 
@@ -530,62 +906,30 @@ function dateFmt(v){
 
   const d=new Date(v);
 
-  return isNaN(d)
-    ? String(v)
-    : d.toLocaleString(
-        'vi-VN',
-        {
-          year:'numeric',
-          month:'2-digit',
-          day:'2-digit',
-          hour:'2-digit',
-          minute:'2-digit',
-          second:'2-digit'
-        }
-      );
+  if(isNaN(d))
+    return String(v);
 
-}
-
-
-function paymentBadge(v){
-
-  const s=String(v||'').toLowerCase();
-
-  if(s==='paid')
-    return '<span class="badge green">Đã thanh toán</span>';
-
-  if(s==='pending')
-    return '<span class="badge yellow">Chờ thanh toán</span>';
-
-  return '<span class="badge blue">'+
-    esc(v||'-')+
-    '</span>';
-
-}
-
-
-function fulfillmentBadge(v){
-
-  const s=String(v||'').toLowerCase();
-
-  if(s==='fulfilled')
-    return '<span class="badge green">Đã giao hàng</span>';
-
-  if(s==='notfulfilled')
-    return '<span class="badge yellow">Chưa giao hàng</span>';
-
-  return '<span class="badge blue">'+
-    esc(v||'-')+
-    '</span>';
+  return d.toLocaleString(
+    'vi-VN',
+    {
+      year:'numeric',
+      month:'2-digit',
+      day:'2-digit',
+      hour:'2-digit',
+      minute:'2-digit',
+      second:'2-digit'
+    }
+  );
 
 }
 
 
 function showAdmin(msg,ok=true){
 
-  const e=document.getElementById(
-    'adminStatus'
-  );
+  const e=
+    document.getElementById(
+      'adminStatus'
+    );
 
   if(!e)return;
 
@@ -598,60 +942,9 @@ function showAdmin(msg,ok=true){
 }
 
 
-function extractOrders(data){
+function isAdminMode(){
 
-  if(
-    data &&
-    Array.isArray(data.orders)
-  )
-    return data.orders;
-
-
-  if(
-    data &&
-    Array.isArray(data.responses)
-  )
-    return data.responses.flatMap(
-      r=>Array.isArray(r?.orders)
-        ?r.orders
-        :[]
-    );
-
-
-  if(Array.isArray(data))
-    return data.flatMap(
-      r=>Array.isArray(r?.orders)
-        ?r.orders
-        :[]
-    );
-
-
-  return [];
-
-}
-
-
-function indexEntry(e){
-
-  if(typeof e==='string')
-    return {
-      path:e,
-      mail:null
-    };
-
-
-  if(
-    e &&
-    typeof e==='object' &&
-    e.path
-  )
-    return {
-      path:e.path,
-      mail:e.mail||null
-    };
-
-
-  return null;
+  return location.hash.toLowerCase()==='#admin';
 
 }
 
@@ -676,20 +969,163 @@ function rawUrl(
 }
 
 
-/* =========================================================
-   ADMIN
-========================================================= */
+function extractOrders(data){
 
-function isAdminMode(){
+  if(
+    data &&
+    Array.isArray(data.orders)
+  )
+    return data.orders;
 
-  return location.hash.toLowerCase()==='#admin';
+
+  if(
+    data &&
+    Array.isArray(data.responses)
+  ){
+
+    return data.responses.flatMap(
+      r=>
+        Array.isArray(r?.orders)
+          ?r.orders
+          :[]
+    );
+
+  }
+
+
+  if(Array.isArray(data)){
+
+    return data.flatMap(
+      r=>
+        Array.isArray(r?.orders)
+          ?r.orders
+          :[]
+    );
+
+  }
+
+
+  return [];
 
 }
 
 
-/* =========================================================
+function indexEntry(e){
+
+  if(typeof e==='string'){
+
+    return {
+      path:e,
+      mail:null
+    };
+
+  }
+
+
+  if(
+    e &&
+    typeof e==='object' &&
+    e.path
+  ){
+
+    return {
+      path:e.path,
+      mail:e.mail||null
+    };
+
+  }
+
+
+  return null;
+
+}
+
+
+
+/* =====================================================
+   BADGES
+====================================================== */
+
+function paymentBadge(v){
+
+  const s=
+    String(v||'')
+      .toLowerCase();
+
+
+  if(s==='paid'){
+
+    return `
+      <span class="badge green">
+        Đã thanh toán
+      </span>
+    `;
+
+  }
+
+
+  if(s==='pending'){
+
+    return `
+      <span class="badge yellow">
+        Chờ thanh toán
+      </span>
+    `;
+
+  }
+
+
+  return `
+    <span class="badge blue">
+      ${esc(v||'-')}
+    </span>
+  `;
+
+}
+
+
+function fulfillmentBadge(v){
+
+  const s=
+    String(v||'')
+      .toLowerCase();
+
+
+  if(s==='fulfilled'){
+
+    return `
+      <span class="badge green">
+        Đã giao hàng
+      </span>
+    `;
+
+  }
+
+
+  if(s==='notfulfilled'){
+
+    return `
+      <span class="badge yellow">
+        Chưa giao hàng
+      </span>
+    `;
+
+  }
+
+
+  return `
+    <span class="badge blue">
+      ${esc(v||'-')}
+    </span>
+  `;
+
+}
+
+
+
+/* =====================================================
    CHECKBOX
-========================================================= */
+====================================================== */
 
 function normalizeOrderChecks(data){
 
@@ -704,18 +1140,22 @@ function normalizeOrderChecks(data){
     return result;
 
 
-  Object.keys(data).forEach(k=>{
+  Object.keys(data).forEach(
+    k=>{
 
-    if(data[k]===true){
+      if(data[k]===true){
 
-      const key=String(k).trim();
+        const key=
+          String(k).trim();
 
-      if(key)
-        result[key]=true;
+
+        if(key)
+          result[key]=true;
+
+      }
 
     }
-
-  });
+  );
 
 
   return result;
@@ -723,32 +1163,28 @@ function normalizeOrderChecks(data){
 }
 
 
-/*
-  Đọc order_checks.json.
-*/
 async function loadOrderChecks(){
 
   try{
 
-    const url=rawUrl(
-      CONFIG.owner,
-      CONFIG.repo,
-      CONFIG.branch,
-      CONFIG.checksPath
-    );
+    const url=
+      rawUrl(
+        CONFIG.owner,
+        CONFIG.repo,
+        CONFIG.branch,
+        CONFIG.checksPath
+      );
 
 
-    const r=await fetch(
-      url,
-      {
-        cache:'no-store'
-      }
-    );
+    const r=
+      await fetch(
+        url,
+        {
+          cache:'no-store'
+        }
+      );
 
 
-    /*
-      Chưa có file lần đầu.
-    */
     if(r.status===404){
 
       orderChecks={};
@@ -771,10 +1207,10 @@ async function loadOrderChecks(){
     }
 
 
-    const data=await r.json();
-
     orderChecks=
-      normalizeOrderChecks(data);
+      normalizeOrderChecks(
+        await r.json()
+      );
 
 
   }catch(e){
@@ -792,16 +1228,10 @@ async function loadOrderChecks(){
 
 
 /*
-  Admin tick / un-tick.
-
-  UI đổi ngay lập tức.
-  Sau đó debounce 800ms rồi tự save.
+  Admin tick / untick.
 */
 function toggleOrderCheck(checkbox){
 
-  /*
-    User thường không được sửa.
-  */
   if(!isAdminMode()){
 
     checkbox.checked=
@@ -814,9 +1244,36 @@ function toggleOrderCheck(checkbox){
   }
 
 
-  const key=String(
-    checkbox.dataset.orderKey||''
-  ).trim();
+  /*
+    Không có Token thì không cho sửa.
+  */
+  const token=
+    document.getElementById(
+      'ghToken'
+    )?.value.trim()||'';
+
+
+  if(!token){
+
+    checkbox.checked=
+      !!orderChecks[
+        checkbox.dataset.orderKey
+      ];
+
+    showAdmin(
+      '🔒 Nhập GitHub Token trước khi tick checkbox.',
+      false
+    );
+
+    return;
+
+  }
+
+
+  const key=
+    String(
+      checkbox.dataset.orderKey||''
+    ).trim();
 
 
   if(!key)return;
@@ -833,16 +1290,13 @@ function toggleOrderCheck(checkbox){
   }
 
 
-  /*
-    Bắt đầu debounce.
-  */
   scheduleOrderChecksSave();
 
 }
 
 
 /*
-  Debounce auto-save.
+  Debounce 800ms.
 */
 function scheduleOrderChecksSave(){
 
@@ -867,7 +1321,7 @@ function scheduleOrderChecksSave(){
 
 
 /*
-  Auto-save checkbox lên GitHub.
+  Auto-save lên GitHub.
 */
 async function saveOrderChecksRealtime(){
 
@@ -900,7 +1354,7 @@ async function saveOrderChecksRealtime(){
   ){
 
     showAdmin(
-      '❌ Không thể tự lưu checkbox: chưa có GitHub Token.',
+      '🔒 Chưa có GitHub Token nên không thể lưu checkbox.',
       false
     );
 
@@ -909,10 +1363,6 @@ async function saveOrderChecksRealtime(){
   }
 
 
-  /*
-    Nếu request trước vẫn đang chạy,
-    đánh dấu để chạy thêm 1 lần sau đó.
-  */
   if(orderCheckSaving){
 
     orderCheckSaveQueued=true;
@@ -941,9 +1391,6 @@ async function saveOrderChecksRealtime(){
       )+'\n';
 
 
-    /*
-      Lấy SHA mới nhất.
-    */
     const existing=
       await ghGet(
         owner,
@@ -986,11 +1433,6 @@ async function saveOrderChecksRealtime(){
     orderCheckSaving=false;
 
 
-    /*
-      Nếu trong lúc request chạy có
-      thay đổi checkbox mới,
-      lưu lại.
-    */
     if(orderCheckSaveQueued){
 
       orderCheckSaveQueued=false;
@@ -1014,32 +1456,25 @@ async function saveOrderChecksRealtime(){
 }
 
 
-/* =========================================================
+
+/* =====================================================
    LOAD DATA
-========================================================= */
+====================================================== */
 
 async function loadData(){
 
   try{
 
-    const owner=CONFIG.owner;
-    const repo=CONFIG.repo;
-    const branch=CONFIG.branch;
-
-
-    /*
-      Đọc checkbox trước.
-    */
     await loadOrderChecks();
 
 
-    const idxRes=
+    const r=
       await fetch(
         rawUrl(
-          owner,
-          repo,
-          branch,
-          'index.json'
+          CONFIG.owner,
+          CONFIG.repo,
+          CONFIG.branch,
+          CONFIG.indexPath
         ),
         {
           cache:'no-store'
@@ -1047,11 +1482,11 @@ async function loadData(){
       );
 
 
-    if(!idxRes.ok){
+    if(!r.ok){
 
       throw new Error(
         'Không đọc được index.json ('+
-        idxRes.status+
+        r.status+
         ').'
       );
 
@@ -1059,15 +1494,15 @@ async function loadData(){
 
 
     const idx=
-      await idxRes.json();
+      await r.json();
 
 
     const entries=
       Array.isArray(idx)
-      ?idx
-        .map(indexEntry)
-        .filter(Boolean)
-      :[];
+        ?idx
+          .map(indexEntry)
+          .filter(Boolean)
+        :[];
 
 
     const results=
@@ -1077,12 +1512,12 @@ async function loadData(){
 
             try{
 
-              const r=
+              const rr=
                 await fetch(
                   rawUrl(
-                    owner,
-                    repo,
-                    branch,
+                    CONFIG.owner,
+                    CONFIG.repo,
+                    CONFIG.branch,
                     e.path
                   ),
                   {
@@ -1091,19 +1526,18 @@ async function loadData(){
                 );
 
 
-              if(!r.ok)
+              if(!rr.ok)
                 throw new Error(
-                  'HTTP '+r.status
+                  'HTTP '+rr.status
                 );
-
-
-              const data=
-                await r.json();
 
 
               return {
                 mail:normMail(e.mail),
-                orders:extractOrders(data)
+                orders:
+                  extractOrders(
+                    await rr.json()
+                  )
               };
 
 
@@ -1130,28 +1564,33 @@ async function loadData(){
 
     allOrders=[];
 
+
     let mails=0;
 
 
-    results.forEach(r=>{
+    results.forEach(
+      r=>{
 
-      if(
-        r.orders.length||
-        r.mail
-      )
-        mails++;
+        if(
+          r.orders.length||
+          r.mail
+        )
+          mails++;
 
 
-      r.orders.forEach(o=>{
+        r.orders.forEach(
+          o=>{
 
-        o.__mail=
-          r.mail||'';
+            o.__mail=
+              r.mail||'';
 
-        allOrders.push(o);
+            allOrders.push(o);
 
-      });
+          }
+        );
 
-    });
+      }
+    );
 
 
     allOrders.sort(
@@ -1198,10 +1637,7 @@ async function loadData(){
       mails+
       ' Mail và '+
       allOrders.length+
-      ' Order. '+
-      'Đã đọc '+
-      Object.keys(orderChecks).length+
-      ' Order được tick.',
+      ' Order.',
       true
     );
 
@@ -1223,22 +1659,10 @@ async function loadData(){
 }
 
 
-/* =========================================================
-   ORDER LIST
-========================================================= */
 
-function getOrderQuantity(o){
-
-  return Array.isArray(o.line_items)
-    ?o.line_items.reduce(
-      (s,i)=>
-        s+Number(i.quantity||0),
-      0
-    )
-    :0;
-
-}
-
+/* =====================================================
+   FILTER
+====================================================== */
 
 function applyFilters(){
 
@@ -1277,26 +1701,37 @@ function applyFilters(){
   filteredOrders=
     allOrders.filter(
       o=>
+
         (!q1||
           orderKey(o)
             .toLowerCase()
             .includes(q1)
-        )&&
+        )
+
+        &&
+
         (!q2||
           String(o.__mail||'')
             .toLowerCase()
             .includes(q2)
-        )&&
+        )
+
+        &&
+
         (!p||
           String(
             o.financial_status||''
           ).toLowerCase()===p
-        )&&
+        )
+
+        &&
+
         (!f||
           String(
             o.fulfillment_status||''
           ).toLowerCase()===f
         )
+
     );
 
 
@@ -1307,9 +1742,10 @@ function applyFilters(){
 }
 
 
-/* =========================================================
+
+/* =====================================================
    RENDER ORDERS
-========================================================= */
+====================================================== */
 
 function renderOrders(){
 
@@ -1337,14 +1773,17 @@ function renderOrders(){
   const counts={};
 
 
-  allOrders.forEach(o=>{
+  allOrders.forEach(
+    o=>{
 
-    const k=orderKey(o);
+      const k=
+        orderKey(o);
 
-    counts[k]=
-      (counts[k]||0)+1;
+      counts[k]=
+        (counts[k]||0)+1;
 
-  });
+    }
+  );
 
 
   document.getElementById(
@@ -1354,204 +1793,244 @@ function renderOrders(){
     filteredOrders.length;
 
 
-  rows.forEach((o,i)=>{
+  rows.forEach(
+    (o,i)=>{
 
-    const k=orderKey(o);
-
-    const stt=
-      start+i+1;
-
-
-    const items=
-      Array.isArray(o.line_items)&&
-      o.line_items.length
-      ?o.line_items
-      :[{}];
+      const k=
+        orderKey(o);
 
 
-    const rowspan=
-      items.length;
+      const stt=
+        start+i+1;
 
 
-    items.forEach(
-      (item,j)=>{
-
-        const tr=
-          document.createElement('tr');
-
-
-        let cells='';
+      const items=
+        Array.isArray(o.line_items)&&
+        o.line_items.length
+          ?o.line_items
+          :[{}];
 
 
-        /*
-          Checkbox chỉ xuất hiện 1 lần
-          cho mỗi Order.
-        */
-        if(j===0){
-
-          const checked=
-            orderChecks[k]===true
-            ?' checked'
-            :'';
+      const rowspan=
+        items.length;
 
 
-          /*
-            Chỉ Admin mới được tick.
-          */
-          const disabled=
-            isAdminMode()
-            ?''
-            :' disabled';
+      items.forEach(
+        (item,j)=>{
+
+          const tr=
+            document.createElement(
+              'tr'
+            );
 
 
-          cells+=
-            '<td rowspan="'+
-              rowspan+
-            '" class="check-cell">'+
+          let cells='';
 
-              '<input '+
-                'class="order-check" '+
-                'type="checkbox" '+
-                'data-order-key="'+
+
+          if(j===0){
+
+            const checked=
+              orderChecks[k]===true
+                ?' checked'
+                :'';
+
+
+            /*
+              QUAN TRỌNG:
+
+              User thường:
+              disabled
+
+              Admin nhưng chưa Token:
+              disabled
+
+              Admin có Token:
+              enabled
+            */
+
+            const token=
+              document.getElementById(
+                'ghToken'
+              )?.value.trim()||'';
+
+
+            const canEdit=
+              isAdminMode() &&
+              !!token;
+
+
+            const disabled=
+              canEdit
+                ?''
+                :' disabled';
+
+
+            let title='';
+
+
+            if(!isAdminMode()){
+
+              title=
+                'Chỉ Admin mới có thể tick';
+
+            }else if(!token){
+
+              title=
+                'Nhập GitHub Token để bật checkbox';
+
+            }else{
+
+              title=
+                'Admin: tick để đánh dấu Order';
+
+            }
+
+
+            cells+=
+              '<td rowspan="'+
+                rowspan+
+              '" class="check-cell">'+
+
+                '<input '+
+                  'class="order-check" '+
+                  'type="checkbox" '+
+                  'data-order-key="'+
+                    esc(k)+
+                  '"'+
+                  checked+
+                  disabled+
+                  ' onchange="toggleOrderCheck(this)"'+
+                  ' title="'+
+                    title+
+                  '">'+
+
+              '</td>';
+
+
+            cells+=
+              '<td rowspan="'+
+                rowspan+
+              '">'+
+                stt+
+              '</td>';
+
+
+            cells+=
+              '<td rowspan="'+
+                rowspan+
+              '">'+
+
+                '<div class="order-code">'+
                   esc(k)+
-                '"'+
-                checked+
-                disabled+
-                ' onchange="toggleOrderCheck(this)"'+
-                ' title="'+
-                  (
-                    isAdminMode()
-                    ?'Admin: tick để đánh dấu Order'
-                    :'Chỉ Admin mới có thể tick'
-                  )+
-                '">'+
+                '</div>'+
 
-            '</td>';
+                (
+                  counts[k]>1
+                    ?'<span class="badge red">'+
+                      '⚠️ TRÙNG ORDER'+
+                     '</span>'
+                    :''
+                )+
+
+              '</td>';
 
 
-          cells+=
-            '<td rowspan="'+
-              rowspan+
-            '">'+
-              stt+
-            '</td>';
+            cells+=
+              '<td rowspan="'+
+                rowspan+
+              '">'+
+                esc(o.__mail||'')+
+              '</td>';
 
 
-          cells+=
-            '<td rowspan="'+
-              rowspan+
-            '">'+
+            cells+=
+              '<td rowspan="'+
+                rowspan+
+              '" class="order-time">'+
+                esc(
+                  dateFmt(
+                    o.created_at
+                  )||'-'
+                )+
+              '</td>';
 
-              '<div class="order-code">'+
-                esc(k)+
-              '</div>'+
 
+            cells+=
+              '<td rowspan="'+
+                rowspan+
+              '">'+
+                paymentBadge(
+                  o.financial_status
+                )+
+              '</td>';
+
+
+            cells+=
+              '<td rowspan="'+
+                rowspan+
+              '">'+
+                fulfillmentBadge(
+                  o.fulfillment_status
+                )+
+              '</td>';
+
+          }
+
+
+          const title=
+            String(
+              item.title||''
+            ).trim();
+
+
+          const variant=
+            String(
+              item.variant_title||''
+            ).trim();
+
+
+          const product=
+            (
+              title+
               (
-                counts[k]>1
-                ?'<span class="badge red">'+
-                  '⚠️ TRÙNG ORDER'+
-                 '</span>'
-                :''
-              )+
+                variant
+                  ?' / '+variant
+                  :''
+              )
+            )||'-';
 
+
+          cells+=
+            '<td class="products">'+
+              '<div class="product-line">'+
+                '<div class="product-title">'+
+                  esc(product)+
+                '</div>'+
+              '</div>'+
             '</td>';
 
 
           cells+=
-            '<td rowspan="'+
-              rowspan+
-            '">'+
-              esc(o.__mail||'')+
+            '<td>'+
+              '<div class="product-line qty-cell">'+
+                '<b>'+
+                  Number(
+                    item.quantity||0
+                  )+
+                '</b>'+
+              '</div>'+
             '</td>';
 
 
-          cells+=
-            '<td rowspan="'+
-              rowspan+
-            '" class="order-time">'+
-              esc(
-                dateFmt(
-                  o.created_at
-                )||'-'
-              )+
-            '</td>';
+          tr.innerHTML=cells;
 
-
-          cells+=
-            '<td rowspan="'+
-              rowspan+
-            '">'+
-              paymentBadge(
-                o.financial_status
-              )+
-            '</td>';
-
-
-          cells+=
-            '<td rowspan="'+
-              rowspan+
-            '">'+
-              fulfillmentBadge(
-                o.fulfillment_status
-              )+
-            '</td>';
+          tb.appendChild(tr);
 
         }
+      );
 
-
-        const title=
-          String(
-            item.title||''
-          ).trim();
-
-
-        const variant=
-          String(
-            item.variant_title||''
-          ).trim();
-
-
-        const product=
-          (
-            title+
-            (
-              variant
-              ?' / '+variant
-              :''
-            )
-          )||'-';
-
-
-        cells+=
-          '<td class="products">'+
-            '<div class="product-line">'+
-              '<div class="product-title">'+
-                esc(product)+
-              '</div>'+
-            '</div>'+
-          '</td>';
-
-
-        cells+=
-          '<td>'+
-            '<div class="product-line qty-cell">'+
-              '<b>'+
-                Number(
-                  item.quantity||0
-                )+
-              '</b>'+
-            '</div>'+
-          '</td>';
-
-
-        tr.innerHTML=cells;
-
-        tb.appendChild(tr);
-
-      }
-    );
-
-  });
+    }
+  );
 
 
   renderPagination();
@@ -1559,19 +2038,23 @@ function renderOrders(){
 }
 
 
-/* =========================================================
+
+/* =====================================================
    PAGINATION
-========================================================= */
+====================================================== */
 
 function renderPagination(){
 
-  const e=
+  const box=
     document.getElementById(
       'pagination'
     );
 
 
-  const pages=
+  box.innerHTML='';
+
+
+  const totalPages=
     Math.max(
       1,
       Math.ceil(
@@ -1581,69 +2064,103 @@ function renderPagination(){
     );
 
 
-  e.innerHTML='';
+  if(currentPage>totalPages)
+    currentPage=totalPages;
 
 
-  const info=
-    document.getElementById(
-      'pageInfo'
-    );
+  const makeButton=
+    (
+      text,
+      page,
+      disabled=false,
+      active=false
+    )=>{
+
+      const b=
+        document.createElement(
+          'button'
+        );
 
 
-  const start=
-    filteredOrders.length
-    ?((currentPage-1)*
-       PAGE_SIZE+1)
-    :0;
+      b.className=
+        'page-btn'+
+        (
+          active
+            ?' active'
+            :''
+        );
 
 
-  const end=
-    Math.min(
-      currentPage*PAGE_SIZE,
-      filteredOrders.length
-    );
+      b.textContent=text;
+
+      b.disabled=disabled;
 
 
-  info.textContent=
-    filteredOrders.length
-    ?'Đang xem '+
-      start+
-      '–'+
-      end+
-      ' / '+
-      filteredOrders.length
-    :'Không có bản ghi';
+      b.onclick=()=>{
+
+        if(
+          disabled||
+          page===currentPage
+        )
+          return;
 
 
-  if(pages<=1)
-    return;
+        currentPage=page;
+
+        renderOrders();
 
 
-  const prev=
-    document.createElement(
-      'button'
-    );
+        /*
+          Cuộn nhẹ về đầu bảng.
+        */
+        document.getElementById(
+          'ordersTable'
+        ).scrollIntoView({
+          behavior:'smooth',
+          block:'start'
+        });
+
+      };
 
 
-  prev.className='page-btn';
+      return b;
 
-  prev.textContent='‹';
-
-  prev.disabled=
-    currentPage===1;
+    };
 
 
-  prev.onclick=()=>{
+  /*
+    <<
+    Trang đầu
+  */
+  box.appendChild(
+    makeButton(
+      '<<',
+      1,
+      currentPage===1
+    )
+  );
 
-    currentPage--;
 
-    renderOrders();
+  /*
+    <
+    Trang trước
+  */
+  box.appendChild(
+    makeButton(
+      '<',
+      Math.max(
+        1,
+        currentPage-1
+      ),
+      currentPage===1
+    )
+  );
 
-  };
 
-
-  e.appendChild(prev);
-
+  /*
+    Hiển thị các trang xung quanh
+    trang hiện tại.
+  */
 
   let from=
     Math.max(
@@ -1654,103 +2171,217 @@ function renderPagination(){
 
   let to=
     Math.min(
-      pages,
-      from+4
+      totalPages,
+      currentPage+2
     );
 
 
-  if(to-from<4)
-    from=
-      Math.max(
-        1,
-        to-4
-      );
+  /*
+    Luôn cố gắng hiển thị 5 số trang.
+  */
 
-
-  for(
-    let n=from;
-    n<=to;
-    n++
+  if(
+    to-from<4
   ){
 
-    const b=
-      document.createElement(
-        'button'
-      );
+    if(from===1){
 
+      to=
+        Math.min(
+          totalPages,
+          from+4
+        );
 
-    b.className=
-      'page-btn'+
-      (
-        n===currentPage
-        ?' active'
-        :''
-      );
+    }else{
 
+      from=
+        Math.max(
+          1,
+          to-4
+        );
 
-    b.textContent=n;
-
-
-    b.onclick=()=>{
-
-      currentPage=n;
-
-      renderOrders();
-
-    };
-
-
-    e.appendChild(b);
+    }
 
   }
 
 
-  const next=
-    document.createElement(
-      'button'
+  /*
+    Nếu có trang đầu cách xa,
+    hiển thị ...
+  */
+
+  if(from>1){
+
+    box.appendChild(
+      makeButton(
+        '1',
+        1,
+        false,
+        currentPage===1
+      )
     );
 
 
-  next.className='page-btn';
+    if(from>2){
 
-  next.textContent='›';
+      const dots=
+        document.createElement(
+          'span'
+        );
 
-  next.disabled=
-    currentPage===pages;
+      dots.className=
+        'page-info';
+
+      dots.textContent='...';
+
+      box.appendChild(dots);
+
+    }
+
+  }
 
 
-  next.onclick=()=>{
+  for(
+    let p=from;
+    p<=to;
+    p++
+  ){
 
-    currentPage++;
+    box.appendChild(
+      makeButton(
+        String(p),
+        p,
+        false,
+        p===currentPage
+      )
+    );
 
-    renderOrders();
-
-  };
+  }
 
 
-  e.appendChild(next);
+  /*
+    Nếu còn trang phía sau.
+  */
+
+  if(to<totalPages){
+
+    if(to<totalPages-1){
+
+      const dots=
+        document.createElement(
+          'span'
+        );
+
+      dots.className=
+        'page-info';
+
+      dots.textContent='...';
+
+      box.appendChild(dots);
+
+    }
 
 
-  const total=
+    box.appendChild(
+      makeButton(
+        String(totalPages),
+        totalPages,
+        false,
+        currentPage===totalPages
+      )
+    );
+
+  }
+
+
+  /*
+    >
+    Trang sau
+  */
+  box.appendChild(
+    makeButton(
+      '>',
+      Math.min(
+        totalPages,
+        currentPage+1
+      ),
+      currentPage===totalPages
+    )
+  );
+
+
+  /*
+    >>
+    Trang cuối
+  */
+  box.appendChild(
+    makeButton(
+      '>>',
+      totalPages,
+      currentPage===totalPages
+    )
+  );
+
+
+  /*
+    Thông tin trang.
+  */
+
+  const info=
     document.createElement(
       'span'
     );
 
 
-  total.className='small';
-
-  total.textContent=
-    ' '+pages+' trang';
+  info.className='page-info';
 
 
-  e.appendChild(total);
+  const start=
+    filteredOrders.length
+      ?(
+        (currentPage-1)*
+        PAGE_SIZE+
+        1
+      )
+      :0;
+
+
+  const end=
+    Math.min(
+      currentPage*PAGE_SIZE,
+      filteredOrders.length
+    );
+
+
+  info.textContent=
+    'Trang '+
+    currentPage+
+    '/'+
+    totalPages+
+    ' · '+
+    start+
+    '–'+
+    end;
+
+
+  box.appendChild(info);
+
+
+  document.getElementById(
+    'pageInfo'
+  ).textContent=
+    'Trang '+
+    currentPage+
+    '/'+
+    totalPages;
 
 }
 
 
-/* =========================================================
+
+/* =====================================================
    PRODUCTS
-========================================================= */
+====================================================== */
 
 function buildProducts(){
 
@@ -1888,26 +2519,27 @@ function renderProducts(){
           tr.innerHTML=
             (
               i===0
-              ?'<td rowspan="'+
-                g.variants.length+
-                '">'+
-                stt+
-                '</td>'+
+                ?'<td rowspan="'+
+                  g.variants.length+
+                  '">'+
+                  stt+
+                  '</td>'+
 
-                '<td rowspan="'+
-                g.variants.length+
-                '">'+
-                  '<b>'+
-                    esc(g.name)+
-                  '</b>'+
+                  '<td rowspan="'+
+                  g.variants.length+
+                  '">'+
+                    '<b>'+
+                      esc(g.name)+
+                    '</b>'+
 
-                  '<div class="small">'+
-                    'Tổng: '+
-                    g.total+
-                  '</div>'+
+                    '<div class="small">'+
+                      'Tổng: '+
+                      g.total+
+                    '</div>'+
 
-                '</td>'
-              :''
+                  '</td>'
+
+                :''
             )+
 
             '<td>'+
@@ -1945,17 +2577,19 @@ function renderProducts(){
     );
 
 
-  tr.className='total-row';
-
-
   tr.innerHTML=
     '<td colspan="3">'+
-      'TỔNG TẤT CẢ'+
+      '<b>TỔNG TẤT CẢ</b>'+
     '</td>'+
 
     '<td>'+
-      total+
+      '<b>'+
+        total+
+      '</b>'+
     '</td>';
+
+
+  tr.className='total-row';
 
 
   tb.appendChild(tr);
@@ -1963,13 +2597,15 @@ function renderProducts(){
 }
 
 
-/* =========================================================
-   GITHUB
-========================================================= */
+
+/* =====================================================
+   GITHUB API
+====================================================== */
 
 function ghHeaders(token){
 
   return {
+
     'Authorization':
       'Bearer '+token,
 
@@ -1981,6 +2617,7 @@ function ghHeaders(token){
 
     'Content-Type':
       'application/json'
+
   };
 
 }
@@ -1999,19 +2636,22 @@ async function ghGet(
     ).value.trim();
 
 
+  const url=
+    'https://api.github.com/repos/'+
+    encodeURIComponent(owner)+'/'+
+    encodeURIComponent(repo)+
+    '/contents/'+
+    path
+      .split('/')
+      .map(encodeURIComponent)
+      .join('/')+
+    '?ref='+
+    encodeURIComponent(branch);
+
+
   const r=
     await fetch(
-      'https://api.github.com/repos/'+
-      encodeURIComponent(owner)+'/'+
-      encodeURIComponent(repo)+
-      '/contents/'+
-      path
-        .split('/')
-        .map(encodeURIComponent)
-        .join('/')+
-      '?ref='+
-      encodeURIComponent(branch),
-
+      url,
       {
         headers:
           ghHeaders(token)
@@ -2070,6 +2710,7 @@ async function ghPut(
 
 
   const payload={
+
     message:msg,
 
     content:
@@ -2080,6 +2721,7 @@ async function ghPut(
       ),
 
     branch
+
   };
 
 
@@ -2121,9 +2763,10 @@ async function ghPut(
 }
 
 
-/* =========================================================
+
+/* =====================================================
    UPLOAD FILES
-========================================================= */
+====================================================== */
 
 function prepareUploadFiles(){
 
@@ -2151,30 +2794,33 @@ function prepareUploadFiles(){
 
 
   list.innerHTML=
+
     '<div class="upload-head">'+
       files.length+
-      ' file đã chọn — nhập Mail tương ứng cho từng file'+
+      ' file đã chọn — nhập Mail tương ứng'+
     '</div>'+
 
     files.map(
-      (f,i)=>
+      (f,i)=>`
 
-        '<div class="upload-row">'+
+        <div class="upload-row">
 
-          '<div class="upload-file" title="'+
-            esc(f.name)+
-          '">'+
-            '📄 '+
-            esc(f.name)+
-          '</div>'+
+          <div
+            class="upload-file"
+            title="${esc(f.name)}"
+          >
+            📄 ${esc(f.name)}
+          </div>
 
-          '<input '+
-            'id="uploadMail_'+i+'" '+
-            'type="email" '+
-            'placeholder="Mail cho file này, ví dụ abc@gmail.com">'+
+          <input
+            id="uploadMail_${i}"
+            type="email"
+            placeholder="Mail cho file này"
+          >
 
-        '</div>'
+        </div>
 
+      `
     ).join('');
 
 }
@@ -2208,9 +2854,10 @@ function getBatchItems(){
 }
 
 
-/* =========================================================
+
+/* =====================================================
    UPLOAD DATASET
-========================================================= */
+====================================================== */
 
 async function uploadJsonBatch(){
 
@@ -2279,7 +2926,7 @@ async function uploadJsonBatch(){
   if(badMail){
 
     return showAdmin(
-      '❌ Mỗi file phải có một Mail hợp lệ. Tên file không được dùng để lấy Mail.',
+      '❌ Mỗi file phải có một Mail hợp lệ.',
       false
     );
 
@@ -2295,7 +2942,7 @@ async function uploadJsonBatch(){
     if(mailSet.has(x.mail)){
 
       return showAdmin(
-        '❌ Mail bị trùng trong bộ upload: '+
+        '❌ Mail bị trùng: '+
         esc(x.mail),
         false
       );
@@ -2311,9 +2958,7 @@ async function uploadJsonBatch(){
   try{
 
     showAdmin(
-      '⏳ Đang chuẩn bị '+
-      items.length+
-      ' file...',
+      '⏳ Đang chuẩn bị dữ liệu...',
       true
     );
 
@@ -2355,33 +3000,28 @@ async function uploadJsonBatch(){
         throw new Error(
           'File '+
           x.file.name+
-          ' không có orders hợp lệ (hoặc responses chứa orders).'
+          ' không có orders hợp lệ.'
         );
 
       }
 
 
       prepared.push({
+
         mail:x.mail,
+
         text,
+
         path:
           'data/'+
           x.mail+
           '.json',
+
         orders
+
       });
 
     }
-
-
-    /*
-      Một Git commit duy nhất:
-
-      - index.json
-      - data/*.json
-      - order_checks.json
-      - xóa data cũ
-    */
 
 
     const apiBase=
@@ -2395,7 +3035,10 @@ async function uploadJsonBatch(){
 
 
     const api=
-      async(path,opts={})=>{
+      async(
+        path,
+        opts={}
+      )=>{
 
         const r=
           await fetch(
@@ -2407,6 +3050,7 @@ async function uploadJsonBatch(){
                 ...headers,
                 ...(opts.headers||{})
               }
+
             }
           );
 
@@ -2457,7 +3101,7 @@ async function uploadJsonBatch(){
 
 
     /*
-      Đọc index cũ.
+      Index cũ.
     */
 
     let oldEntries=[];
@@ -2491,18 +3135,19 @@ async function uploadJsonBatch(){
           JSON.parse(decoded);
 
 
-        if(Array.isArray(old))
+        if(Array.isArray(old)){
+
           oldEntries=
             old
               .map(indexEntry)
               .filter(Boolean);
 
+        }
 
       }catch(e){
 
         throw new Error(
-          'index.json cũ không hợp lệ: '+
-          e.message
+          'index.json cũ không hợp lệ.'
         );
 
       }
@@ -2513,8 +3158,11 @@ async function uploadJsonBatch(){
     const newEntries=
       prepared.map(
         x=>({
+
           mail:x.mail,
+
           path:x.path
+
         })
       );
 
@@ -2528,8 +3176,7 @@ async function uploadJsonBatch(){
 
 
     /*
-      Checkbox hiện tại được đưa
-      trực tiếp vào commit upload.
+      Checkbox hiện tại.
     */
 
     const checksText=
@@ -2541,13 +3188,13 @@ async function uploadJsonBatch(){
 
 
     showAdmin(
-      '⏳ Đang ghi dataset + checkbox bằng 1 commit...',
+      '⏳ Đang ghi dataset + checkbox...',
       true
     );
 
 
     /*
-      Tạo blob cho data.
+      Data blobs.
     */
 
     const blobItems=
@@ -2563,18 +3210,27 @@ async function uploadJsonBatch(){
 
                   body:
                     JSON.stringify({
+
                       content:x.text,
+
                       encoding:'utf-8'
+
                     })
+
                 }
               );
 
 
             return {
+
               path:x.path,
+
               mode:'100644',
+
               type:'blob',
+
               sha:b.sha
+
             };
 
           }
@@ -2583,7 +3239,7 @@ async function uploadJsonBatch(){
 
 
     /*
-      Blob index.
+      Index blob.
     */
 
     const indexBlob=
@@ -2594,15 +3250,19 @@ async function uploadJsonBatch(){
 
           body:
             JSON.stringify({
+
               content:newIndexText,
+
               encoding:'utf-8'
+
             })
+
         }
       );
 
 
     /*
-      Blob checkbox.
+      Checkbox blob.
     */
 
     const checksBlob=
@@ -2613,87 +3273,109 @@ async function uploadJsonBatch(){
 
           body:
             JSON.stringify({
+
               content:checksText,
+
               encoding:'utf-8'
+
             })
+
         }
       );
 
 
     /*
-      Tree mới.
+      Tree.
     */
 
     const tree=[];
 
 
-    /*
-      order_checks.json LUÔN được giữ.
-    */
-
     const newPaths=
       new Set([
+
         'index.json',
+
         CONFIG.checksPath,
+
         ...prepared.map(
           x=>x.path
         )
+
       ]);
 
 
     /*
-      Xóa data file cũ.
+      Xóa file data cũ.
     */
 
-    oldEntries.forEach(e=>{
+    oldEntries.forEach(
+      e=>{
 
-      if(
-        e.path&&
-        !newPaths.has(e.path)
-      ){
+        if(
+          e.path&&
+          !newPaths.has(e.path)
+        ){
 
-        tree.push({
-          path:e.path,
-          mode:'100644',
-          type:'blob',
-          sha:null
-        });
+          tree.push({
+
+            path:e.path,
+
+            mode:'100644',
+
+            type:'blob',
+
+            sha:null
+
+          });
+
+        }
 
       }
-
-    });
+    );
 
 
     /*
-      index mới.
+      index.
     */
 
     tree.push({
+
       path:'index.json',
+
       mode:'100644',
+
       type:'blob',
+
       sha:indexBlob.sha
+
     });
 
 
     /*
-      checkbox mới.
+      checkbox.
     */
 
     tree.push({
+
       path:CONFIG.checksPath,
+
       mode:'100644',
+
       type:'blob',
+
       sha:checksBlob.sha
+
     });
 
 
     /*
-      data mới.
+      data.
     */
 
     blobItems.forEach(
-      x=>tree.push(x)
+      x=>
+        tree.push(x)
     );
 
 
@@ -2705,9 +3387,13 @@ async function uploadJsonBatch(){
 
           body:
             JSON.stringify({
+
               base_tree:baseTreeSha,
+
               tree
+
             })
+
         }
       );
 
@@ -2731,6 +3417,7 @@ async function uploadJsonBatch(){
               ]
 
             })
+
         }
       );
 
@@ -2743,18 +3430,23 @@ async function uploadJsonBatch(){
 
         body:
           JSON.stringify({
+
             sha:newCommit.sha,
+
             force:false
+
           })
+
       }
     );
 
 
     /*
-      Cập nhật UI ngay.
+      Cập nhật UI.
     */
 
     allOrders=[];
+
 
     let mails=0;
 
@@ -2823,22 +3515,8 @@ async function uploadJsonBatch(){
     applyFilters();
 
 
-    const deletedCount=
-      oldEntries.filter(
-        e=>
-          e.path&&
-          !newPaths.has(e.path)
-      ).length;
-
-
     showAdmin(
-      '✅ Đã thay bộ dữ liệu: '+
-      prepared.length+
-      ' file mới. '+
-      'Xóa '+deletedCount+
-      ' file cũ. '+
-      '<code>order_checks.json</code> đã được giữ và cập nhật. '+
-      'GitHub đã ghi 1 commit duy nhất.',
+      '✅ Upload thành công. Dataset mới đã được ghi và checkbox được giữ theo mã Order.',
       true
     );
 
@@ -2865,9 +3543,10 @@ async function uploadJsonBatch(){
 }
 
 
-/* =========================================================
+
+/* =====================================================
    CSV
-========================================================= */
+====================================================== */
 
 function csvEsc(v){
 
@@ -2929,22 +3608,25 @@ function downloadCSV(
 }
 
 
-/*
-  Export Order.
-  Có thêm cột Đã check.
-*/
+/* =====================================================
+   EXPORT ORDERS
+====================================================== */
+
 function exportOrders(){
 
   if(!filteredOrders.length){
 
-    return alert(
+    alert(
       'Chưa có dữ liệu phù hợp bộ lọc.'
     );
+
+    return;
 
   }
 
 
   const rows=[
+
     [
       'Đã check',
       'STT',
@@ -2957,6 +3639,7 @@ function exportOrders(){
       'Loại sản phẩm',
       'Số lượng'
     ]
+
   ];
 
 
@@ -2967,38 +3650,41 @@ function exportOrders(){
         orderKey(o);
 
 
-      (o.line_items||[{}])
-        .forEach(
-          it=>{
+      (
+        o.line_items||[{}]
+      ).forEach(
+        it=>{
 
-            rows.push([
-              orderChecks[k]===true
-                ?'YES'
-                :'NO',
+          rows.push([
 
-              i+1,
+            orderChecks[k]===true
+              ?'YES'
+              :'NO',
 
-              k,
+            i+1,
 
-              o.__mail,
+            k,
 
-              dateFmt(
-                o.created_at
-              ),
+            o.__mail,
 
-              o.financial_status||'',
+            dateFmt(
+              o.created_at
+            ),
 
-              o.fulfillment_status||'',
+            o.financial_status||'',
 
-              it.title||'',
+            o.fulfillment_status||'',
 
-              it.variant_title||'',
+            it.title||'',
 
-              it.quantity||0
-            ]);
+            it.variant_title||'',
 
-          }
-        );
+            it.quantity||0
+
+          ]);
+
+        }
+      );
 
     }
   );
@@ -3012,28 +3698,33 @@ function exportOrders(){
 }
 
 
-/* =========================================================
+
+/* =====================================================
    EXPORT PRODUCTS
-========================================================= */
+====================================================== */
 
 function exportProducts(){
 
   if(!productGroups.length){
 
-    return alert(
+    alert(
       'Chưa có sản phẩm từ Order đã thanh toán.'
     );
+
+    return;
 
   }
 
 
   const rows=[
+
     [
       'STT',
       'Tên sản phẩm',
       'Loại sản phẩm',
       'Số lượng'
     ]
+
   ];
 
 
@@ -3044,15 +3735,25 @@ function exportProducts(){
     g=>{
 
       g.variants.forEach(
-        (v,i)=>
+        (v,i)=>{
 
           rows.push([
-            i===0?stt:'',
-            i===0?g.name:'',
-            v.name,
-            v.quantity
-          ])
 
+            i===0
+              ?stt
+              :'',
+
+            i===0
+              ?g.name
+              :'',
+
+            v.name,
+
+            v.quantity
+
+          ]);
+
+        }
       );
 
 
@@ -3063,14 +3764,19 @@ function exportProducts(){
 
 
   rows.push([
+
     '',
+
     '',
+
     'TỔNG',
+
     productGroups.reduce(
       (s,g)=>
         s+g.total,
       0
     )
+
   ]);
 
 
@@ -3082,39 +3788,36 @@ function exportProducts(){
 }
 
 
-/* =========================================================
-   ROUTE / ADMIN MODE
-========================================================= */
+
+/* =====================================================
+   ROUTE
+====================================================== */
 
 function applyRoute(){
 
-  const isAdmin=
+  const admin=
     location.hash.toLowerCase()==='#admin';
 
 
-  const admin=
+  const card=
     document.getElementById(
       'adminCard'
     );
 
 
-  if(admin)
-    admin.style.display=
-      isAdmin
-      ?'block'
-      :'none';
+  if(card){
 
+    card.style.display=
+      admin
+        ?'block'
+        :'none';
 
-  document.body.classList.toggle(
-    'admin-mode',
-    isAdmin
-  );
+  }
 
 
   /*
-    Re-render checkbox để khi chuyển
-    từ user -> admin thì checkbox
-    được enable ngay.
+    Re-render để checkbox
+    tự khóa / mở theo Token.
   */
 
   if(
@@ -3136,33 +3839,37 @@ window.addEventListener(
 );
 
 
-/* =========================================================
+
+/* =====================================================
    START
-========================================================= */
+====================================================== */
 
 document.addEventListener(
   'DOMContentLoaded',
-  ()=>{
+  async()=>{
+
+    const tokenInput=
+      document.getElementById(
+        'ghToken'
+      );
+
 
     /*
-      Lấy token từ sessionStorage.
+      Lấy Token đã lưu trong session.
     */
 
-    document.getElementById(
-      'ghToken'
-    ).value=
+    tokenInput.value=
       sessionStorage.getItem(
         'gh_token'
       )||'';
 
 
     /*
-      Lưu token trong phiên.
+      Khi nhập/xóa Token:
+      checkbox bật/tắt ngay.
     */
 
-    document.getElementById(
-      'ghToken'
-    ).addEventListener(
+    tokenInput.addEventListener(
       'input',
       e=>{
 
@@ -3171,13 +3878,21 @@ document.addEventListener(
           e.target.value
         );
 
+
+        /*
+          Render lại bảng ngay lập tức.
+        */
+
+        renderOrders();
+
       }
     );
 
 
     applyRoute();
 
-    loadData();
+
+    await loadData();
 
   }
 );
