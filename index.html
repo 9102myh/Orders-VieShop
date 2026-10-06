@@ -5,251 +5,2181 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>SFC ORDERS VIESHOP</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f1f5f9;font-family:Arial,sans-serif;color:#1e293b}.container{width:96%;max-width:1600px;margin:25px auto}h1{margin:0 0 5px;color:#17395f}h2{margin-top:0}.card{background:#fff;border-radius:10px;padding:20px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,.08)}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:13px;font-weight:bold}.field input,.field select{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:7px;background:#fff}.actions{display:flex;gap:8px;align-items:end;flex-wrap:wrap}.button{border:0;border-radius:7px;padding:10px 15px;cursor:pointer;font-weight:bold}.primary{background:#2563eb;color:#fff}.success{background:#16a34a;color:#fff}.secondary{background:#64748b;color:#fff}.danger{background:#dc2626;color:#fff}.export{background:#7c3aed;color:#fff}.status{display:none;margin-top:12px;padding:11px;border-radius:7px}.status.show{display:block}.status.ok{background:#dcfce7;color:#166534}.status.err{background:#fee2e2;color:#991b1b}.small{font-size:12px;color:#64748b}.upload-list{margin-top:10px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden}.upload-row{display:grid;grid-template-columns:1.4fr 1fr;gap:10px;padding:10px;border-bottom:1px solid #e2e8f0;background:#f8fafc}.upload-row:last-child{border-bottom:0}.upload-file{padding:10px;background:#fff;border:1px solid #cbd5e1;border-radius:7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.upload-row input{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:7px}.upload-head{padding:9px 10px;background:#e2e8f0;font-weight:bold}@media(max-width:900px){.upload-row{grid-template-columns:1fr}}.summary{display:flex;gap:12px;flex-wrap:wrap}.summary-box{min-width:180px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px}.summary-number{font-size:27px;font-weight:bold;color:#2563eb}.summary-label{color:#64748b;margin-top:4px}.filters{display:grid;grid-template-columns:2fr 2fr 1fr 1fr;gap:10px;margin-bottom:14px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse}th{background:#2563eb;color:#fff;padding:10px;border:1px solid #1d4ed8;text-align:left;white-space:nowrap}td{padding:9px;border:1px solid #e2e8f0;vertical-align:top}tr:nth-child(even){background:#f8fafc}.order-code{color:#2563eb;font-weight:bold}.badge{display:inline-block;padding:4px 9px;border-radius:20px;font-size:12px;font-weight:bold;white-space:nowrap}.green{background:#dcfce7;color:#166534}.yellow{background:#fef3c7;color:#92400e}.blue{background:#dbeafe;color:#1d4ed8}.red{background:#fee2e2;color:#991b1b}.products{min-width:480px}.product-line{padding:5px 0;border-bottom:1px dashed #cbd5e1}.product-line:last-child{border:0}.product-title{font-weight:bold}.variant{color:#64748b;margin-left:12px}.qty{color:#2563eb;font-weight:bold}.qty-cell{min-width:70px;text-align:center}.order-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:-4px 0 12px;padding:10px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:7px}.pagination{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:14px}.page-btn{border:1px solid #cbd5e1;background:#fff;padding:7px 11px;border-radius:6px;cursor:pointer}.page-btn.active{background:#2563eb;color:#fff}.total-row{background:#dbeafe!important;font-weight:bold}@media(max-width:900px){.grid,.grid2,.filters{grid-template-columns:1fr}.summary-box{min-width:140px}}
-.order-time{white-space:nowrap}</style>
+*{box-sizing:border-box}
+body{margin:0;background:#f1f5f9;font-family:Arial,sans-serif;color:#1e293b}
+.container{width:96%;max-width:1600px;margin:25px auto}
+h1{margin:0 0 5px;color:#17395f}
+h2{margin-top:0}
+.card{background:#fff;border-radius:10px;padding:20px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:13px;font-weight:bold}
+.field input,.field select{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:7px;background:#fff}
+.actions{display:flex;gap:8px;align-items:end;flex-wrap:wrap}
+.button{border:0;border-radius:7px;padding:10px 15px;cursor:pointer;font-weight:bold}
+.primary{background:#2563eb;color:#fff}
+.success{background:#16a34a;color:#fff}
+.secondary{background:#64748b;color:#fff}
+.danger{background:#dc2626;color:#fff}
+.export{background:#7c3aed;color:#fff}
+.status{display:none;margin-top:12px;padding:11px;border-radius:7px}
+.status.show{display:block}
+.status.ok{background:#dcfce7;color:#166534}
+.status.err{background:#fee2e2;color:#991b1b}
+.small{font-size:12px;color:#64748b}
+.upload-list{margin-top:10px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden}
+.upload-row{display:grid;grid-template-columns:1.4fr 1fr;gap:10px;padding:10px;border-bottom:1px solid #e2e8f0;background:#f8fafc}
+.upload-row:last-child{border-bottom:0}
+.upload-file{padding:10px;background:#fff;border:1px solid #cbd5e1;border-radius:7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.upload-row input{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:7px}
+.upload-head{padding:9px 10px;background:#e2e8f0;font-weight:bold}
+@media(max-width:900px){.upload-row{grid-template-columns:1fr}}
+.summary{display:flex;gap:12px;flex-wrap:wrap}
+.summary-box{min-width:180px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px}
+.summary-number{font-size:27px;font-weight:bold;color:#2563eb}
+.summary-label{color:#64748b;margin-top:4px}
+.filters{display:grid;grid-template-columns:2fr 2fr 1fr 1fr;gap:10px;margin-bottom:14px}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse}
+th{background:#2563eb;color:#fff;padding:10px;border:1px solid #1d4ed8;text-align:left;white-space:nowrap}
+td{padding:9px;border:1px solid #e2e8f0;vertical-align:top}
+tr:nth-child(even){background:#f8fafc}
+.order-code{color:#2563eb;font-weight:bold}
+.badge{display:inline-block;padding:4px 9px;border-radius:20px;font-size:12px;font-weight:bold;white-space:nowrap}
+.green{background:#dcfce7;color:#166534}
+.yellow{background:#fef3c7;color:#92400e}
+.blue{background:#dbeafe;color:#1d4ed8}
+.red{background:#fee2e2;color:#991b1b}
+.products{min-width:480px}
+.product-line{padding:5px 0;border-bottom:1px dashed #cbd5e1}
+.product-line:last-child{border:0}
+.product-title{font-weight:bold}
+.variant{color:#64748b;margin-left:12px}
+.qty{color:#2563eb;font-weight:bold}
+.qty-cell{min-width:70px;text-align:center}
+.order-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:-4px 0 12px;padding:10px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:7px}
+.pagination{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:14px}
+.page-btn{border:1px solid #cbd5e1;background:#fff;padding:7px 11px;border-radius:6px;cursor:pointer}
+.page-btn.active{background:#2563eb;color:#fff}
+.total-row{background:#dbeafe!important;font-weight:bold}
+.order-time{white-space:nowrap}
+
+/* CHECKBOX */
+.check-cell{
+  width:55px;
+  min-width:55px;
+  text-align:center;
+  vertical-align:middle;
+}
+.order-check{
+  width:20px;
+  height:20px;
+  cursor:pointer;
+  accent-color:#16a34a;
+}
+.order-check:disabled{
+  cursor:not-allowed;
+  opacity:.7;
+}
+.check-note{
+  margin-top:8px;
+  padding:9px 11px;
+  border-radius:7px;
+  background:#eff6ff;
+  color:#1d4ed8;
+  font-size:12px;
+}
+
+@media(max-width:900px){
+  .grid,.grid2,.filters{grid-template-columns:1fr}
+  .summary-box{min-width:140px}
+}
+</style>
 </head>
+
 <body>
 <div class="container">
+
 <h1>SFC ORDERS VIESHOP</h1>
 
 <div class="card" id="adminCard">
 <h2>⚙️ Admin – cập nhật dữ liệu</h2>
-<p class="small">Mail được nhập riêng trên web. Tên file JSON được chọn chỉ là file nguồn và <b>không dùng để xác định Mail</b>.</p>
+
+<p class="small">
+Mail được nhập riêng trên web. Tên file JSON được chọn chỉ là file nguồn và
+<b>không dùng để xác định Mail</b>.
+</p>
+
 <div class="grid">
-<div class="field"><label>GitHub Owner</label><input id="ghOwner" value="9102myh"></div>
-<div class="field"><label>Repository</label><input id="ghRepo" value="Orders-VieShop"></div>
-<div class="field"><label>Branch</label><input id="ghBranch" value="main"></div>
+<div class="field">
+<label>GitHub Owner</label>
+<input id="ghOwner" value="9102myh">
 </div>
-<div class="field" style="margin-top:10px"><label>GitHub Token (chỉ giữ trong phiên)</label><input id="ghToken" type="password" placeholder="ghp_... hoặc fine-grained PAT"></div>
-<div class="field" style="margin-top:10px"><label>Chọn nhiều file JSON</label><input id="jsonFiles" type="file" accept=".json,application/json" multiple onchange="prepareUploadFiles()"></div>
-<p class="small">Mỗi lần upload là <b>một bộ dữ liệu mới</b>: dữ liệu cũ trong <code>index.json</code> sẽ bị clear và các file cũ được liệt kê trong index sẽ bị xóa. Mail phải nhập riêng cho từng file; tên file không được dùng để lấy Mail.</p>
+
+<div class="field">
+<label>Repository</label>
+<input id="ghRepo" value="Orders-VieShop">
+</div>
+
+<div class="field">
+<label>Branch</label>
+<input id="ghBranch" value="main">
+</div>
+</div>
+
+<div class="field" style="margin-top:10px">
+<label>GitHub Token (chỉ giữ trong phiên)</label>
+<input id="ghToken" type="password" placeholder="ghp_... hoặc fine-grained PAT">
+</div>
+
+<div class="field" style="margin-top:10px">
+<label>Chọn nhiều file JSON</label>
+<input id="jsonFiles" type="file" accept=".json,application/json" multiple onchange="prepareUploadFiles()">
+</div>
+
+<p class="small">
+Mỗi lần upload là <b>một bộ dữ liệu mới</b>: dữ liệu cũ trong
+<code>index.json</code> sẽ bị clear và các file cũ được liệt kê trong index sẽ bị xóa.
+Mail phải nhập riêng cho từng file; tên file không được dùng để lấy Mail.
+</p>
+
 <div id="uploadList" class="upload-list"></div>
+
 <div class="actions" style="margin-top:10px">
-<button class="button primary" onclick="uploadJsonBatch()">⬆ Upload tất cả & thay bộ dữ liệu cũ</button>
-<button class="button secondary" onclick="loadData()">↻ Đọc lại dữ liệu</button>
+<button class="button primary" onclick="uploadJsonBatch()">
+⬆ Upload tất cả & thay bộ dữ liệu cũ
+</button>
+
+<button class="button success" onclick="saveOrderChecks()">
+💾 Lưu checkbox
+</button>
+
+<button class="button secondary" onclick="loadData()">
+↻ Đọc lại dữ liệu
+</button>
 </div>
+
+<div class="check-note">
+☑️ Checkbox được lưu theo <b>mã Order</b> trong
+<code>order_checks.json</code>. Khi upload dataset mới, trạng thái checkbox
+sẽ tự giữ nguyên nếu mã Order vẫn tồn tại.
+</div>
+
 <div id="adminStatus" class="status"></div>
 </div>
 
+
 <div class="card">
 <h2>📊 Tổng quan</h2>
+
 <div class="summary">
-<div class="summary-box"><div id="mailCount" class="summary-number">0</div><div class="summary-label">Mail</div></div>
-<div class="summary-box"><div id="deliveredCount" class="summary-number">0</div><div class="summary-label">Đã giao hàng</div></div>
-<div class="summary-box"><div id="paidCount" class="summary-number">0</div><div class="summary-label">Đã thanh toán</div></div>
+<div class="summary-box">
+<div id="mailCount" class="summary-number">0</div>
+<div class="summary-label">Mail</div>
+</div>
+
+<div class="summary-box">
+<div id="deliveredCount" class="summary-number">0</div>
+<div class="summary-label">Đã giao hàng</div>
+</div>
+
+<div class="summary-box">
+<div id="paidCount" class="summary-number">0</div>
+<div class="summary-label">Đã thanh toán</div>
 </div>
 </div>
+</div>
+
 
 <div class="card">
 <h2>📦 Danh sách Order</h2>
-<div class="order-meta"><b id="filteredCount">Tổng bản ghi: 0</b><span class="small" id="pageInfo"></span></div>
-<div class="filters">
-<div class="field"><label>Search Order code</label><input id="searchOrder" placeholder="Nhập mã Order..." oninput="applyFilters()"></div>
-<div class="field"><label>Search Mail</label><input id="searchMail" placeholder="Nhập Mail..." oninput="applyFilters()"></div>
-<div class="field"><label>Payment status</label><select id="paymentFilter" onchange="applyFilters()"><option value="">Tất cả</option><option value="paid">Đã thanh toán</option><option value="pending">Chờ thanh toán</option></select></div>
-<div class="field"><label>Fulfillment status</label><select id="fulfillmentFilter" onchange="applyFilters()"><option value="">Tất cả</option><option value="fulfilled">Đã giao hàng</option><option value="notfulfilled">Chưa giao hàng</option></select></div>
+
+<div class="order-meta">
+<b id="filteredCount">Tổng bản ghi: 0</b>
+<span class="small" id="pageInfo"></span>
 </div>
-<button class="button export" onclick="exportOrders()">📥 Export danh sách Order</button>
-<div class="table-wrap" style="margin-top:12px"><table id="ordersTable"><thead><tr><th>STT</th><th>Order</th><th>Mail</th><th>Thời gian đặt </th><th>Thanh toán</th><th>Giao hàng</th><th>Sản phẩm</th><th>Số lượng</th></tr></thead><tbody></tbody></table></div>
+
+<div class="filters">
+
+<div class="field">
+<label>Search Order code</label>
+<input id="searchOrder" placeholder="Nhập mã Order..." oninput="applyFilters()">
+</div>
+
+<div class="field">
+<label>Search Mail</label>
+<input id="searchMail" placeholder="Nhập Mail..." oninput="applyFilters()">
+</div>
+
+<div class="field">
+<label>Payment status</label>
+<select id="paymentFilter" onchange="applyFilters()">
+<option value="">Tất cả</option>
+<option value="paid">Đã thanh toán</option>
+<option value="pending">Chờ thanh toán</option>
+</select>
+</div>
+
+<div class="field">
+<label>Fulfillment status</label>
+<select id="fulfillmentFilter" onchange="applyFilters()">
+<option value="">Tất cả</option>
+<option value="fulfilled">Đã giao hàng</option>
+<option value="notfulfilled">Chưa giao hàng</option>
+</select>
+</div>
+
+</div>
+
+<button class="button export" onclick="exportOrders()">
+📥 Export danh sách Order
+</button>
+
+<div class="table-wrap" style="margin-top:12px">
+<table id="ordersTable">
+<thead>
+<tr>
+<th>✓</th>
+<th>STT</th>
+<th>Order</th>
+<th>Mail</th>
+<th>Thời gian đặt</th>
+<th>Thanh toán</th>
+<th>Giao hàng</th>
+<th>Sản phẩm</th>
+<th>Số lượng</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+
 <div id="pagination" class="pagination"></div>
 </div>
 
+
 <div class="card">
 <h2>🛍️ Tổng hợp sản phẩm</h2>
-<p class="small">Chỉ tổng hợp sản phẩm từ các Order có <b>financial_status = paid</b>.</p>
-<button class="button export" onclick="exportProducts()">📥 Export tổng hợp sản phẩm</button>
-<div class="table-wrap" style="margin-top:12px"><table id="productsTable"><thead><tr><th>STT</th><th>Tên sản phẩm</th><th>Loại sản phẩm</th><th>Số lượng</th></tr></thead><tbody></tbody></table></div>
+
+<p class="small">
+Chỉ tổng hợp sản phẩm từ các Order có
+<b>financial_status = paid</b>.
+</p>
+
+<button class="button export" onclick="exportProducts()">
+📥 Export tổng hợp sản phẩm
+</button>
+
+<div class="table-wrap" style="margin-top:12px">
+<table id="productsTable">
+<thead>
+<tr>
+<th>STT</th>
+<th>Tên sản phẩm</th>
+<th>Loại sản phẩm</th>
+<th>Số lượng</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
 </div>
 </div>
+
+</div>
+
 
 <script>
-const CONFIG={owner:'9102myh',repo:'Orders-VieShop',branch:'main',indexPath:'index.json'};
-let allOrders=[],filteredOrders=[],productGroups=[],currentPage=1;const PAGE_SIZE=10;
 
-function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}
-function normMail(v){return String(v||'').trim().toLowerCase()}
-function orderKey(o){return String(o?.name??o?.order_number??o?.number??o?.id??'')}
-function dateFmt(v){if(!v)return '';const d=new Date(v);return isNaN(d)?String(v):d.toLocaleString('vi-VN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'})}
-function paymentBadge(v){const s=String(v||'').toLowerCase();if(s==='paid')return '<span class="badge green">Đã thanh toán</span>';if(s==='pending')return '<span class="badge yellow">Chờ thanh toán</span>';return '<span class="badge blue">'+esc(v||'-')+'</span>'}
-function fulfillmentBadge(v){const s=String(v||'').toLowerCase();if(s==='fulfilled')return '<span class="badge green">Đã giao hàng</span>';if(s==='notfulfilled')return '<span class="badge yellow">Chưa giao hàng</span>';return '<span class="badge blue">'+esc(v||'-')+'</span>'}
-function productHtml(o){if(!Array.isArray(o.line_items)||!o.line_items.length)return '-';return o.line_items.map(i=>'<div class="product-line"><div class="product-title">'+esc(i.title||'')+'</div><div class="variant">'+esc(i.variant_title||'Không có loại')+'</div></div>').join('')}
-function showAdmin(msg,ok=true){const e=document.getElementById('adminStatus');if(!e)return;e.innerHTML=msg;e.className='status show '+(ok?'ok':'err')}
-function extractOrders(data){if(data&&Array.isArray(data.orders))return data.orders;if(data&&Array.isArray(data.responses))return data.responses.flatMap(r=>Array.isArray(r?.orders)?r.orders:[]);if(Array.isArray(data))return data.flatMap(r=>Array.isArray(r?.orders)?r.orders:[]);return []}
-function indexEntry(e){if(typeof e==='string')return {path:e,mail:null};if(e&&typeof e==='object'&&e.path)return {path:e.path,mail:e.mail||null};return null}
-function rawUrl(owner,repo,branch,path){return 'https://raw.githubusercontent.com/'+encodeURIComponent(owner)+'/'+encodeURIComponent(repo)+'/'+encodeURIComponent(branch)+'/'+path.split('/').map(encodeURIComponent).join('/')+'?t='+Date.now()}
-async function loadData(){
-try{
- const owner=CONFIG.owner,repo=CONFIG.repo,branch=CONFIG.branch;
- const idxRes=await fetch(rawUrl(owner,repo,branch,'index.json'),{cache:'no-store'});
- if(!idxRes.ok)throw new Error('Không đọc được index.json ('+idxRes.status+').');
- const idx=await idxRes.json();
- const entries=Array.isArray(idx)?idx.map(indexEntry).filter(Boolean):[];
- const results=await Promise.all(entries.map(async e=>{try{const r=await fetch(rawUrl(owner,repo,branch,e.path),{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);const data=await r.json();return {mail:normMail(e.mail),orders:extractOrders(data)}}catch(err){console.warn('Không đọc được',e.path,err);return {mail:normMail(e.mail),orders:[]}}}));
- allOrders=[];let mails=0;
- results.forEach(r=>{if(r.orders.length||r.mail)mails++;r.orders.forEach(o=>{o.__mail=r.mail||'';allOrders.push(o)})});
- allOrders.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
- document.getElementById('mailCount').textContent=mails;
- document.getElementById('deliveredCount').textContent=allOrders.filter(o=>String(o.fulfillment_status||'').toLowerCase()==='fulfilled').length;
- document.getElementById('paidCount').textContent=allOrders.filter(o=>String(o.financial_status||'').toLowerCase()==='paid').length;
- buildProducts();applyFilters();
- showAdmin('✅ Đã đọc '+mails+' Mail và '+allOrders.length+' Order từ index.json.',true);
-}catch(e){allOrders=[];applyFilters();showAdmin('❌ '+esc(e.message),false)}
-}
-function getOrderQuantity(o){return Array.isArray(o.line_items)?o.line_items.reduce((s,i)=>s+Number(i.quantity||0),0):0}
-function applyFilters(){const q1=String(document.getElementById('searchOrder').value||'').trim().toLowerCase(),q2=String(document.getElementById('searchMail').value||'').trim().toLowerCase(),p=document.getElementById('paymentFilter').value,f=document.getElementById('fulfillmentFilter').value;filteredOrders=allOrders.filter(o=>(!q1||orderKey(o).toLowerCase().includes(q1))&&(!q2||String(o.__mail||'').toLowerCase().includes(q2))&&(!p||String(o.financial_status||'').toLowerCase()===p)&&(!f||String(o.fulfillment_status||'').toLowerCase()===f));currentPage=1;renderOrders()}
-function renderOrders(){const tb=document.querySelector('#ordersTable tbody');tb.innerHTML='';const start=(currentPage-1)*PAGE_SIZE;const rows=filteredOrders.slice(start,start+PAGE_SIZE);const counts={};allOrders.forEach(o=>{const k=orderKey(o);counts[k]=(counts[k]||0)+1});document.getElementById('filteredCount').textContent='Tổng bản ghi theo bộ lọc: '+filteredOrders.length;rows.forEach((o,i)=>{const k=orderKey(o),stt=start+i+1,items=Array.isArray(o.line_items)&&o.line_items.length?o.line_items:[{}],rowspan=items.length;items.forEach((item,j)=>{const tr=document.createElement('tr');let cells='';if(j===0){cells+='<td rowspan="'+rowspan+'">'+stt+'</td><td rowspan="'+rowspan+'"><div class="order-code">'+esc(k)+'</div>'+(counts[k]>1?'<span class="badge red">⚠️ TRÙNG ORDER</span>':'')+'</td><td rowspan="'+rowspan+'">'+esc(o.__mail||'')+'</td><td rowspan="'+rowspan+'" class="order-time">'+esc(dateFmt(o.created_at)||'-')+'</td><td rowspan="'+rowspan+'">'+paymentBadge(o.financial_status)+'</td><td rowspan="'+rowspan+'">'+fulfillmentBadge(o.fulfillment_status)+'</td>';}const title=String(item.title||'').trim();const variant=String(item.variant_title||'').trim();const product=(title+(variant?' / '+variant:''))||'-';cells+='<td class="products"><div class="product-line"><div class="product-title">'+esc(product)+'</div></div></td><td><div class="product-line qty-cell"><b>'+Number(item.quantity||0)+'</b></div></td>';tr.innerHTML=cells;tb.appendChild(tr)})});renderPagination()}
-function renderPagination(){const e=document.getElementById('pagination'),pages=Math.max(1,Math.ceil(filteredOrders.length/PAGE_SIZE));e.innerHTML='';const info=document.getElementById('pageInfo');const start=filteredOrders.length?((currentPage-1)*PAGE_SIZE+1):0;const end=Math.min(currentPage*PAGE_SIZE,filteredOrders.length);info.textContent=filteredOrders.length?'Đang xem '+start+'–'+end+' / '+filteredOrders.length:'Không có bản ghi';if(pages<=1)return;const prev=document.createElement('button');prev.className='page-btn';prev.textContent='‹';prev.disabled=currentPage===1;prev.onclick=()=>{currentPage--;renderOrders()};e.appendChild(prev);let from=Math.max(1,currentPage-2),to=Math.min(pages,from+4);if(to-from<4)from=Math.max(1,to-4);for(let n=from;n<=to;n++){const b=document.createElement('button');b.className='page-btn'+(n===currentPage?' active':'');b.textContent=n;b.onclick=()=>{currentPage=n;renderOrders()};e.appendChild(b)}const next=document.createElement('button');next.className='page-btn';next.textContent='›';next.disabled=currentPage===pages;next.onclick=()=>{currentPage++;renderOrders()};e.appendChild(next);const total=document.createElement('span');total.className='small';total.textContent=' '+pages+' trang';e.appendChild(total)}
-function buildProducts(){const m=new Map();allOrders.filter(o=>String(o.financial_status||'').toLowerCase()==='paid').forEach(o=>{(o.line_items||[]).forEach(i=>{const name=String(i.title||'').trim();if(!name)return;const variant=String(i.variant_title||'').trim();const q=Number(i.quantity||0);if(!m.has(name))m.set(name,new Map());const vm=m.get(name);vm.set(variant,(vm.get(variant)||0)+q)})});productGroups=[];m.forEach((vm,name)=>{const variants=[];let total=0;vm.forEach((q,v)=>{variants.push({name:v,quantity:q});total+=q});productGroups.push({name,variants,total})});renderProducts()}
-function renderProducts(){const tb=document.querySelector('#productsTable tbody');tb.innerHTML='';let stt=1,total=0;productGroups.forEach(g=>{g.variants.forEach((v,i)=>{const tr=document.createElement('tr');tr.innerHTML=(i===0?'<td rowspan="'+g.variants.length+'">'+stt+'</td><td rowspan="'+g.variants.length+'"><b>'+esc(g.name)+'</b><div class="small">Tổng: '+g.total+'</div></td>':'')+'<td>'+esc(v.name||'Không có loại')+'</td><td><b>'+v.quantity+'</b></td>';tb.appendChild(tr);total+=v.quantity});stt++});const tr=document.createElement('tr');tr.className='total-row';tr.innerHTML='<td colspan="3">TỔNG TẤT CẢ</td><td>'+total+'</td>';tb.appendChild(tr)}
-function ghHeaders(token){return {'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'}}
-async function ghGet(owner,repo,path,token){
- const branch=document.getElementById('ghBranch').value.trim();
- const r=await fetch('https://api.github.com/repos/'+encodeURIComponent(owner)+'/'+encodeURIComponent(repo)+'/contents/'+path.split('/').map(encodeURIComponent).join('/')+'?ref='+encodeURIComponent(branch),{headers:ghHeaders(token)});
- if(!r.ok){if(r.status===404)return null;throw new Error('GitHub GET '+path+' → '+r.status+' '+await r.text())}
- return r.json();
-}
-async function ghPut(owner,repo,path,token,body,sha,msg){
- const branch=document.getElementById('ghBranch').value.trim();
- const url='https://api.github.com/repos/'+encodeURIComponent(owner)+'/'+encodeURIComponent(repo)+'/contents/'+path.split('/').map(encodeURIComponent).join('/');
- const payload={message:msg,content:btoa(unescape(encodeURIComponent(body))),branch};
- if(sha)payload.sha=sha;
- const r=await fetch(url,{method:'PUT',headers:ghHeaders(token),body:JSON.stringify(payload)});
- if(!r.ok)throw new Error('GitHub PUT '+path+' → '+r.status+' '+await r.text());
- return r.json();
-}
-async function ghDelete(owner,repo,path,token,sha,msg){
- const branch=document.getElementById('ghBranch').value.trim();
- const url='https://api.github.com/repos/'+encodeURIComponent(owner)+'/'+encodeURIComponent(repo)+'/contents/'+path.split('/').map(encodeURIComponent).join('/');
- const payload={message:msg,sha,branch};
- const r=await fetch(url,{method:'DELETE',headers:ghHeaders(token),body:JSON.stringify(payload)});
- if(!r.ok)throw new Error('GitHub DELETE '+path+' → '+r.status+' '+await r.text());
- return r.json();
-}
-function prepareUploadFiles(){
- const files=Array.from(document.getElementById('jsonFiles').files||[]);
- const list=document.getElementById('uploadList');
- if(!files.length){list.innerHTML='';return;}
- list.innerHTML='<div class="upload-head">'+files.length+' file đã chọn — nhập Mail tương ứng cho từng file</div>'+files.map((f,i)=>
-   '<div class="upload-row"><div class="upload-file" title="'+esc(f.name)+'">📄 '+esc(f.name)+'</div><input id="uploadMail_'+i+'" type="email" placeholder="Mail cho file này, ví dụ abc@gmail.com"></div>'
- ).join('');
-}
-function getBatchItems(){
- const files=Array.from(document.getElementById('jsonFiles').files||[]);
- return files.map((file,i)=>({file,mail:normMail(document.getElementById('uploadMail_'+i)?.value||'')}));
-}
-async function uploadJsonBatch(){
- const owner=document.getElementById('ghOwner').value.trim(),repo=document.getElementById('ghRepo').value.trim(),branch=document.getElementById('ghBranch').value.trim(),token=document.getElementById('ghToken').value.trim();
- if(!owner||!repo||!branch||!token)return showAdmin('❌ Nhập đủ Owner, Repository, Branch và Token.',false);
- const items=getBatchItems();
- if(!items.length)return showAdmin('❌ Chưa chọn file JSON nào.',false);
- const badMail=items.find(x=>!x.mail||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x.mail));
- if(badMail)return showAdmin('❌ Mỗi file phải có một Mail hợp lệ. Tên file không được dùng để lấy Mail.',false);
- const mailSet=new Set();
- for(const x of items){if(mailSet.has(x.mail))return showAdmin('❌ Mail bị trùng trong bộ upload: '+esc(x.mail),false);mailSet.add(x.mail)}
- try{
-   showAdmin('⏳ Đang chuẩn bị '+items.length+' file...',true);
-   const prepared=[];
-   for(const x of items){
-     const text=await x.file.text();
-     let parsed;try{parsed=JSON.parse(text)}catch(e){throw new Error('File '+x.file.name+' không phải JSON hợp lệ.')}
-     const orders=extractOrders(parsed);
-     if(!orders.length)throw new Error('File '+x.file.name+' không có orders hợp lệ (hoặc responses chứa orders).');
-     prepared.push({mail:x.mail,text,path:'data/'+x.mail+'.json',orders});
-   }
+const CONFIG={
+  owner:'9102myh',
+  repo:'Orders-VieShop',
+  branch:'main',
+  indexPath:'index.json',
+  checksPath:'order_checks.json'
+};
 
-   /*
-    * Tạo MỘT Git commit duy nhất bằng Git Data API:
-    * - index.json = bộ mới
-    * - data/*.json = bộ mới
-    * - các file cũ được liệt kê trong index = xóa
-    * Nhờ vậy không phải PUT/DELETE từng file => nhanh hơn rất nhiều.
+let allOrders=[];
+let filteredOrders=[];
+let productGroups=[];
+let orderChecks={};
+let currentPage=1;
+
+const PAGE_SIZE=10;
+
+
+/* =========================
+   BASIC HELPERS
+========================= */
+
+function esc(v){
+  return String(v??'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;');
+}
+
+function normMail(v){
+  return String(v||'').trim().toLowerCase();
+}
+
+function orderKey(o){
+  return String(
+    o?.name ??
+    o?.order_number ??
+    o?.number ??
+    o?.id ??
+    ''
+  ).trim();
+}
+
+function dateFmt(v){
+  if(!v)return '';
+  const d=new Date(v);
+  return isNaN(d)
+    ? String(v)
+    : d.toLocaleString('vi-VN',{
+        year:'numeric',
+        month:'2-digit',
+        day:'2-digit',
+        hour:'2-digit',
+        minute:'2-digit',
+        second:'2-digit'
+      });
+}
+
+function paymentBadge(v){
+  const s=String(v||'').toLowerCase();
+
+  if(s==='paid')
+    return '<span class="badge green">Đã thanh toán</span>';
+
+  if(s==='pending')
+    return '<span class="badge yellow">Chờ thanh toán</span>';
+
+  return '<span class="badge blue">'+esc(v||'-')+'</span>';
+}
+
+function fulfillmentBadge(v){
+  const s=String(v||'').toLowerCase();
+
+  if(s==='fulfilled')
+    return '<span class="badge green">Đã giao hàng</span>';
+
+  if(s==='notfulfilled')
+    return '<span class="badge yellow">Chưa giao hàng</span>';
+
+  return '<span class="badge blue">'+esc(v||'-')+'</span>';
+}
+
+function productHtml(o){
+  if(!Array.isArray(o.line_items)||!o.line_items.length)
+    return '-';
+
+  return o.line_items.map(i=>
+    '<div class="product-line">'+
+      '<div class="product-title">'+esc(i.title||'')+'</div>'+
+      '<div class="variant">'+esc(i.variant_title||'Không có loại')+'</div>'+
+    '</div>'
+  ).join('');
+}
+
+function showAdmin(msg,ok=true){
+  const e=document.getElementById('adminStatus');
+
+  if(!e)return;
+
+  e.innerHTML=msg;
+  e.className='status show '+(ok?'ok':'err');
+}
+
+function extractOrders(data){
+  if(data&&Array.isArray(data.orders))
+    return data.orders;
+
+  if(data&&Array.isArray(data.responses))
+    return data.responses.flatMap(r=>
+      Array.isArray(r?.orders)?r.orders:[]
+    );
+
+  if(Array.isArray(data))
+    return data.flatMap(r=>
+      Array.isArray(r?.orders)?r.orders:[]
+    );
+
+  return [];
+}
+
+function indexEntry(e){
+  if(typeof e==='string')
+    return {path:e,mail:null};
+
+  if(e&&typeof e==='object'&&e.path)
+    return {
+      path:e.path,
+      mail:e.mail||null
+    };
+
+  return null;
+}
+
+function rawUrl(owner,repo,branch,path){
+  return 'https://raw.githubusercontent.com/'+
+    encodeURIComponent(owner)+'/'+
+    encodeURIComponent(repo)+'/'+
+    encodeURIComponent(branch)+'/'+
+    path.split('/').map(encodeURIComponent).join('/')+
+    '?t='+Date.now();
+}
+
+
+/* =========================
+   CHECKBOX DATA
+========================= */
+
+/*
+  order_checks.json chỉ lưu những Order đang được tick.
+
+  Ví dụ:
+  {
+    "#1001": true,
+    "#1005": true
+  }
+
+  Order không có trong object = chưa tick.
+*/
+
+function normalizeOrderChecks(data){
+  const result={};
+
+  if(!data || typeof data!=='object' || Array.isArray(data))
+    return result;
+
+  Object.keys(data).forEach(k=>{
+    if(data[k]===true){
+      const key=String(k).trim();
+      if(key)result[key]=true;
+    }
+  });
+
+  return result;
+}
+
+
+async function loadOrderChecks(){
+
+  try{
+
+    const url=rawUrl(
+      CONFIG.owner,
+      CONFIG.repo,
+      CONFIG.branch,
+      CONFIG.checksPath
+    );
+
+    const r=await fetch(url,{cache:'no-store'});
+
+    /*
+      File chưa tồn tại lần đầu:
+      coi như chưa có checkbox nào.
     */
-   const apiBase='https://api.github.com/repos/'+encodeURIComponent(owner)+'/'+encodeURIComponent(repo);
-   const headers=ghHeaders(token);
-   const api=async(path,opts={})=>{
-     const r=await fetch(apiBase+path,{...opts,headers:{...headers,...(opts.headers||{})}});
-     if(!r.ok)throw new Error('GitHub API '+path+' → '+r.status+' '+await r.text());
-     return r.json();
-   };
+    if(r.status===404){
+      orderChecks={};
+      return;
+    }
 
-   // Đọc commit hiện tại của branch và index cũ.
-   const ref=await api('/git/ref/heads/'+encodeURIComponent(branch));
-   const parentSha=ref.object.sha;
-   const commit=await api('/git/commits/'+encodeURIComponent(parentSha));
-   const baseTreeSha=commit.tree.sha;
+    if(!r.ok)
+      throw new Error(
+        'Không đọc được '+CONFIG.checksPath+
+        ' ('+r.status+').'
+      );
 
-   let oldEntries=[];
-   const oldIndex=await ghGet(owner,repo,'index.json',token);
-   if(oldIndex?.content){
-     try{
-       const decoded=decodeURIComponent(escape(atob(oldIndex.content.replace(/\n/g,''))));
-       const old=JSON.parse(decoded);
-       if(Array.isArray(old))oldEntries=old.map(indexEntry).filter(Boolean);
-     }catch(e){throw new Error('index.json cũ không hợp lệ: '+e.message)}
-   }
+    const data=await r.json();
 
-   const newEntries=prepared.map(x=>({mail:x.mail,path:x.path}));
-   const newIndexText=JSON.stringify(newEntries,null,2);
+    orderChecks=normalizeOrderChecks(data);
 
-   showAdmin('⏳ Đang ghi toàn bộ bộ dữ liệu bằng 1 commit...',true);
+  }catch(e){
 
-   // Tạo blobs song song cho các file mới.
-   const blobItems=await Promise.all(prepared.map(async x=>{
-     const b=await api('/git/blobs',{method:'POST',body:JSON.stringify({content:x.text,encoding:'utf-8'})});
-     return {path:x.path,mode:'100644',type:'blob',sha:b.sha};
-   }));
-   const indexBlob=await api('/git/blobs',{method:'POST',body:JSON.stringify({content:newIndexText,encoding:'utf-8'})});
+    console.warn('Không đọc được order_checks.json:',e);
 
-   // Tree mới: xóa file cũ, rồi ghi file mới + index mới.
-   const tree=[];
-   const newPaths=new Set(['index.json',...prepared.map(x=>x.path)]);
-   oldEntries.forEach(e=>{
-     if(e.path && !newPaths.has(e.path)){
-       tree.push({path:e.path,mode:'100644',type:'blob',sha:null});
-     }
-   });
-   tree.push({path:'index.json',mode:'100644',type:'blob',sha:indexBlob.sha});
-   blobItems.forEach(x=>tree.push(x));
-
-   const newTree=await api('/git/trees',{method:'POST',body:JSON.stringify({base_tree:baseTreeSha,tree})});
-   const newCommit=await api('/git/commits',{
-     method:'POST',
-     body:JSON.stringify({
-       message:'Replace order dataset',
-       tree:newTree.sha,
-       parents:[parentSha]
-     })
-   });
-   await api('/git/refs/heads/'+encodeURIComponent(branch),{
-     method:'PATCH',
-     body:JSON.stringify({sha:newCommit.sha,force:false})
-   });
-
-   // Cập nhật UI ngay từ batch vừa upload, không chờ raw.githubusercontent.com/CDN.
-   allOrders=[];
-   let mails=0;
-   prepared.forEach(x=>{
-     if(x.orders.length||x.mail)mails++;
-     x.orders.forEach(o=>{o.__mail=x.mail;allOrders.push(o)});
-   });
-   allOrders.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
-   document.getElementById('mailCount').textContent=mails;
-   document.getElementById('deliveredCount').textContent=allOrders.filter(o=>String(o.fulfillment_status||'').toLowerCase()==='fulfilled').length;
-   document.getElementById('paidCount').textContent=allOrders.filter(o=>String(o.financial_status||'').toLowerCase()==='paid').length;
-   buildProducts();applyFilters();
-
-   showAdmin('✅ Đã thay bộ dữ liệu: '+prepared.length+' file mới. Xóa '+oldEntries.filter(e=>e.path&&!newPaths.has(e.path)).length+' file cũ. GitHub đã ghi 1 commit duy nhất.',true);
-   document.getElementById('jsonFiles').value='';
-   document.getElementById('uploadList').innerHTML='';
- }catch(e){showAdmin('❌ '+esc(e.message),false)}
+    /*
+      Không làm chết toàn bộ web nếu file checkbox
+      chưa tồn tại hoặc có lỗi.
+    */
+    orderChecks={};
+  }
 }
-function csvEsc(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}function downloadCSV(rows,name){const blob=new Blob(['\uFEFF'+rows.map(r=>r.map(csvEsc).join(',')).join('\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
-function exportOrders(){if(!filteredOrders.length)return alert('Chưa có dữ liệu phù hợp bộ lọc.');const rows=[['STT','Mã Order','Mail','Ngày giờ','Trạng thái thanh toán','Trạng thái giao hàng','Tên sản phẩm','Loại sản phẩm','Số lượng']];filteredOrders.forEach((o,i)=>(o.line_items||[{}]).forEach(it=>rows.push([i+1,orderKey(o),o.__mail,dateFmt(o.created_at),o.financial_status||'',o.fulfillment_status||'',it.title||'',it.variant_title||'',it.quantity||0])));downloadCSV(rows,'orders.csv')}
-function exportProducts(){if(!productGroups.length)return alert('Chưa có sản phẩm từ Order đã thanh toán.');const rows=[['STT','Tên sản phẩm','Loại sản phẩm','Số lượng']];let stt=1;productGroups.forEach(g=>{g.variants.forEach((v,i)=>rows.push([i===0?stt:'',i===0?g.name:'',v.name,v.quantity]));stt++});rows.push(['','','TỔNG',productGroups.reduce((s,g)=>s+g.total,0)]);downloadCSV(rows,'tong-hop-san-pham.csv')}
 
-function applyRoute(){const isAdmin=location.hash.toLowerCase()==='#admin';const admin=document.getElementById('adminCard');if(admin)admin.style.display=isAdmin?'block':'none';document.body.classList.toggle('admin-mode',isAdmin)}
-window.addEventListener('hashchange',applyRoute);
-document.addEventListener('DOMContentLoaded',()=>{document.getElementById('ghToken').value=sessionStorage.getItem('gh_token')||'';document.getElementById('ghToken').addEventListener('input',e=>sessionStorage.setItem('gh_token',e.target.value));applyRoute();loadData()});
+
+/*
+  Admin tick / untick checkbox.
+*/
+function toggleOrderCheck(checkbox){
+
+  /*
+    Chặn tuyệt đối nếu không phải admin.
+  */
+  if(!isAdminMode()){
+    checkbox.checked=!!orderChecks[checkbox.dataset.orderKey];
+    return;
+  }
+
+  const key=String(
+    checkbox.dataset.orderKey||''
+  ).trim();
+
+  if(!key)return;
+
+  if(checkbox.checked){
+    orderChecks[key]=true;
+  }else{
+    delete orderChecks[key];
+  }
+
+  showAdmin(
+    '☑️ Đã thay đổi checkbox cho Order <b>'+
+    esc(key)+
+    '</b>. Bấm <b>💾 Lưu checkbox</b> hoặc upload dataset để lưu lên GitHub.',
+    true
+  );
+}
+
+
+/* =========================
+   LOAD DATA
+========================= */
+
+async function loadData(){
+
+try{
+
+  const owner=CONFIG.owner;
+  const repo=CONFIG.repo;
+  const branch=CONFIG.branch;
+
+  /*
+    Đọc checkbox trước.
+  */
+  await loadOrderChecks();
+
+
+  const idxRes=await fetch(
+    rawUrl(owner,repo,branch,'index.json'),
+    {cache:'no-store'}
+  );
+
+  if(!idxRes.ok)
+    throw new Error(
+      'Không đọc được index.json ('+
+      idxRes.status+').'
+    );
+
+  const idx=await idxRes.json();
+
+  const entries=Array.isArray(idx)
+    ? idx.map(indexEntry).filter(Boolean)
+    : [];
+
+
+  const results=await Promise.all(
+    entries.map(async e=>{
+
+      try{
+
+        const r=await fetch(
+          rawUrl(owner,repo,branch,e.path),
+          {cache:'no-store'}
+        );
+
+        if(!r.ok)
+          throw new Error('HTTP '+r.status);
+
+        const data=await r.json();
+
+        return {
+          mail:normMail(e.mail),
+          orders:extractOrders(data)
+        };
+
+      }catch(err){
+
+        console.warn(
+          'Không đọc được',
+          e.path,
+          err
+        );
+
+        return {
+          mail:normMail(e.mail),
+          orders:[]
+        };
+      }
+
+    })
+  );
+
+
+  allOrders=[];
+  let mails=0;
+
+  results.forEach(r=>{
+
+    if(r.orders.length||r.mail)
+      mails++;
+
+    r.orders.forEach(o=>{
+      o.__mail=r.mail||'';
+      allOrders.push(o);
+    });
+
+  });
+
+
+  allOrders.sort(
+    (a,b)=>new Date(b.created_at)-new Date(a.created_at)
+  );
+
+
+  document.getElementById('mailCount').textContent=mails;
+
+  document.getElementById('deliveredCount').textContent=
+    allOrders.filter(o=>
+      String(o.fulfillment_status||'').toLowerCase()==='fulfilled'
+    ).length;
+
+  document.getElementById('paidCount').textContent=
+    allOrders.filter(o=>
+      String(o.financial_status||'').toLowerCase()==='paid'
+    ).length;
+
+
+  buildProducts();
+  applyFilters();
+
+
+  showAdmin(
+    '✅ Đã đọc '+
+    mails+
+    ' Mail và '+
+    allOrders.length+
+    ' Order từ index.json. '+
+    'Đã đọc '+
+    Object.keys(orderChecks).length+
+    ' Order được tick.',
+    true
+  );
+
+
+}catch(e){
+
+  allOrders=[];
+  applyFilters();
+
+  showAdmin(
+    '❌ '+esc(e.message),
+    false
+  );
+
+}
+
+}
+
+
+/* =========================
+   ORDERS
+========================= */
+
+function getOrderQuantity(o){
+  return Array.isArray(o.line_items)
+    ? o.line_items.reduce(
+        (s,i)=>s+Number(i.quantity||0),
+        0
+      )
+    : 0;
+}
+
+
+function applyFilters(){
+
+  const q1=String(
+    document.getElementById('searchOrder').value||''
+  ).trim().toLowerCase();
+
+  const q2=String(
+    document.getElementById('searchMail').value||''
+  ).trim().toLowerCase();
+
+  const p=document.getElementById('paymentFilter').value;
+
+  const f=document.getElementById('fulfillmentFilter').value;
+
+
+  filteredOrders=allOrders.filter(o=>
+    (!q1||orderKey(o).toLowerCase().includes(q1))&&
+    (!q2||String(o.__mail||'').toLowerCase().includes(q2))&&
+    (!p||String(o.financial_status||'').toLowerCase()===p)&&
+    (!f||String(o.fulfillment_status||'').toLowerCase()===f)
+  );
+
+
+  currentPage=1;
+
+  renderOrders();
+}
+
+
+function renderOrders(){
+
+  const tb=document.querySelector(
+    '#ordersTable tbody'
+  );
+
+  tb.innerHTML='';
+
+  const start=(currentPage-1)*PAGE_SIZE;
+
+  const rows=filteredOrders.slice(
+    start,
+    start+PAGE_SIZE
+  );
+
+
+  const counts={};
+
+  allOrders.forEach(o=>{
+    const k=orderKey(o);
+    counts[k]=(counts[k]||0)+1;
+  });
+
+
+  document.getElementById('filteredCount').textContent=
+    'Tổng bản ghi theo bộ lọc: '+
+    filteredOrders.length;
+
+
+  rows.forEach((o,i)=>{
+
+    const k=orderKey(o);
+
+    const stt=start+i+1;
+
+    const items=
+      Array.isArray(o.line_items)&&o.line_items.length
+      ? o.line_items
+      : [{}];
+
+    const rowspan=items.length;
+
+
+    items.forEach((item,j)=>{
+
+      const tr=document.createElement('tr');
+
+      let cells='';
+
+
+      /*
+        Chỉ render checkbox 1 lần cho mỗi Order.
+      */
+      if(j===0){
+
+        const checked=
+          orderChecks[k]===true
+          ? ' checked'
+          : '';
+
+        /*
+          Admin mới được tick.
+          User thường chỉ xem.
+        */
+        const disabled=
+          isAdminMode()
+          ? ''
+          : ' disabled';
+
+
+        cells+=
+          '<td rowspan="'+rowspan+'" class="check-cell">'+
+            '<input '+
+              'class="order-check" '+
+              'type="checkbox" '+
+              'data-order-key="'+esc(k)+'" '+
+              checked+
+              disabled+
+              ' onchange="toggleOrderCheck(this)" '+
+              'title="'+
+                (isAdminMode()
+                  ? 'Admin: tick để đánh dấu Order'
+                  : 'Chỉ Admin mới có thể tick')+
+              '">'+
+          '</td>';
+
+
+        cells+=
+          '<td rowspan="'+rowspan+'">'+
+            stt+
+          '</td>';
+
+
+        cells+=
+          '<td rowspan="'+rowspan+'">'+
+            '<div class="order-code">'+
+              esc(k)+
+            '</div>'+
+            (
+              counts[k]>1
+              ? '<span class="badge red">⚠️ TRÙNG ORDER</span>'
+              : ''
+            )+
+          '</td>';
+
+
+        cells+=
+          '<td rowspan="'+rowspan+'">'+
+            esc(o.__mail||'')+
+          '</td>';
+
+
+        cells+=
+          '<td rowspan="'+rowspan+'" class="order-time">'+
+            esc(dateFmt(o.created_at)||'-')+
+          '</td>';
+
+
+        cells+=
+          '<td rowspan="'+rowspan+'">'+
+            paymentBadge(o.financial_status)+
+          '</td>';
+
+
+        cells+=
+          '<td rowspan="'+rowspan+'">'+
+            fulfillmentBadge(o.fulfillment_status)+
+          '</td>';
+
+      }
+
+
+      const title=String(
+        item.title||''
+      ).trim();
+
+      const variant=String(
+        item.variant_title||''
+      ).trim();
+
+      const product=
+        (title+(variant?' / '+variant:''))||
+        '-';
+
+
+      cells+=
+        '<td class="products">'+
+          '<div class="product-line">'+
+            '<div class="product-title">'+
+              esc(product)+
+            '</div>'+
+          '</div>'+
+        '</td>';
+
+
+      cells+=
+        '<td>'+
+          '<div class="product-line qty-cell">'+
+            '<b>'+
+              Number(item.quantity||0)+
+            '</b>'+
+          '</div>'+
+        '</td>';
+
+
+      tr.innerHTML=cells;
+
+      tb.appendChild(tr);
+
+    });
+
+  });
+
+
+  renderPagination();
+}
+
+
+function renderPagination(){
+
+  const e=document.getElementById('pagination');
+
+  const pages=Math.max(
+    1,
+    Math.ceil(filteredOrders.length/PAGE_SIZE)
+  );
+
+  e.innerHTML='';
+
+
+  const info=document.getElementById('pageInfo');
+
+  const start=filteredOrders.length
+    ? ((currentPage-1)*PAGE_SIZE+1)
+    : 0;
+
+  const end=Math.min(
+    currentPage*PAGE_SIZE,
+    filteredOrders.length
+  );
+
+
+  info.textContent=
+    filteredOrders.length
+    ? 'Đang xem '+start+'–'+end+' / '+filteredOrders.length
+    : 'Không có bản ghi';
+
+
+  if(pages<=1)return;
+
+
+  const prev=document.createElement('button');
+
+  prev.className='page-btn';
+
+  prev.textContent='‹';
+
+  prev.disabled=currentPage===1;
+
+  prev.onclick=()=>{
+    currentPage--;
+    renderOrders();
+  };
+
+  e.appendChild(prev);
+
+
+  let from=Math.max(
+    1,
+    currentPage-2
+  );
+
+  let to=Math.min(
+    pages,
+    from+4
+  );
+
+  if(to-from<4)
+    from=Math.max(
+      1,
+      to-4
+    );
+
+
+  for(let n=from;n<=to;n++){
+
+    const b=document.createElement('button');
+
+    b.className=
+      'page-btn'+
+      (n===currentPage?' active':'');
+
+    b.textContent=n;
+
+    b.onclick=()=>{
+      currentPage=n;
+      renderOrders();
+    };
+
+    e.appendChild(b);
+  }
+
+
+  const next=document.createElement('button');
+
+  next.className='page-btn';
+
+  next.textContent='›';
+
+  next.disabled=currentPage===pages;
+
+  next.onclick=()=>{
+    currentPage++;
+    renderOrders();
+  };
+
+  e.appendChild(next);
+
+
+  const total=document.createElement('span');
+
+  total.className='small';
+
+  total.textContent=' '+pages+' trang';
+
+  e.appendChild(total);
+}
+
+
+/* =========================
+   PRODUCTS
+========================= */
+
+function buildProducts(){
+
+  const m=new Map();
+
+  allOrders
+    .filter(o=>
+      String(o.financial_status||'').toLowerCase()==='paid'
+    )
+    .forEach(o=>{
+
+      (o.line_items||[]).forEach(i=>{
+
+        const name=String(
+          i.title||''
+        ).trim();
+
+        if(!name)return;
+
+        const variant=String(
+          i.variant_title||''
+        ).trim();
+
+        const q=Number(
+          i.quantity||0
+        );
+
+
+        if(!m.has(name))
+          m.set(name,new Map());
+
+
+        const vm=m.get(name);
+
+        vm.set(
+          variant,
+          (vm.get(variant)||0)+q
+        );
+
+      });
+
+    });
+
+
+  productGroups=[];
+
+
+  m.forEach((vm,name)=>{
+
+    const variants=[];
+    let total=0;
+
+    vm.forEach((q,v)=>{
+
+      variants.push({
+        name:v,
+        quantity:q
+      });
+
+      total+=q;
+
+    });
+
+
+    productGroups.push({
+      name,
+      variants,
+      total
+    });
+
+  });
+
+
+  renderProducts();
+}
+
+
+function renderProducts(){
+
+  const tb=document.querySelector(
+    '#productsTable tbody'
+  );
+
+  tb.innerHTML='';
+
+  let stt=1;
+  let total=0;
+
+
+  productGroups.forEach(g=>{
+
+    g.variants.forEach((v,i)=>{
+
+      const tr=document.createElement('tr');
+
+      tr.innerHTML=
+        (
+          i===0
+          ? '<td rowspan="'+g.variants.length+'">'+
+              stt+
+            '</td>'+
+            '<td rowspan="'+g.variants.length+'">'+
+              '<b>'+esc(g.name)+'</b>'+
+              '<div class="small">Tổng: '+g.total+'</div>'+
+            '</td>'
+          : ''
+        )+
+        '<td>'+
+          esc(v.name||'Không có loại')+
+        '</td>'+
+        '<td>'+
+          '<b>'+v.quantity+'</b>'+
+        '</td>';
+
+
+      tb.appendChild(tr);
+
+      total+=v.quantity;
+
+    });
+
+    stt++;
+
+  });
+
+
+  const tr=document.createElement('tr');
+
+  tr.className='total-row';
+
+  tr.innerHTML=
+    '<td colspan="3">TỔNG TẤT CẢ</td>'+
+    '<td>'+total+'</td>';
+
+  tb.appendChild(tr);
+}
+
+
+/* =========================
+   GITHUB API
+========================= */
+
+function ghHeaders(token){
+
+  return {
+    'Authorization':'Bearer '+token,
+    'Accept':'application/vnd.github+json',
+    'X-GitHub-Api-Version':'2022-11-28',
+    'Content-Type':'application/json'
+  };
+
+}
+
+
+async function ghGet(owner,repo,path,token){
+
+  const branch=
+    document.getElementById('ghBranch').value.trim();
+
+
+  const r=await fetch(
+    'https://api.github.com/repos/'+
+    encodeURIComponent(owner)+'/'+
+    encodeURIComponent(repo)+
+    '/contents/'+
+    path.split('/').map(encodeURIComponent).join('/')+
+    '?ref='+encodeURIComponent(branch),
+    {
+      headers:ghHeaders(token)
+    }
+  );
+
+
+  if(!r.ok){
+
+    if(r.status===404)
+      return null;
+
+    throw new Error(
+      'GitHub GET '+path+
+      ' → '+r.status+' '+
+      await r.text()
+    );
+
+  }
+
+
+  return r.json();
+}
+
+
+async function ghPut(
+  owner,
+  repo,
+  path,
+  token,
+  body,
+  sha,
+  msg
+){
+
+  const branch=
+    document.getElementById('ghBranch').value.trim();
+
+
+  const url=
+    'https://api.github.com/repos/'+
+    encodeURIComponent(owner)+'/'+
+    encodeURIComponent(repo)+
+    '/contents/'+
+    path.split('/').map(encodeURIComponent).join('/');
+
+
+  const payload={
+    message:msg,
+    content:btoa(
+      unescape(
+        encodeURIComponent(body)
+      )
+    ),
+    branch
+  };
+
+
+  if(sha)
+    payload.sha=sha;
+
+
+  const r=await fetch(
+    url,
+    {
+      method:'PUT',
+      headers:ghHeaders(token),
+      body:JSON.stringify(payload)
+    }
+  );
+
+
+  if(!r.ok)
+    throw new Error(
+      'GitHub PUT '+path+
+      ' → '+r.status+' '+
+      await r.text()
+    );
+
+
+  return r.json();
+}
+
+
+/* =========================
+   SAVE CHECKBOX
+========================= */
+
+async function saveOrderChecks(){
+
+  const owner=
+    document.getElementById('ghOwner').value.trim();
+
+  const repo=
+    document.getElementById('ghRepo').value.trim();
+
+  const token=
+    document.getElementById('ghToken').value.trim();
+
+
+  if(!isAdminMode())
+    return showAdmin(
+      '❌ Chỉ Admin mới được lưu checkbox.',
+      false
+    );
+
+
+  if(!owner||!repo||!token)
+    return showAdmin(
+      '❌ Nhập đủ Owner, Repository và Token.',
+      false
+    );
+
+
+  try{
+
+    showAdmin(
+      '⏳ Đang lưu trạng thái checkbox lên GitHub...',
+      true
+    );
+
+
+    const body=
+      JSON.stringify(orderChecks,null,2)+
+      '\n';
+
+
+    const existing=
+      await ghGet(
+        owner,
+        repo,
+        CONFIG.checksPath,
+        token
+      );
+
+
+    await ghPut(
+      owner,
+      repo,
+      CONFIG.checksPath,
+      token,
+      body,
+      existing?.sha,
+      'Update order checkbox states'
+    );
+
+
+    showAdmin(
+      '✅ Đã lưu '+
+      Object.keys(orderChecks).length+
+      ' Order được tick vào <code>'+
+      CONFIG.checksPath+
+      '</code>.',
+      true
+    );
+
+
+  }catch(e){
+
+    showAdmin(
+      '❌ '+esc(e.message),
+      false
+    );
+
+  }
+
+}
+
+
+/* =========================
+   UPLOAD
+========================= */
+
+function prepareUploadFiles(){
+
+  const files=Array.from(
+    document.getElementById('jsonFiles').files||[]
+  );
+
+  const list=document.getElementById('uploadList');
+
+
+  if(!files.length){
+
+    list.innerHTML='';
+
+    return;
+  }
+
+
+  list.innerHTML=
+    '<div class="upload-head">'+
+      files.length+
+      ' file đã chọn — nhập Mail tương ứng cho từng file'+
+    '</div>'+
+    files.map((f,i)=>
+      '<div class="upload-row">'+
+        '<div class="upload-file" title="'+
+          esc(f.name)+
+        '">📄 '+esc(f.name)+'</div>'+
+        '<input id="uploadMail_'+i+
+        '" type="email" placeholder="Mail cho file này, ví dụ abc@gmail.com">'+
+      '</div>'
+    ).join('');
+}
+
+
+function getBatchItems(){
+
+  const files=Array.from(
+    document.getElementById('jsonFiles').files||[]
+  );
+
+
+  return files.map((file,i)=>({
+
+    file,
+
+    mail:normMail(
+      document.getElementById(
+        'uploadMail_'+i
+      )?.value||''
+    )
+
+  }));
+
+}
+
+
+async function uploadJsonBatch(){
+
+  const owner=
+    document.getElementById('ghOwner').value.trim();
+
+  const repo=
+    document.getElementById('ghRepo').value.trim();
+
+  const branch=
+    document.getElementById('ghBranch').value.trim();
+
+  const token=
+    document.getElementById('ghToken').value.trim();
+
+
+  if(!owner||!repo||!branch||!token)
+    return showAdmin(
+      '❌ Nhập đủ Owner, Repository, Branch và Token.',
+      false
+    );
+
+
+  const items=getBatchItems();
+
+
+  if(!items.length)
+    return showAdmin(
+      '❌ Chưa chọn file JSON nào.',
+      false
+    );
+
+
+  const badMail=items.find(x=>
+    !x.mail||
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x.mail)
+  );
+
+
+  if(badMail)
+    return showAdmin(
+      '❌ Mỗi file phải có một Mail hợp lệ. Tên file không được dùng để lấy Mail.',
+      false
+    );
+
+
+  const mailSet=new Set();
+
+
+  for(const x of items){
+
+    if(mailSet.has(x.mail))
+      return showAdmin(
+        '❌ Mail bị trùng trong bộ upload: '+
+        esc(x.mail),
+        false
+      );
+
+    mailSet.add(x.mail);
+
+  }
+
+
+  try{
+
+    showAdmin(
+      '⏳ Đang chuẩn bị '+items.length+' file...',
+      true
+    );
+
+
+    const prepared=[];
+
+
+    for(const x of items){
+
+      const text=await x.file.text();
+
+      let parsed;
+
+      try{
+
+        parsed=JSON.parse(text);
+
+      }catch(e){
+
+        throw new Error(
+          'File '+x.file.name+
+          ' không phải JSON hợp lệ.'
+        );
+
+      }
+
+
+      const orders=extractOrders(parsed);
+
+
+      if(!orders.length)
+        throw new Error(
+          'File '+x.file.name+
+          ' không có orders hợp lệ (hoặc responses chứa orders).'
+        );
+
+
+      prepared.push({
+        mail:x.mail,
+        text,
+        path:'data/'+x.mail+'.json',
+        orders
+      });
+
+    }
+
+
+    /*
+      MỘT Git commit duy nhất:
+      - index.json
+      - data/*.json
+      - order_checks.json
+      - xóa data cũ
+    */
+
+
+    const apiBase=
+      'https://api.github.com/repos/'+
+      encodeURIComponent(owner)+'/'+
+      encodeURIComponent(repo);
+
+
+    const headers=ghHeaders(token);
+
+
+    const api=async(path,opts={})=>{
+
+      const r=await fetch(
+        apiBase+path,
+        {
+          ...opts,
+          headers:{
+            ...headers,
+            ...(opts.headers||{})
+          }
+        }
+      );
+
+
+      if(!r.ok)
+        throw new Error(
+          'GitHub API '+path+
+          ' → '+r.status+' '+
+          await r.text()
+        );
+
+
+      return r.json();
+
+    };
+
+
+    /* Commit hiện tại */
+    const ref=await api(
+      '/git/ref/heads/'+
+      encodeURIComponent(branch)
+    );
+
+
+    const parentSha=ref.object.sha;
+
+
+    const commit=await api(
+      '/git/commits/'+
+      encodeURIComponent(parentSha)
+    );
+
+
+    const baseTreeSha=commit.tree.sha;
+
+
+    /*
+      Đọc index cũ để biết file data nào cần xóa.
+    */
+
+    let oldEntries=[];
+
+
+    const oldIndex=
+      await ghGet(
+        owner,
+        repo,
+        'index.json',
+        token
+      );
+
+
+    if(oldIndex?.content){
+
+      try{
+
+        const decoded=
+          decodeURIComponent(
+            escape(
+              atob(
+                oldIndex.content.replace(/\n/g,'')
+              )
+            )
+          );
+
+
+        const old=JSON.parse(decoded);
+
+
+        if(Array.isArray(old))
+          oldEntries=
+            old.map(indexEntry).filter(Boolean);
+
+
+      }catch(e){
+
+        throw new Error(
+          'index.json cũ không hợp lệ: '+
+          e.message
+        );
+
+      }
+
+    }
+
+
+    const newEntries=
+      prepared.map(x=>({
+        mail:x.mail,
+        path:x.path
+      }));
+
+
+    const newIndexText=
+      JSON.stringify(
+        newEntries,
+        null,
+        2
+      );
+
+
+    /*
+      QUAN TRỌNG:
+      checkbox hiện tại được ghi vào cùng commit
+      với dataset mới.
+    */
+
+    const checksText=
+      JSON.stringify(
+        orderChecks,
+        null,
+        2
+      )+'\n';
+
+
+    showAdmin(
+      '⏳ Đang ghi dataset + checkbox bằng 1 commit...',
+      true
+    );
+
+
+    /*
+      Tạo blobs song song.
+    */
+
+    const blobItems=
+      await Promise.all(
+        prepared.map(async x=>{
+
+          const b=
+            await api(
+              '/git/blobs',
+              {
+                method:'POST',
+                body:JSON.stringify({
+                  content:x.text,
+                  encoding:'utf-8'
+                })
+              }
+            );
+
+
+          return {
+            path:x.path,
+            mode:'100644',
+            type:'blob',
+            sha:b.sha
+          };
+
+        })
+      );
+
+
+    const indexBlob=
+      await api(
+        '/git/blobs',
+        {
+          method:'POST',
+          body:JSON.stringify({
+            content:newIndexText,
+            encoding:'utf-8'
+          })
+        }
+      );
+
+
+    const checksBlob=
+      await api(
+        '/git/blobs',
+        {
+          method:'POST',
+          body:JSON.stringify({
+            content:checksText,
+            encoding:'utf-8'
+          })
+        }
+      );
+
+
+    /*
+      Tree mới.
+    */
+
+    const tree=[];
+
+
+    /*
+      order_checks.json được giữ lại.
+    */
+    const newPaths=new Set([
+      'index.json',
+      CONFIG.checksPath,
+      ...prepared.map(x=>x.path)
+    ]);
+
+
+    /*
+      Xóa các data file cũ không còn trong dataset mới.
+      KHÔNG xóa order_checks.json.
+    */
+    oldEntries.forEach(e=>{
+
+      if(
+        e.path &&
+        !newPaths.has(e.path)
+      ){
+
+        tree.push({
+          path:e.path,
+          mode:'100644',
+          type:'blob',
+          sha:null
+        });
+
+      }
+
+    });
+
+
+    tree.push({
+      path:'index.json',
+      mode:'100644',
+      type:'blob',
+      sha:indexBlob.sha
+    });
+
+
+    tree.push({
+      path:CONFIG.checksPath,
+      mode:'100644',
+      type:'blob',
+      sha:checksBlob.sha
+    });
+
+
+    blobItems.forEach(x=>
+      tree.push(x)
+    );
+
+
+    const newTree=
+      await api(
+        '/git/trees',
+        {
+          method:'POST',
+          body:JSON.stringify({
+            base_tree:baseTreeSha,
+            tree
+          })
+        }
+      );
+
+
+    const newCommit=
+      await api(
+        '/git/commits',
+        {
+          method:'POST',
+          body:JSON.stringify({
+            message:'Replace order dataset and preserve order checks',
+            tree:newTree.sha,
+            parents:[parentSha]
+          })
+        }
+      );
+
+
+    await api(
+      '/git/refs/heads/'+
+      encodeURIComponent(branch),
+      {
+        method:'PATCH',
+        body:JSON.stringify({
+          sha:newCommit.sha,
+          force:false
+        })
+      }
+    );
+
+
+    /*
+      Cập nhật UI ngay lập tức.
+    */
+
+    allOrders=[];
+
+    let mails=0;
+
+
+    prepared.forEach(x=>{
+
+      if(x.orders.length||x.mail)
+        mails++;
+
+
+      x.orders.forEach(o=>{
+
+        o.__mail=x.mail;
+
+        allOrders.push(o);
+
+      });
+
+    });
+
+
+    allOrders.sort(
+      (a,b)=>
+        new Date(b.created_at)-
+        new Date(a.created_at)
+    );
+
+
+    document.getElementById(
+      'mailCount'
+    ).textContent=mails;
+
+
+    document.getElementById(
+      'deliveredCount'
+    ).textContent=
+      allOrders.filter(o=>
+        String(
+          o.fulfillment_status||''
+        ).toLowerCase()==='fulfilled'
+      ).length;
+
+
+    document.getElementById(
+      'paidCount'
+    ).textContent=
+      allOrders.filter(o=>
+        String(
+          o.financial_status||''
+        ).toLowerCase()==='paid'
+      ).length;
+
+
+    buildProducts();
+    applyFilters();
+
+
+    const deletedCount=
+      oldEntries.filter(e=>
+        e.path &&
+        !newPaths.has(e.path)
+      ).length;
+
+
+    showAdmin(
+      '✅ Đã thay bộ dữ liệu: '+
+      prepared.length+
+      ' file mới. '+
+      'Xóa '+deletedCount+
+      ' file cũ. '+
+      '<code>order_checks.json</code> đã được giữ và cập nhật. '+
+      'GitHub đã ghi 1 commit duy nhất.',
+      true
+    );
+
+
+    document.getElementById(
+      'jsonFiles'
+    ).value='';
+
+    document.getElementById(
+      'uploadList'
+    ).innerHTML='';
+
+
+  }catch(e){
+
+    showAdmin(
+      '❌ '+esc(e.message),
+      false
+    );
+
+  }
+
+}
+
+
+/* =========================
+   CSV
+========================= */
+
+function csvEsc(v){
+  return '"'+
+    String(v??'').replace(/"/g,'""')+
+    '"';
+}
+
+
+function downloadCSV(rows,name){
+
+  const blob=new Blob(
+    [
+      '\uFEFF'+
+      rows.map(r=>
+        r.map(csvEsc).join(',')
+      ).join('\n')
+    ],
+    {
+      type:'text/csv;charset=utf-8'
+    }
+  );
+
+
+  const a=document.createElement('a');
+
+  a.href=URL.createObjectURL(blob);
+
+  a.download=name;
+
+  a.click();
+
+  setTimeout(
+    ()=>URL.revokeObjectURL(a.href),
+    500
+  );
+}
+
+
+function exportOrders(){
+
+  if(!filteredOrders.length)
+    return alert(
+      'Chưa có dữ liệu phù hợp bộ lọc.'
+    );
+
+
+  const rows=[
+    [
+      'Đã check',
+      'STT',
+      'Mã Order',
+      'Mail',
+      'Ngày giờ',
+      'Trạng thái thanh toán',
+      'Trạng thái giao hàng',
+      'Tên sản phẩm',
+      'Loại sản phẩm',
+      'Số lượng'
+    ]
+  ];
+
+
+  filteredOrders.forEach((o,i)=>{
+
+    const k=orderKey(o);
+
+    (o.line_items||[{}]).forEach(it=>
+      rows.push([
+        orderChecks[k]===true?'YES':'NO',
+        i+1,
+        k,
+        o.__mail,
+        dateFmt(o.created_at),
+        o.financial_status||'',
+        o.fulfillment_status||'',
+        it.title||'',
+        it.variant_title||'',
+        it.quantity||0
+      ])
+    );
+
+  });
+
+
+  downloadCSV(
+    rows,
+    'orders.csv'
+  );
+}
+
+
+function exportProducts(){
+
+  if(!productGroups.length)
+    return alert(
+      'Chưa có sản phẩm từ Order đã thanh toán.'
+    );
+
+
+  const rows=[
+    [
+      'STT',
+      'Tên sản phẩm',
+      'Loại sản phẩm',
+      'Số lượng'
+    ]
+  ];
+
+
+  let stt=1;
+
+
+  productGroups.forEach(g=>{
+
+    g.variants.forEach((v,i)=>
+      rows.push([
+        i===0?stt:'',
+        i===0?g.name:'',
+        v.name,
+        v.quantity
+      ])
+    );
+
+    stt++;
+
+  });
+
+
+  rows.push([
+    '',
+    '',
+    'TỔNG',
+    productGroups.reduce(
+      (s,g)=>s+g.total,
+      0
+    )
+  ]);
+
+
+  downloadCSV(
+    rows,
+    'tong-hop-san-pham.csv'
+  );
+}
+
+
+/* =========================
+   ADMIN MODE
+========================= */
+
+function isAdminMode(){
+
+  return location.hash.toLowerCase()==='#admin';
+
+}
+
+
+function applyRoute(){
+
+  const isAdmin=isAdminMode();
+
+  const admin=
+    document.getElementById(
+      'adminCard'
+    );
+
+
+  if(admin)
+    admin.style.display=
+      isAdmin
+      ? 'block'
+      : 'none';
+
+
+  document.body.classList.toggle(
+    'admin-mode',
+    isAdmin
+  );
+
+
+  /*
+    Rerender để checkbox chuyển
+    disabled/enabled ngay khi đổi #admin.
+  */
+  if(
+    document.querySelector(
+      '#ordersTable tbody'
+    )
+  ){
+    renderOrders();
+  }
+
+}
+
+
+window.addEventListener(
+  'hashchange',
+  applyRoute
+);
+
+
+/* =========================
+   START
+========================= */
+
+document.addEventListener(
+  'DOMContentLoaded',
+  ()=>{
+
+    document.getElementById(
+      'ghToken'
+    ).value=
+      sessionStorage.getItem(
+        'gh_token'
+      )||'';
+
+
+    document.getElementById(
+      'ghToken'
+    ).addEventListener(
+      'input',
+      e=>{
+        sessionStorage.setItem(
+          'gh_token',
+          e.target.value
+        );
+      }
+    );
+
+
+    applyRoute();
+
+    loadData();
+
+  }
+);
+
 </script>
 </body>
 </html>
