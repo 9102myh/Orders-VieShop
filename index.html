@@ -492,6 +492,16 @@ tr:nth-child(even){
 }
 
 
+
+/* ================= TABS ================= */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.tab-btn{border:1px solid #cbd5e1;background:#fff;color:#334155;border-radius:8px;padding:10px 16px;cursor:pointer;font-weight:bold}
+.tab-btn.active{background:#2563eb;color:#fff;border-color:#2563eb}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+.price-cell,.money-cell{text-align:right;white-space:nowrap}
+.card-count-cell{text-align:center;font-weight:bold}
+
 @media(max-width:900px){
 
   .grid{
@@ -682,6 +692,8 @@ hệ thống tự lưu sau <b>800ms</b>.
 
 <h2>📊 Tổng quan</h2>
 
+<p class="small">Chỉ tính Order đặt từ <b>01/07/2026</b> trở đi.</p>
+
 <div class="summary">
 
 <div class="summary-box">
@@ -737,6 +749,16 @@ Mail
 
 
 
+<!-- =====================================================
+     TABS
+====================================================== -->
+<div class="tabs">
+  <button class="tab-btn active" data-tab="ordersTab" onclick="switchTab('ordersTab',this)">📦 Danh sách Order</button>
+  <button class="tab-btn" data-tab="productsTab" onclick="switchTab('productsTab',this)">🛍️ Tổng hợp sản phẩm</button>
+  <button class="tab-btn" data-tab="cardsTab" onclick="switchTab('cardsTab',this)">🎴 Chia card</button>
+</div>
+
+<div id="ordersTab" class="tab-panel active">
 <!-- =====================================================
      ORDERS
 ====================================================== -->
@@ -916,20 +938,20 @@ Tổng bản ghi: 0
 
 
 </div>
+</div>
 
 
 
 <!-- =====================================================
      PRODUCTS
 ====================================================== -->
-
+<div id="productsTab" class="tab-panel">
 <div class="card">
 
 <h2>🛍️ Tổng hợp sản phẩm</h2>
 
 <p class="small">
-Chỉ tổng hợp sản phẩm từ các Order có
-<b>financial_status = paid</b>.
+Chỉ tổng hợp sản phẩm từ các Order <b>đã thanh toán (financial_status = paid)</b> và đặt từ <b>01/07/2026</b> trở đi. Giá và thành tiền được tính theo bảng giá đã cấu hình.
 </p>
 
 
@@ -955,6 +977,8 @@ Chỉ tổng hợp sản phẩm từ các Order có
 <th>Tên sản phẩm</th>
 <th>Loại sản phẩm</th>
 <th>Số lượng</th>
+<th>Đơn giá</th>
+<th>Thành tiền</th>
 </tr>
 
 </thead>
@@ -966,9 +990,26 @@ Chỉ tổng hợp sản phẩm từ các Order có
 </div>
 
 </div>
-
 </div>
 
+<!-- =====================================================
+     CARDS
+====================================================== -->
+<div id="cardsTab" class="tab-panel">
+  <div class="card">
+    <h2>🎴 Chia card</h2>
+    <p class="small">Số lượng card hiển thị đúng theo quy tắc m đã cấu hình (ví dụ: 1 hoặc 3 card No.8, 2 card No.7...). Không nhân theo số lượng sản phẩm.</p>
+    <button class="button export" onclick="exportCards()">📥 Export chia card</button>
+    <div class="table-wrap" style="margin-top:12px">
+      <table id="cardsTable">
+        <thead><tr><th>STT</th><th>SẢN PHẨM</th><th>SỐ LƯỢNG CARD</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div>
 
 
 <script>
@@ -993,6 +1034,18 @@ const CONFIG={
 
 
 /* =====================================================
+   DISPLAY CUTOFF
+====================================================== */
+
+const DISPLAY_CUTOFF=new Date(2026,6,1,0,0,0,0);
+
+function isDisplayOrder(o){
+  const d=new Date(o?.created_at);
+  return !isNaN(d.getTime()) && d>=DISPLAY_CUTOFF;
+}
+
+
+/* =====================================================
    GLOBAL
 ====================================================== */
 
@@ -1001,6 +1054,7 @@ let allOrders=[];
 let filteredOrders=[];
 
 let productGroups=[];
+let cardGroups=[];
 
 let orderChecks={};
 
@@ -1785,15 +1839,18 @@ async function loadData(){
     );
 
 
+    const displayOrders=allOrders.filter(isDisplayOrder);
+    const displayMails=new Set(displayOrders.map(o=>String(o.__mail||'').trim().toLowerCase()).filter(Boolean));
+
     document.getElementById(
       'mailCount'
-    ).textContent=mails;
+    ).textContent=displayMails.size;
 
 
     document.getElementById(
       'deliveredCount'
     ).textContent=
-      allOrders.filter(
+      displayOrders.filter(
         o=>
           String(
             o.fulfillment_status||''
@@ -1804,7 +1861,7 @@ async function loadData(){
     document.getElementById(
       'paidCount'
     ).textContent=
-      allOrders.filter(
+      displayOrders.filter(
         o=>
           String(
             o.financial_status||''
@@ -1819,10 +1876,10 @@ async function loadData(){
 
     showAdmin(
       '✅ Đã đọc '+
-      mails+
+      displayMails.size+
       ' Mail và '+
-      allOrders.length+
-      ' Order.',
+      displayOrders.length+
+      ' Order từ 01/07/2026 trở đi.',
       true
     );
 
@@ -1947,7 +2004,7 @@ function applyFilters(){
 
 
   filteredOrders=
-    allOrders.filter(
+    allOrders.filter(isDisplayOrder).filter(
       o=>
 
         (!q1||
@@ -2677,1410 +2734,176 @@ function renderPagination(){
    PRODUCTS
 ====================================================== */
 
-function buildProducts(){
+function productPrice(name){
 
-  const m=new Map();
-
-
-  allOrders
-    .filter(
-      o=>
-        String(
-          o.financial_status||''
-        ).toLowerCase()==='paid'
-    )
-    .forEach(
-      o=>{
-
-        (o.line_items||[])
-          .forEach(
-            i=>{
-
-              const name=
-                String(
-                  i.title||''
-                ).trim();
-
-
-              if(!name)
-                return;
-
-
-              const variant=
-                String(
-                  i.variant_title||''
-                ).trim();
-
-
-              const q=
-                Number(
-                  i.quantity||0
-                );
-
-
-              if(!m.has(name))
-                m.set(
-                  name,
-                  new Map()
-                );
-
-
-              const vm=
-                m.get(name);
-
-
-              vm.set(
-                variant,
-                (vm.get(variant)||0)+q
-              );
-
-            }
-          );
-
-      }
-    );
-
-
-  productGroups=[];
-
-
-  m.forEach(
-    (vm,name)=>{
-
-      const variants=[];
-
-      let total=0;
-
-
-      vm.forEach(
-        (q,v)=>{
-
-          variants.push({
-            name:v,
-            quantity:q
-          });
-
-
-          total+=q;
-
-        }
-      );
-
-
-      productGroups.push({
-        name,
-        variants,
-        total
-      });
-
-    }
-  );
-
-
-  renderProducts();
-
+  const prices={
+    'TINH HÀ "SAY HI" Tote bag (Túi tote) / TOGETHER WE SHINE':350000,
+    'TINH HÀ "SAY HI" T-shirt (Áo thun) / TOGETHER WE SHINE 2':450000,
+    'TINH HÀ "SAY HI" Notebook (Sổ tay ghi chú) / TOGETHER WE SHINE':130000,
+    'TINH HÀ "SAY HI" T-shirt (Áo thun) / TOGETHER WE SHINE':500000,
+    'TINH HÀ "SAY HI" - File Ảnh Lời bài hát':10000,
+    'TINH HÀ "SAY HI" Cap (Nón kết) / TOGETHER WE SHINE':300000,
+    'Sách ảnh Liên Quân 2 (Photobook): Tinh Hà "Say Hi" – Together We Shine':700000,
+    'TINH HÀ "SAY HI" Bandana (Khăn lụa) / TOGETHER WE SHINE':250000,
+    'TINH HÀ "SAY HI" Jersey (Áo thun lưới) / TOGETHER WE SHINE':500000,
+    'TINH HÀ "SAY HI" Body Fit T-Shirt (Áo thun ôm) / TOGETHER WE SHINE 2':500000,
+    'TINH HÀ "SAY HI" Lanyard & cardholder set (Bộ dây đeo thẻ) / TOGETHER WE SHINE 2':170000,
+    'TINH HÀ "SAY HI" Bandana (Khăn lụa) / TOGETHER WE SHINE 2':230000,
+    'TINH HÀ "SAY HI" Bandana (Khăn lụa) / TOGETHER WE SHINE - EP2':230000,
+    'TINH HÀ "SAY HI" Bandana (Khăn lụa) / TOGETHER WE SHINE - EP1':230000,
+    'TINH HÀ "SAY HI" T-shirt (Áo thun) / STARDUST':449000,
+    'TINH HÀ "SAY HI" Crop-top/Babytee (Áo thun lửng) / STARDUST':399000,
+    'TINH HÀ "SAY HI" Bandana (Khăn lụa) / ECLIPSE':259000,
+    'TINH HÀ “SAY HI” - File Ảnh Mascot':50000,
+    'TINH HÀ "SAY HI" Figure (Mô hình) / GRAVITY - 10cm':599000,
+    'Sách ảnh Liên Quân 1 (Photobook): Tinh Hà "Say Hi" – Together We Shine':700000,
+    'TINH HÀ "SAY HI" Adult Sports Set (Bộ đồ thể thao) / STARDUST':999000,
+    'TINH HÀ "SAY HI" / TOGETHER WE SHINE - CORE FAN (Bộ sản phẩm)':2000000,
+    'TINH HÀ "SAY HI" Lightstick (Gậy cổ vũ) / TOGETHER WE SHINE':550000,
+    'TINH HÀ "SAY HI" Washed T-shirt (áo wash) / TOGETHER WE SHINE':590000,
+    'TINH HÀ "SAY HI" Body Fit T-Shirt (Áo thun ôm) / TOGETHER WE SHINE 1':500000,
+    'TINH HÀ "SAY HI" Lanyard & cardholder set (Bộ dây đeo thẻ) / TOGETHER WE SHINE':170000,
+    'TINH HÀ "SAY HI" Polo Shirt (Áo polo) / TOGETHER WE SHINE':590000,
+    'TINH HÀ "SAY HI" Long-sleeved T-shirt (Áo thun tay dài) / STARDUST':469000
+  };
+  return prices[String(name||'').trim()] ?? 0;
 }
 
+function cardRuleText(name){
+  const rules={
+    'TINH HÀ "SAY HI" Tote bag (Túi tote) / TOGETHER WE SHINE':'1 hoặc 3 card No.8',
+    'TINH HÀ "SAY HI" T-shirt (Áo thun) / TOGETHER WE SHINE 2':'2 hoặc 4 card No.8',
+    'TINH HÀ "SAY HI" Notebook (Sổ tay ghi chú) / TOGETHER WE SHINE':'1 card No.8',
+    'TINH HÀ "SAY HI" T-shirt (Áo thun) / TOGETHER WE SHINE':'4 card No.6',
+    'TINH HÀ "SAY HI" - File Ảnh Lời bài hát':'0 card',
+    'TINH HÀ "SAY HI" Cap (Nón kết) / TOGETHER WE SHINE':'1 hoặc 2 card No.8',
+    'Sách ảnh Liên Quân 2 (Photobook): Tinh Hà "Say Hi" – Together We Shine':'5 card No.6',
+    'TINH HÀ "SAY HI" Bandana (Khăn lụa) / TOGETHER WE SHINE':'2 card No.5',
+    'TINH HÀ "SAY HI" Jersey (Áo thun lưới) / TOGETHER WE SHINE':'4 card No.6',
+    'TINH HÀ "SAY HI" Body Fit T-Shirt (Áo thun ôm) / TOGETHER WE SHINE 2':'4 card No.6',
+    'TINH HÀ "SAY HI" Lanyard & cardholder set (Bộ dây đeo thẻ) / TOGETHER WE SHINE 2':'1 card No.8',
+    'TINH HÀ "SAY HI" Bandana (Khăn lụa) / TOGETHER WE SHINE 2':'1 hoặc 2 card No.8',
+    'TINH HÀ "SAY HI" Bandana (Khăn lụa) / TOGETHER WE SHINE - EP2':'2 card No.7',
+    'TINH HÀ "SAY HI" Bandana (Khăn lụa) / TOGETHER WE SHINE - EP1':'2 card No.7',
+    'TINH HÀ "SAY HI" T-shirt (Áo thun) / STARDUST':'3 card No.5',
+    'TINH HÀ "SAY HI" Crop-top/Babytee (Áo thun lửng) / STARDUST':'3 card No.5',
+    'TINH HÀ "SAY HI" Bandana (Khăn lụa) / ECLIPSE':'2 card No.5',
+    'TINH HÀ “SAY HI” - File Ảnh Mascot':'0 card',
+    'TINH HÀ "SAY HI" Figure (Mô hình) / GRAVITY - 10cm':'4 card No.5',
+    'Sách ảnh Liên Quân 1 (Photobook): Tinh Hà "Say Hi" – Together We Shine':'5 card No.6',
+    'TINH HÀ "SAY HI" Adult Sports Set (Bộ đồ thể thao) / STARDUST':'7 card No.7',
+    'TINH HÀ "SAY HI" / TOGETHER WE SHINE - CORE FAN (Bộ sản phẩm)':'0 card',
+    'TINH HÀ "SAY HI" Lightstick (Gậy cổ vũ) / TOGETHER WE SHINE':'3 hoặc 5 card No.8',
+    'TINH HÀ "SAY HI" Washed T-shirt (áo wash) / TOGETHER WE SHINE':'4 card No.6',
+    'TINH HÀ "SAY HI" Body Fit T-Shirt (Áo thun ôm) / TOGETHER WE SHINE 1':'4 card No.6',
+    'TINH HÀ "SAY HI" Lanyard & cardholder set (Bộ dây đeo thẻ) / TOGETHER WE SHINE':'1 card No.6',
+    'TINH HÀ "SAY HI" Polo Shirt (Áo polo) / TOGETHER WE SHINE':'5 card No.6',
+    'TINH HÀ "SAY HI" Long-sleeved T-shirt (Áo thun tay dài) / STARDUST':'3 card No.6'
+  };
+  return rules[String(name||'').trim()] ?? '';
+}
+
+function money(v){ return Number(v||0).toLocaleString('vi-VN')+'đ'; }
+
+function buildProducts(){
+  const m=new Map();
+  allOrders.filter(o => isDisplayOrder(o) && String(o.financial_status||'').toLowerCase()==='paid').forEach(o=>{
+    (o.line_items||[]).forEach(i=>{
+      const name=String(i.title||'').trim(); if(!name)return;
+      const variant=String(i.variant_title||'').trim();
+      const q=Number(i.quantity||0);
+      if(!m.has(name))m.set(name,new Map());
+      const vm=m.get(name); vm.set(variant,(vm.get(variant)||0)+q);
+    });
+  });
+  productGroups=[];
+  m.forEach((vm,name)=>{
+    const variants=[]; let total=0;
+    vm.forEach((q,v)=>{variants.push({name:v,quantity:q}); total+=q;});
+    productGroups.push({name,variants,total,price:productPrice(name)});
+  });
+  productGroups.sort((a,b)=>a.name.localeCompare(b.name,'vi'));
+
+  const cardNames=Object.keys({
+    'TINH HÀ "SAY HI" Tote bag (Túi tote) / TOGETHER WE SHINE':1,
+    'TINH HÀ "SAY HI" T-shirt (Áo thun) / TOGETHER WE SHINE 2':1,
+    'TINH HÀ "SAY HI" Notebook (Sổ tay ghi chú) / TOGETHER WE SHINE':1,
+    'TINH HÀ "SAY HI" T-shirt (Áo thun) / TOGETHER WE SHINE':1,
+    'TINH HÀ "SAY HI" - File Ảnh Lời bài hát':1,
+    'TINH HÀ "SAY HI" Cap (Nón kết) / TOGETHER WE SHINE':1,
+    'Sách ảnh Liên Quân 2 (Photobook): Tinh Hà "Say Hi" – Together We Shine':1,
+    'TINH HÀ "SAY HI" Bandana (Khăn lụa) / TOGETHER WE SHINE':1,
+    'TINH HÀ "SAY HI" Jersey (Áo thun lưới) / TOGETHER WE SHINE':1,
+    'TINH HÀ "SAY HI" Body Fit T-Shirt (Áo thun ôm) / TOGETHER WE SHINE 2':1,
+    'TINH HÀ "SAY HI" Lanyard & cardholder set (Bộ dây đeo thẻ) / TOGETHER WE SHINE 2':1,
+    'TINH HÀ "SAY HI" Bandana (Khăn lụa) / TOGETHER WE SHINE 2':1,
+    'TINH HÀ "SAY HI" Bandana (Khăn lụa) / TOGETHER WE SHINE - EP2':1,
+    'TINH HÀ "SAY HI" Bandana (Khăn lụa) / TOGETHER WE SHINE - EP1':1,
+    'TINH HÀ "SAY HI" T-shirt (Áo thun) / STARDUST':1,
+    'TINH HÀ "SAY HI" Crop-top/Babytee (Áo thun lửng) / STARDUST':1,
+    'TINH HÀ "SAY HI" Bandana (Khăn lụa) / ECLIPSE':1,
+    'TINH HÀ “SAY HI” - File Ảnh Mascot':1,
+    'TINH HÀ "SAY HI" Figure (Mô hình) / GRAVITY - 10cm':1,
+    'Sách ảnh Liên Quân 1 (Photobook): Tinh Hà "Say Hi" – Together We Shine':1,
+    'TINH HÀ "SAY HI" Adult Sports Set (Bộ đồ thể thao) / STARDUST':1,
+    'TINH HÀ "SAY HI" / TOGETHER WE SHINE - CORE FAN (Bộ sản phẩm)':1,
+    'TINH HÀ "SAY HI" Lightstick (Gậy cổ vũ) / TOGETHER WE SHINE':1,
+    'TINH HÀ "SAY HI" Washed T-shirt (áo wash) / TOGETHER WE SHINE':1,
+    'TINH HÀ "SAY HI" Body Fit T-Shirt (Áo thun ôm) / TOGETHER WE SHINE 1':1,
+    'TINH HÀ "SAY HI" Lanyard & cardholder set (Bộ dây đeo thẻ) / TOGETHER WE SHINE':1,
+    'TINH HÀ "SAY HI" Polo Shirt (Áo polo) / TOGETHER WE SHINE':1,
+    'TINH HÀ "SAY HI" Long-sleeved T-shirt (Áo thun tay dài) / STARDUST':1
+  });
+  cardGroups=cardNames.map(name=>({name,rule:cardRuleText(name)}));
+  renderProducts(); renderCards();
+}
 
 function renderProducts(){
-
-  const tb=
-    document.querySelector(
-      '#productsTable tbody'
-    );
-
-
-  tb.innerHTML='';
-
-
-  let stt=1;
-
-  let total=0;
-
-
-  productGroups.forEach(
-    g=>{
-
-      g.variants.forEach(
-        (v,i)=>{
-
-          const tr=
-            document.createElement(
-              'tr'
-            );
-
-
-          tr.innerHTML=
-            (
-              i===0
-                ?'<td rowspan="'+
-                  g.variants.length+
-                  '">'+
-                  stt+
-                  '</td>'+
-
-                  '<td rowspan="'+
-                  g.variants.length+
-                  '">'+
-                    '<b>'+
-                      esc(g.name)+
-                    '</b>'+
-
-                    '<div class="small">'+
-                      'Tổng: '+
-                      g.total+
-                    '</div>'+
-
-                  '</td>'
-
-                :''
-            )+
-
-            '<td>'+
-              esc(
-                v.name||
-                'Không có loại'
-              )+
-            '</td>'+
-
-            '<td>'+
-              '<b>'+
-                v.quantity+
-              '</b>'+
-            '</td>';
-
-
-          tb.appendChild(tr);
-
-
-          total+=v.quantity;
-
-        }
-      );
-
-
-      stt++;
-
-    }
-  );
-
-
-  const tr=
-    document.createElement(
-      'tr'
-    );
-
-
-  tr.innerHTML=
-    '<td colspan="3">'+
-      '<b>TỔNG TẤT CẢ</b>'+
-    '</td>'+
-
-    '<td>'+
-      '<b>'+
-        total+
-      '</b>'+
-    '</td>';
-
-
-  tr.className='total-row';
-
-
+  const tb=document.querySelector('#productsTable tbody'); tb.innerHTML='';
+  let stt=1,totalQty=0,totalMoney=0;
+  productGroups.forEach(g=>{
+    const amount=g.total*g.price; totalMoney+=amount; totalQty+=g.total;
+    g.variants.forEach((v,i)=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=(i===0?'<td rowspan="'+g.variants.length+'">'+stt+'</td><td rowspan="'+g.variants.length+'"><b>'+esc(g.name)+'</b><div class="small">Tổng: '+g.total+'</div></td>':'')+'<td>'+esc(v.name||'Không có loại')+'</td><td><b>'+v.quantity+'</b></td>'+(i===0?'<td rowspan="'+g.variants.length+'" class="price-cell">'+money(g.price)+'</td><td rowspan="'+g.variants.length+'" class="money-cell"><b>'+money(amount)+'</b></td>':'');
+      tb.appendChild(tr);
+    }); stt++;
+  });
+  const tr=document.createElement('tr');
+  tr.innerHTML='<td colspan="3"><b>TỔNG TẤT CẢ</b></td><td><b>'+totalQty+'</b></td><td></td><td class="money-cell"><b>'+money(totalMoney)+'</b></td>';
   tb.appendChild(tr);
-
 }
 
-
-
-/* =====================================================
-   GITHUB API
-====================================================== */
-
-function ghHeaders(token){
-
-  return {
-
-    'Authorization':
-      'Bearer '+token,
-
-    'Accept':
-      'application/vnd.github+json',
-
-    'X-GitHub-Api-Version':
-      '2022-11-28',
-
-    'Content-Type':
-      'application/json'
-
-  };
-
+function renderCards(){
+  const tb=document.querySelector('#cardsTable tbody'); if(!tb)return; tb.innerHTML='';
+  let stt=1;
+  cardGroups.forEach(g=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td>'+stt+'</td><td><b>'+esc(g.name.toUpperCase())+'</b></td><td class="card-count-cell">'+esc(g.rule)+'</td>';
+    tb.appendChild(tr); stt++;
+  });
 }
-
-
-async function ghGet(
-  owner,
-  repo,
-  path,
-  token
-){
-
-  const branch=
-    document.getElementById(
-      'ghBranch'
-    ).value.trim();
-
-
-  const url=
-    'https://api.github.com/repos/'+
-    encodeURIComponent(owner)+'/'+
-    encodeURIComponent(repo)+
-    '/contents/'+
-    path
-      .split('/')
-      .map(encodeURIComponent)
-      .join('/')+
-    '?ref='+
-    encodeURIComponent(branch);
-
-
-  const r=
-    await fetch(
-      url,
-      {
-        headers:
-          ghHeaders(token)
-      }
-    );
-
-
-  if(!r.ok){
-
-    if(r.status===404)
-      return null;
-
-
-    throw new Error(
-      'GitHub GET '+
-      path+
-      ' → '+
-      r.status+
-      ' '+
-      await r.text()
-    );
-
-  }
-
-
-  return r.json();
-
-}
-
-
-async function ghPut(
-  owner,
-  repo,
-  path,
-  token,
-  body,
-  sha,
-  msg
-){
-
-  const branch=
-    document.getElementById(
-      'ghBranch'
-    ).value.trim();
-
-
-  const url=
-    'https://api.github.com/repos/'+
-    encodeURIComponent(owner)+'/'+
-    encodeURIComponent(repo)+
-    '/contents/'+
-    path
-      .split('/')
-      .map(encodeURIComponent)
-      .join('/');
-
-
-  const payload={
-
-    message:msg,
-
-    content:
-      btoa(
-        unescape(
-          encodeURIComponent(body)
-        )
-      ),
-
-    branch
-
-  };
-
-
-  if(sha)
-    payload.sha=sha;
-
-
-  const r=
-    await fetch(
-      url,
-      {
-        method:'PUT',
-
-        headers:
-          ghHeaders(token),
-
-        body:
-          JSON.stringify(payload)
-      }
-    );
-
-
-  if(!r.ok){
-
-    throw new Error(
-      'GitHub PUT '+
-      path+
-      ' → '+
-      r.status+
-      ' '+
-      await r.text()
-    );
-
-  }
-
-
-  return r.json();
-
-}
-
-
-
-/* =====================================================
-   UPLOAD FILES
-====================================================== */
-
-function prepareUploadFiles(){
-
-  const files=
-    Array.from(
-      document.getElementById(
-        'jsonFiles'
-      ).files||[]
-    );
-
-
-  const list=
-    document.getElementById(
-      'uploadList'
-    );
-
-
-  if(!files.length){
-
-    list.innerHTML='';
-
-    return;
-
-  }
-
-
-  list.innerHTML=
-
-    '<div class="upload-head">'+
-      files.length+
-      ' file đã chọn — nhập Mail tương ứng'+
-    '</div>'+
-
-    files.map(
-      (f,i)=>`
-
-        <div class="upload-row">
-
-          <div
-            class="upload-file"
-            title="${esc(f.name)}"
-          >
-            📄 ${esc(f.name)}
-          </div>
-
-          <input
-            id="uploadMail_${i}"
-            type="email"
-            placeholder="Mail cho file này"
-          >
-
-        </div>
-
-      `
-    ).join('');
-
-}
-
-
-function getBatchItems(){
-
-  const files=
-    Array.from(
-      document.getElementById(
-        'jsonFiles'
-      ).files||[]
-    );
-
-
-  return files.map(
-    (file,i)=>({
-
-      file,
-
-      mail:
-        normMail(
-          document.getElementById(
-            'uploadMail_'+i
-          )?.value||''
-        )
-
-    })
-  );
-
-}
-
-
-
-/* =====================================================
-   UPLOAD DATASET
-====================================================== */
-
-async function uploadJsonBatch(){
-
-  const owner=
-    document.getElementById(
-      'ghOwner'
-    ).value.trim();
-
-
-  const repo=
-    document.getElementById(
-      'ghRepo'
-    ).value.trim();
-
-
-  const branch=
-    document.getElementById(
-      'ghBranch'
-    ).value.trim();
-
-
-  const token=
-    document.getElementById(
-      'ghToken'
-    ).value.trim();
-
-
-  if(
-    !owner||
-    !repo||
-    !branch||
-    !token
-  ){
-
-    return showAdmin(
-      '❌ Nhập đủ Owner, Repository, Branch và Token.',
-      false
-    );
-
-  }
-
-
-  const items=
-    getBatchItems();
-
-
-  if(!items.length){
-
-    return showAdmin(
-      '❌ Chưa chọn file JSON nào.',
-      false
-    );
-
-  }
-
-
-  const badMail=
-    items.find(
-      x=>
-        !x.mail||
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/
-          .test(x.mail)
-    );
-
-
-  if(badMail){
-
-    return showAdmin(
-      '❌ Mỗi file phải có một Mail hợp lệ.',
-      false
-    );
-
-  }
-
-
-  const mailSet=
-    new Set();
-
-
-  for(const x of items){
-
-    if(mailSet.has(x.mail)){
-
-      return showAdmin(
-        '❌ Mail bị trùng: '+
-        esc(x.mail),
-        false
-      );
-
-    }
-
-
-    mailSet.add(x.mail);
-
-  }
-
-
-  try{
-
-    showAdmin(
-      '⏳ Đang chuẩn bị dữ liệu...',
-      true
-    );
-
-
-    const prepared=[];
-
-
-    for(const x of items){
-
-      const text=
-        await x.file.text();
-
-
-      let parsed;
-
-
-      try{
-
-        parsed=
-          JSON.parse(text);
-
-      }catch(e){
-
-        throw new Error(
-          'File '+
-          x.file.name+
-          ' không phải JSON hợp lệ.'
-        );
-
-      }
-
-
-      const orders=
-        extractOrders(parsed);
-
-
-      if(!orders.length){
-
-        throw new Error(
-          'File '+
-          x.file.name+
-          ' không có orders hợp lệ.'
-        );
-
-      }
-
-
-      prepared.push({
-
-        mail:x.mail,
-
-        text,
-
-        path:
-          'data/'+
-          x.mail+
-          '.json',
-
-        orders
-
-      });
-
-    }
-
-
-    const apiBase=
-      'https://api.github.com/repos/'+
-      encodeURIComponent(owner)+'/'+
-      encodeURIComponent(repo);
-
-
-    const headers=
-      ghHeaders(token);
-
-
-    const api=
-      async(
-        path,
-        opts={}
-      )=>{
-
-        const r=
-          await fetch(
-            apiBase+path,
-            {
-              ...opts,
-
-              headers:{
-                ...headers,
-                ...(opts.headers||{})
-              }
-
-            }
-          );
-
-
-        if(!r.ok){
-
-          throw new Error(
-            'GitHub API '+
-            path+
-            ' → '+
-            r.status+
-            ' '+
-            await r.text()
-          );
-
-        }
-
-
-        return r.json();
-
-      };
-
-
-    /*
-      Commit hiện tại.
-    */
-
-    const ref=
-      await api(
-        '/git/ref/heads/'+
-        encodeURIComponent(branch)
-      );
-
-
-    const parentSha=
-      ref.object.sha;
-
-
-    const commit=
-      await api(
-        '/git/commits/'+
-        encodeURIComponent(parentSha)
-      );
-
-
-    const baseTreeSha=
-      commit.tree.sha;
-
-
-    /*
-      Index cũ.
-    */
-
-    let oldEntries=[];
-
-
-    const oldIndex=
-      await ghGet(
-        owner,
-        repo,
-        'index.json',
-        token
-      );
-
-
-    if(oldIndex?.content){
-
-      try{
-
-        const decoded=
-          decodeURIComponent(
-            escape(
-              atob(
-                oldIndex.content
-                  .replace(/\n/g,'')
-              )
-            )
-          );
-
-
-        const old=
-          JSON.parse(decoded);
-
-
-        if(Array.isArray(old)){
-
-          oldEntries=
-            old
-              .map(indexEntry)
-              .filter(Boolean);
-
-        }
-
-      }catch(e){
-
-        throw new Error(
-          'index.json cũ không hợp lệ.'
-        );
-
-      }
-
-    }
-
-
-    const newEntries=
-      prepared.map(
-        x=>({
-
-          mail:x.mail,
-
-          path:x.path
-
-        })
-      );
-
-
-    const newIndexText=
-      JSON.stringify(
-        newEntries,
-        null,
-        2
-      );
-
-
-    /*
-      Checkbox hiện tại.
-    */
-
-    const checksText=
-      JSON.stringify(
-        orderChecks,
-        null,
-        2
-      )+'\n';
-
-
-    showAdmin(
-      '⏳ Đang ghi dataset + checkbox...',
-      true
-    );
-
-
-    /*
-      Data blobs.
-    */
-
-    const blobItems=
-      await Promise.all(
-        prepared.map(
-          async x=>{
-
-            const b=
-              await api(
-                '/git/blobs',
-                {
-                  method:'POST',
-
-                  body:
-                    JSON.stringify({
-
-                      content:x.text,
-
-                      encoding:'utf-8'
-
-                    })
-
-                }
-              );
-
-
-            return {
-
-              path:x.path,
-
-              mode:'100644',
-
-              type:'blob',
-
-              sha:b.sha
-
-            };
-
-          }
-        )
-      );
-
-
-    /*
-      Index blob.
-    */
-
-    const indexBlob=
-      await api(
-        '/git/blobs',
-        {
-          method:'POST',
-
-          body:
-            JSON.stringify({
-
-              content:newIndexText,
-
-              encoding:'utf-8'
-
-            })
-
-        }
-      );
-
-
-    /*
-      Checkbox blob.
-    */
-
-    const checksBlob=
-      await api(
-        '/git/blobs',
-        {
-          method:'POST',
-
-          body:
-            JSON.stringify({
-
-              content:checksText,
-
-              encoding:'utf-8'
-
-            })
-
-        }
-      );
-
-
-    /*
-      Tree.
-    */
-
-    const tree=[];
-
-
-    const newPaths=
-      new Set([
-
-        'index.json',
-
-        CONFIG.checksPath,
-
-        ...prepared.map(
-          x=>x.path
-        )
-
-      ]);
-
-
-    /*
-      Xóa file data cũ.
-    */
-
-    oldEntries.forEach(
-      e=>{
-
-        if(
-          e.path&&
-          !newPaths.has(e.path)
-        ){
-
-          tree.push({
-
-            path:e.path,
-
-            mode:'100644',
-
-            type:'blob',
-
-            sha:null
-
-          });
-
-        }
-
-      }
-    );
-
-
-    /*
-      index.
-    */
-
-    tree.push({
-
-      path:'index.json',
-
-      mode:'100644',
-
-      type:'blob',
-
-      sha:indexBlob.sha
-
-    });
-
-
-    /*
-      checkbox.
-    */
-
-    tree.push({
-
-      path:CONFIG.checksPath,
-
-      mode:'100644',
-
-      type:'blob',
-
-      sha:checksBlob.sha
-
-    });
-
-
-    /*
-      data.
-    */
-
-    blobItems.forEach(
-      x=>
-        tree.push(x)
-    );
-
-
-    const newTree=
-      await api(
-        '/git/trees',
-        {
-          method:'POST',
-
-          body:
-            JSON.stringify({
-
-              base_tree:baseTreeSha,
-
-              tree
-
-            })
-
-        }
-      );
-
-
-    const newCommit=
-      await api(
-        '/git/commits',
-        {
-          method:'POST',
-
-          body:
-            JSON.stringify({
-
-              message:
-                'Replace order dataset and preserve order checks',
-
-              tree:newTree.sha,
-
-              parents:[
-                parentSha
-              ]
-
-            })
-
-        }
-      );
-
-
-    await api(
-      '/git/refs/heads/'+
-      encodeURIComponent(branch),
-      {
-        method:'PATCH',
-
-        body:
-          JSON.stringify({
-
-            sha:newCommit.sha,
-
-            force:false
-
-          })
-
-      }
-    );
-
-
-    /*
-      Cập nhật UI.
-    */
-
-    allOrders=[];
-
-
-    let mails=0;
-
-
-    prepared.forEach(
-      x=>{
-
-        if(
-          x.orders.length||
-          x.mail
-        )
-          mails++;
-
-
-        x.orders.forEach(
-          o=>{
-
-            o.__mail=
-              x.mail;
-
-            allOrders.push(o);
-
-          }
-        );
-
-      }
-    );
-
-
-    allOrders.sort(
-      (a,b)=>
-        new Date(b.created_at)-
-        new Date(a.created_at)
-    );
-
-
-    document.getElementById(
-      'mailCount'
-    ).textContent=mails;
-
-
-    document.getElementById(
-      'deliveredCount'
-    ).textContent=
-      allOrders.filter(
-        o=>
-          String(
-            o.fulfillment_status||''
-          ).toLowerCase()==='fulfilled'
-      ).length;
-
-
-    document.getElementById(
-      'paidCount'
-    ).textContent=
-      allOrders.filter(
-        o=>
-          String(
-            o.financial_status||''
-          ).toLowerCase()==='paid'
-      ).length;
-
-
-    buildProducts();
-
-    applyFilters();
-
-
-    showAdmin(
-      '✅ Upload thành công. Dataset mới đã được ghi và checkbox được giữ theo mã Order.',
-      true
-    );
-
-
-    document.getElementById(
-      'jsonFiles'
-    ).value='';
-
-
-    document.getElementById(
-      'uploadList'
-    ).innerHTML='';
-
-
-  }catch(e){
-
-    showAdmin(
-      '❌ '+esc(e.message),
-      false
-    );
-
-  }
-
-}
-
-
-
-/* =====================================================
-   CSV
-====================================================== */
-
-function csvEsc(v){
-
-  return '"'+
-    String(v??'')
-      .replace(/"/g,'""')+
-    '"';
-
-}
-
-
-function downloadCSV(
-  rows,
-  name
-){
-
-  const blob=
-    new Blob(
-      [
-        '\uFEFF'+
-        rows
-          .map(
-            r=>
-              r
-                .map(csvEsc)
-                .join(',')
-          )
-          .join('\n')
-      ],
-      {
-        type:
-          'text/csv;charset=utf-8'
-      }
-    );
-
-
-  const a=
-    document.createElement(
-      'a'
-    );
-
-
-  a.href=
-    URL.createObjectURL(
-      blob
-    );
-
-
-  a.download=name;
-
-  a.click();
-
-
-  setTimeout(
-    ()=>URL.revokeObjectURL(a.href),
-    500
-  );
-
-}
-
-
-/* =====================================================
-   EXPORT ORDERS
-====================================================== */
-
-function exportOrders(){
-
-  if(!filteredOrders.length){
-
-    alert(
-      'Chưa có dữ liệu phù hợp bộ lọc.'
-    );
-
-    return;
-
-  }
-
-
-  const rows=[
-
-    [
-      'Đã check',
-      'STT',
-      'Mã Order',
-      'Mail',
-      'Ngày giờ',
-      'Trạng thái thanh toán',
-      'Trạng thái giao hàng',
-      'Tên sản phẩm',
-      'Loại sản phẩm',
-      'Số lượng'
-    ]
-
-  ];
-
-
-  filteredOrders.forEach(
-    (o,i)=>{
-
-      const k=
-        orderKey(o);
-
-
-      (
-        o.line_items||[{}]
-      ).forEach(
-        it=>{
-
-          rows.push([
-
-            orderChecks[k]===true
-              ?'YES'
-              :'NO',
-
-            i+1,
-
-            k,
-
-            o.__mail,
-
-            dateFmt(
-              o.created_at
-            ),
-
-            o.financial_status||'',
-
-            o.fulfillment_status||'',
-
-            it.title||'',
-
-            it.variant_title||'',
-
-            it.quantity||0
-
-          ]);
-
-        }
-      );
-
-    }
-  );
-
-
-  downloadCSV(
-    rows,
-    'orders.csv'
-  );
-
-}
-
-
-
-/* =====================================================
-   EXPORT PRODUCTS
-====================================================== */
 
 function exportProducts(){
-
-  if(!productGroups.length){
-
-    alert(
-      'Chưa có sản phẩm từ Order đã thanh toán.'
-    );
-
-    return;
-
-  }
-
-
-  const rows=[
-
-    [
-      'STT',
-      'Tên sản phẩm',
-      'Loại sản phẩm',
-      'Số lượng'
-    ]
-
-  ];
-
-
-  let stt=1;
-
-
-  productGroups.forEach(
-    g=>{
-
-      g.variants.forEach(
-        (v,i)=>{
-
-          rows.push([
-
-            i===0
-              ?stt
-              :'',
-
-            i===0
-              ?g.name
-              :'',
-
-            v.name,
-
-            v.quantity
-
-          ]);
-
-        }
-      );
-
-
-      stt++;
-
-    }
-  );
-
-
-  rows.push([
-
-    '',
-
-    '',
-
-    'TỔNG',
-
-    productGroups.reduce(
-      (s,g)=>
-        s+g.total,
-      0
-    )
-
-  ]);
-
-
-  downloadCSV(
-    rows,
-    'tong-hop-san-pham.csv'
-  );
-
+  if(!productGroups.length){alert('Chưa có sản phẩm từ Order đặt từ 01/07/2026 trở đi.');return;}
+  const rows=[['STT','Tên sản phẩm','Loại sản phẩm','Số lượng','Đơn giá','Thành tiền']]; let stt=1,total=0;
+  productGroups.forEach(g=>{const amount=g.total*g.price; total+=amount; g.variants.forEach((v,i)=>rows.push([i===0?stt:'',i===0?g.name:'',v.name,v.quantity,i===0?g.price:'',i===0?amount:'']));stt++;});
+  rows.push(['','','TỔNG',productGroups.reduce((s,g)=>s+g.total,0),'',total]); downloadCSV(rows,'tong-hop-san-pham.csv');
 }
 
+function exportCards(){
+  if(!cardGroups.length){alert('Chưa có quy tắc card.');return;}
+  const rows=[['STT','SẢN PHẨM','SỐ LƯỢNG CARD']];
+  let stt=1;
+  cardGroups.forEach(g=>{rows.push([stt,g.name.toUpperCase(),g.rule]);stt++;});
+  downloadCSV(rows,'chia-card.csv');
+}
+
+function switchTab(id,btn){
+  document.querySelectorAll('.tab-panel').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));
+  const panel=document.getElementById(id); if(panel)panel.classList.add('active'); if(btn)btn.classList.add('active');
+}
 
 
 /* =====================================================
