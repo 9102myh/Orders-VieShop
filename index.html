@@ -189,10 +189,111 @@ h2{
 }
 
 .filters{
-  display:grid;
-  grid-template-columns:2fr 2fr 1fr 1fr;
+  display:flex;
+  justify-content:flex-end;
+  margin-bottom:12px;
+}
+
+.date-filter{
+  display:flex;
+  align-items:center;
   gap:10px;
-  margin-bottom:14px;
+  padding:12px 14px;
+  background:#f8fafc;
+  border:1px solid #dbe4ef;
+  border-radius:10px;
+  box-shadow:0 1px 3px rgba(15,23,42,.05);
+  flex-wrap:wrap;
+}
+
+.date-filter-title{
+  font-size:13px;
+  font-weight:bold;
+  color:#334155;
+  margin-right:2px;
+}
+
+.date-filter-group{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+.date-filter-label{
+  font-size:12px;
+  font-weight:bold;
+  color:#64748b;
+}
+
+.date-filter input{
+  min-width:205px;
+  padding:9px 10px;
+  border:1px solid #cbd5e1;
+  border-radius:8px;
+  background:#fff;
+  color:#1e293b;
+  font:inherit;
+}
+
+.date-filter input:focus{
+  outline:none;
+  border-color:#2563eb;
+  box-shadow:0 0 0 3px rgba(37,99,235,.10);
+}
+
+.date-arrow{
+  color:#94a3b8;
+  font-weight:bold;
+}
+
+.clear-date{
+  border:1px solid #cbd5e1;
+  background:#fff;
+  color:#475569;
+  border-radius:8px;
+  padding:9px 11px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.clear-date:hover{
+  background:#f1f5f9;
+}
+
+.th-filter{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  min-width:120px;
+}
+
+.th-title{
+  font-size:13px;
+  line-height:1.2;
+}
+
+th .th-filter input,
+th .th-filter select{
+  width:100%;
+  min-width:110px;
+  padding:7px 8px;
+  border:1px solid rgba(255,255,255,.65);
+  border-radius:6px;
+  background:#fff;
+  color:#1e293b;
+  font:inherit;
+  font-size:12px;
+}
+
+th .th-filter input::placeholder{
+  color:#94a3b8;
+}
+
+th .th-filter input:focus,
+th .th-filter select:focus{
+  outline:none;
+  border-color:#fff;
+  box-shadow:0 0 0 2px rgba(255,255,255,.35);
 }
 
 .table-wrap{
@@ -295,6 +396,23 @@ tr:nth-child(even){
   white-space:nowrap;
 }
 
+.selected-count{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  padding:6px 10px;
+  border:1px solid #bbf7d0;
+  border-radius:999px;
+  background:#f0fdf4;
+  color:#166534;
+  font-size:13px;
+  font-weight:600;
+}
+
+.selected-count b{
+  font-size:14px;
+}
+
 
 /* ================= CHECKBOX ================= */
 
@@ -376,9 +494,22 @@ tr:nth-child(even){
 
 @media(max-width:900px){
 
-  .grid,
-  .filters{
+  .grid{
     grid-template-columns:1fr;
+  }
+
+  .date-filter{
+    width:100%;
+    justify-content:flex-start;
+  }
+
+  .date-filter-group{
+    flex:1 1 220px;
+  }
+
+  .date-filter input{
+    min-width:0;
+    width:100%;
   }
 
   .upload-row{
@@ -617,9 +748,14 @@ Mail
 
 <div class="order-meta">
 
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
 <b id="filteredCount">
 Tổng bản ghi: 0
 </b>
+<span class="selected-count" aria-live="polite">
+  ☑ Đã tích chọn: <b id="checkedOrderCount">0</b> Order
+</span>
+</div>
 
 <span
   class="small"
@@ -631,67 +767,40 @@ Tổng bản ghi: 0
 
 <div class="filters">
 
+  <div class="date-filter">
 
-<div class="field">
+    <span class="date-filter-title">🗓 Thời gian đặt</span>
 
-<label>Search Order code</label>
+    <div class="date-filter-group">
+      <span class="date-filter-label">From</span>
+      <input
+        id="dateFrom"
+        type="datetime-local"
+        onchange="applyFilters()"
+      >
+    </div>
 
-<input
-  id="searchOrder"
-  placeholder="Nhập mã Order..."
-  oninput="applyFilters()"
->
+    <span class="date-arrow">→</span>
 
-</div>
+    <div class="date-filter-group">
+      <span class="date-filter-label">To</span>
+      <input
+        id="dateTo"
+        type="datetime-local"
+        onchange="applyFilters()"
+      >
+    </div>
 
+    <button
+      type="button"
+      class="clear-date"
+      onclick="clearDateFilter()"
+      title="Xoá khoảng thời gian"
+    >
+      ✕
+    </button>
 
-<div class="field">
-
-<label>Search Mail</label>
-
-<input
-  id="searchMail"
-  placeholder="Nhập Mail..."
-  oninput="applyFilters()"
->
-
-</div>
-
-
-<div class="field">
-
-<label>Payment status</label>
-
-<select
-  id="paymentFilter"
-  onchange="applyFilters()"
->
-
-<option value="">Tất cả</option>
-<option value="paid">Đã thanh toán</option>
-<option value="pending">Chờ thanh toán</option>
-
-</select>
-
-</div>
-
-
-<div class="field">
-
-<label>Fulfillment status</label>
-
-<select
-  id="fulfillmentFilter"
-  onchange="applyFilters()"
->
-
-<option value="">Tất cả</option>
-<option value="fulfilled">Đã giao hàng</option>
-<option value="notfulfilled">Chưa giao hàng</option>
-
-</select>
-
-</div>
+  </div>
 
 </div>
 
@@ -717,12 +826,73 @@ Tổng bản ghi: 0
 
 <th>✓</th>
 <th>STT</th>
-<th>Order</th>
-<th>Mail</th>
+
+<th>
+  <div class="th-filter">
+    <div class="th-title">Order</div>
+    <input
+      id="searchOrder"
+      type="search"
+      placeholder="Search..."
+      oninput="applyFilters()"
+    >
+  </div>
+</th>
+
+<th>
+  <div class="th-filter">
+    <div class="th-title">Mail</div>
+    <input
+      id="searchMail"
+      type="search"
+      placeholder="Search..."
+      oninput="applyFilters()"
+    >
+  </div>
+</th>
+
 <th>Thời gian đặt</th>
-<th>Thanh toán</th>
-<th>Giao hàng</th>
-<th>Sản phẩm</th>
+
+<th>
+  <div class="th-filter">
+    <div class="th-title">Thanh toán</div>
+    <select
+      id="paymentFilter"
+      onchange="applyFilters()"
+    >
+      <option value="">Tất cả</option>
+      <option value="paid">Đã thanh toán</option>
+      <option value="pending">Chờ thanh toán</option>
+    </select>
+  </div>
+</th>
+
+<th>
+  <div class="th-filter">
+    <div class="th-title">Giao hàng</div>
+    <select
+      id="fulfillmentFilter"
+      onchange="applyFilters()"
+    >
+      <option value="">Tất cả</option>
+      <option value="fulfilled">Đã giao hàng</option>
+      <option value="notfulfilled">Chưa giao hàng</option>
+    </select>
+  </div>
+</th>
+
+<th>
+  <div class="th-filter">
+    <div class="th-title">Sản phẩm</div>
+    <input
+      id="searchProduct"
+      type="search"
+      placeholder="Search..."
+      oninput="applyFilters()"
+    >
+  </div>
+</th>
+
 <th>Số lượng</th>
 
 </tr>
@@ -883,6 +1053,21 @@ function normMail(v){
   return String(v||'')
     .trim()
     .toLowerCase();
+
+}
+
+
+function updateCheckedOrderCount(){
+
+  const count = Object.values(orderChecks)
+    .filter(value => value === true)
+    .length;
+
+  const el = document.getElementById('checkedOrderCount');
+
+  if(el){
+    el.textContent = count.toLocaleString('vi-VN');
+  }
 
 }
 
@@ -1664,6 +1849,16 @@ async function loadData(){
    FILTER
 ====================================================== */
 
+function clearDateFilter(){
+
+  document.getElementById('dateFrom').value='';
+  document.getElementById('dateTo').value='';
+
+  applyFilters();
+
+}
+
+
 function applyFilters(){
 
   const q1=
@@ -1686,6 +1881,40 @@ function applyFilters(){
     .toLowerCase();
 
 
+  const q3=
+    String(
+      document.getElementById(
+        'searchProduct'
+      ).value||''
+    )
+    .trim()
+    .toLowerCase();
+
+
+  const dateFromValue=
+    document.getElementById(
+      'dateFrom'
+    ).value;
+
+
+  const dateToValue=
+    document.getElementById(
+      'dateTo'
+    ).value;
+
+
+  const dateFrom=
+    dateFromValue
+      ? new Date(dateFromValue).getTime()
+      : null;
+
+
+  const dateTo=
+    dateToValue
+      ? new Date(dateToValue).getTime()
+      : null;
+
+
   const p=
     document.getElementById(
       'paymentFilter'
@@ -1696,6 +1925,25 @@ function applyFilters(){
     document.getElementById(
       'fulfillmentFilter'
     ).value;
+
+
+  if(
+    dateFrom!==null &&
+    dateTo!==null &&
+    dateFrom>dateTo
+  ){
+
+    filteredOrders=[];
+
+    document.getElementById(
+      'filteredCount'
+    ).textContent=
+      'Khoảng thời gian không hợp lệ: Từ phải nhỏ hơn hoặc bằng Đến.';
+
+    currentPage=1;
+    renderOrders();
+    return;
+  }
 
 
   filteredOrders=
@@ -1714,6 +1962,50 @@ function applyFilters(){
           String(o.__mail||'')
             .toLowerCase()
             .includes(q2)
+        )
+
+        &&
+
+        (!q3||
+          (Array.isArray(o.line_items) &&
+            o.line_items.some(
+              item=>{
+                const title=
+                  String(item?.title||'')
+                    .trim()
+                    .toLowerCase();
+
+                const variant=
+                  String(item?.variant_title||'')
+                    .trim()
+                    .toLowerCase();
+
+                return (
+                  title.includes(q3) ||
+                  variant.includes(q3) ||
+                  (title+' / '+variant).includes(q3)
+                );
+              }
+            )
+          )
+        )
+
+        &&
+
+        (!dateFrom||
+          (
+            !isNaN(new Date(o.created_at).getTime()) &&
+            new Date(o.created_at).getTime()>=dateFrom
+          )
+        )
+
+        &&
+
+        (!dateTo||
+          (
+            !isNaN(new Date(o.created_at).getTime()) &&
+            new Date(o.created_at).getTime()<=dateTo
+          )
         )
 
         &&
@@ -1748,6 +2040,8 @@ function applyFilters(){
 ====================================================== */
 
 function renderOrders(){
+
+  updateCheckedOrderCount();
 
   const tb=
     document.querySelector(
