@@ -1077,14 +1077,14 @@ Chỉ tổng hợp sản phẩm từ các Order <b>đã thanh toán (financial_s
 <div id="perfumeTab" class="tab-panel">
   <div class="card">
     <h2>🌸 Nước hoa</h2>
-    <p class="small">Tự thêm / sửa / xóa. Tổng tiền = số lượng × giá / 1 sản phẩm.</p>
+    <p class="small">Tự thêm / sửa / xóa. Tổng tiền = số lượng × đơn giá.</p>
     <div class="actions" style="margin-bottom:12px">
       <button class="button btn-add" onclick="addPerfumeRow()">＋ Thêm nước hoa</button>
       <button class="button export" onclick="exportPerfumes()">📥 Export nước hoa</button>
     </div>
     <div class="table-wrap">
       <table id="perfumeTable">
-        <thead><tr><th>STT</th><th>NƯỚC HOA</th><th>SỐ LƯỢNG</th><th>GIÁ / 1 SẢN PHẨM</th><th>THÀNH TIỀN</th><th>Thao tác</th></tr></thead>
+        <thead><tr><th>STT</th><th>NƯỚC HOA</th><th>SỐ LƯỢNG</th><th>ĐƠN GIÁ</th><th>THÀNH TIỀN</th><th>Thao tác</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -1097,14 +1097,14 @@ Chỉ tổng hợp sản phẩm từ các Order <b>đã thanh toán (financial_s
 <div id="voteTab" class="tab-panel">
   <div class="card">
     <h2>🗳️ Mua vote</h2>
-    <p class="small">Tự thêm / sửa / xóa. Tổng tiền = số lượng vote × giá.</p>
+    <p class="small">Tự thêm / sửa / xóa. Tổng tiền = số lượng vote × đơn giá.</p>
     <div class="actions" style="margin-bottom:12px">
       <button class="button btn-add" onclick="addVoteRow()">＋ Thêm lượt vote</button>
       <button class="button export" onclick="exportVotes()">📥 Export mua vote</button>
     </div>
     <div class="table-wrap">
       <table id="voteTable">
-        <thead><tr><th>STT</th><th>SỐ LƯỢNG VOTE</th><th>GIÁ</th><th>THÀNH TIỀN</th><th>Thao tác</th></tr></thead>
+        <thead><tr><th>STT</th><th>SỐ LƯỢNG VOTE</th><th>ĐƠN GIÁ</th><th>THÀNH TIỀN</th><th>Thao tác</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -1297,6 +1297,17 @@ function isAdminMode(){
 
   return location.hash.toLowerCase()==='#admin';
 
+}
+
+function canEditManual(){
+  const token=document.getElementById('ghToken')?.value.trim()||'';
+  return isAdminMode() && !!token;
+}
+
+function requireManualEdit(){
+  if(canEditManual()) return true;
+  showAdmin('🔒 Chỉ Admin có GitHub Token mới được sửa dữ liệu.', false);
+  return false;
 }
 
 
@@ -2987,7 +2998,9 @@ function renderProducts(){
   let stt=1,totalQty=0,totalMoney=0;
   productGroups.forEach(g=>{
     const amount=g.total*g.price; totalMoney+=amount; totalQty+=g.total;
-    const priceInput='<input class=\"edit-input\" type=\"number\" min=\"0\" step=\"1\" value=\"'+esc(g.price)+'\" onchange=\"updateProductPrice('+g._index+',this.value)\">';
+    const priceInput=canEditManual()
+      ? '<input class=\"edit-input\" type=\"number\" min=\"0\" step=\"1\" value=\"'+esc(g.price)+'\" onchange=\"updateProductPrice('+g._index+',this.value)\">'
+      : '<span>'+esc(g.price)+'</span>';
     g.variants.forEach((v,i)=>{
       const tr=document.createElement('tr');
       tr.innerHTML=(i===0?'<td rowspan=\"'+g.variants.length+'\">'+stt+'</td><td rowspan=\"'+g.variants.length+'\"><b>'+esc(g.name)+'</b><div class=\"small\">Tổng: '+g.total+'</div></td>':'')+'<td>'+esc(v.name||'Không có loại')+'</td><td><b>'+v.quantity+'</b></td>'+(i===0?'<td rowspan=\"'+g.variants.length+'\" class=\"price-cell\">'+priceInput+'</td><td rowspan=\"'+g.variants.length+'\" class=\"money-cell\"><b>'+money(amount)+'</b></td>':'');
@@ -3000,6 +3013,7 @@ function renderProducts(){
 }
 
 function updateProductPrice(index,value){
+  if(!requireManualEdit())return;
   const g=productGroups[index]; if(!g)return;
   const price=Math.max(0,Number(value)||0);
   productPriceOverrides[g.name]=price;
@@ -3011,78 +3025,99 @@ function updateProductPrice(index,value){
 
 function renderCards(){
   const tb=document.querySelector('#cardsTable tbody'); if(!tb)return; tb.innerHTML='';
+  const editable=canEditManual();
   cardGroups.forEach((g,i)=>{
     const tr=document.createElement('tr');
     tr.innerHTML='<td>'+(i+1)+'</td>'
-      +'<td><input class=\"edit-input\" type=\"text\" value=\"'+esc(String(g.name||'').toUpperCase())+'\" onchange=\"updateCardRow('+i+',\'name\',this.value)\"></td>'
-      +'<td><input class=\"edit-input\" type=\"text\" value=\"'+esc(String(g.rule||''))+'\" onchange=\"updateCardRow('+i+',\'rule\',this.value)\"></td>'
-      +'<td><button class=\"button btn-danger\" onclick=\"deleteCardRow('+i+')\">🗑 Xóa</button></td>';
+      +'<td>'+(editable
+        ? '<input class="edit-input" type="text" value="'+esc(String(g.name||'').toUpperCase())+'" onchange="updateCardRow('+i+',\'name\',this.value)">'
+        : '<span>'+esc(String(g.name||'').toUpperCase())+'</span>')+'</td>'
+      +'<td>'+(editable
+        ? '<input class="edit-input" type="text" value="'+esc(String(g.rule||''))+'" onchange="updateCardRow('+i+',\'rule\',this.value)">'
+        : '<span>'+esc(String(g.rule||''))+'</span>')+'</td>'
+      +(editable ? '<td><button class="button btn-danger" onclick="deleteCardRow('+i+')">🗑 Xóa</button></td>' : '');
     tb.appendChild(tr);
   });
+  const head=document.querySelector('#cardsTable thead tr');
+  if(head) head.lastElementChild.style.display=editable?'':'none';
   if(!cardGroups.length){
     const tr=document.createElement('tr');
-    tr.innerHTML='<td colspan=\"4\" class=\"small\">Chưa có dữ liệu card. Bấm “Thêm sản phẩm”.</td>';
+    tr.innerHTML='<td colspan="'+(editable?4:3)+'" class="small">'+(editable?'Chưa có dữ liệu card. Bấm “Thêm sản phẩm”.':'Chưa có dữ liệu card.')+'</td>';
     tb.appendChild(tr);
   }
+  const add=document.querySelector('#cardsTable')?.closest('.card')?.querySelector('.btn-add');
+  if(add) add.style.display=editable?'':'none';
 }
-
 function addCardRow(){
+  if(!requireManualEdit())return;
   cardGroups.push({name:'',rule:''});
   saveCardState(); renderCards();
 }
 function updateCardRow(index,key,value){
+  if(!requireManualEdit())return;
   if(!cardGroups[index])return;
   cardGroups[index][key]=key==='name'?String(value||'').toUpperCase():String(value||'');
   saveCardState(); renderCards();
 }
 function deleteCardRow(index){
+  if(!requireManualEdit())return;
   if(!cardGroups[index])return;
   cardGroups.splice(index,1); saveCardState(); renderCards();
 }
 
 function renderPerfumes(){
   const tb=document.querySelector('#perfumeTable tbody'); if(!tb)return; tb.innerHTML='';
+  const editable=canEditManual();
   let total=0;
   perfumes.forEach((p,i)=>{
     const qty=Number(p.qty)||0, price=Number(p.price)||0, amount=qty*price; total+=amount;
     const tr=document.createElement('tr');
     tr.innerHTML='<td>'+(i+1)+'</td>'
-      +'<td><input class=\"edit-input\" type=\"text\" value=\"'+esc(p.name||'')+'\" onchange=\"updatePerfumeRow('+i+',\'name\',this.value)\"></td>'
-      +'<td><input class=\"edit-input\" type=\"number\" min=\"0\" step=\"1\" value=\"'+esc(qty)+'\" onchange=\"updatePerfumeRow('+i+',\'qty\',this.value)\"></td>'
-      +'<td><input class=\"edit-input\" type=\"number\" min=\"0\" step=\"1\" value=\"'+esc(price)+'\" onchange=\"updatePerfumeRow('+i+',\'price\',this.value)\"></td>'
-      +'<td class=\"money-cell\"><b>'+money(amount)+'</b></td>'
-      +'<td><button class=\"button btn-danger\" onclick=\"deletePerfumeRow('+i+')\">🗑 Xóa</button></td>';
+      +'<td>'+(editable?'<input class="edit-input" type="text" value="'+esc(p.name||'')+'" onchange="updatePerfumeRow('+i+',\'name\',this.value)">':'<span>'+esc(p.name||'')+'</span>')+'</td>'
+      +'<td>'+(editable?'<input class="edit-input" type="number" min="0" step="1" value="'+esc(qty)+'" onchange="updatePerfumeRow('+i+',\'qty\',this.value)">':'<span>'+esc(qty)+'</span>')+'</td>'
+      +'<td>'+(editable?'<input class="edit-input" type="number" min="0" step="1" value="'+esc(price)+'" onchange="updatePerfumeRow('+i+',\'price\',this.value)">':'<span>'+esc(price)+'</span>')+'</td>'
+      +'<td class="money-cell"><b>'+money(amount)+'</b></td>'
+      +(editable?'<td><button class="button btn-danger" onclick="deletePerfumeRow('+i+')">🗑 Xóa</button></td>':'');
     tb.appendChild(tr);
   });
   const totalRow=document.createElement('tr');
-  totalRow.innerHTML='<td colspan=\"4\"><b>TỔNG TẤT CẢ NƯỚC HOA</b></td><td class=\"money-cell\"><b>'+money(total)+'</b></td><td></td>';
+  totalRow.innerHTML='<td colspan="4"><b>TỔNG TẤT CẢ NƯỚC HOA</b></td><td class="money-cell"><b>'+money(total)+'</b></td>'+(editable?'<td></td>':'');
   tb.appendChild(totalRow);
+  const head=document.querySelector('#perfumeTable thead tr');
+  if(head) head.lastElementChild.style.display=editable?'':'none';
+  const add=document.querySelector('#perfumeTable')?.closest('.card')?.querySelector('.btn-add');
+  if(add) add.style.display=editable?'':'none';
 }
-function addPerfumeRow(){ perfumes.push({name:'',qty:0,price:0}); savePerfumeState(); renderPerfumes(); updateGrandTotal(); }
-function updatePerfumeRow(index,key,value){ if(!perfumes[index])return; perfumes[index][key]=key==='name'?String(value||''):Number(value)||0; savePerfumeState(); renderPerfumes(); updateGrandTotal(); }
-function deletePerfumeRow(index){ if(!perfumes[index])return; perfumes.splice(index,1); savePerfumeState(); renderPerfumes(); updateGrandTotal(); }
+function addPerfumeRow(){ if(!requireManualEdit())return; perfumes.push({name:'',qty:0,price:0}); savePerfumeState(); renderPerfumes(); updateGrandTotal(); }
+function updatePerfumeRow(index,key,value){ if(!requireManualEdit())return; if(!perfumes[index])return; perfumes[index][key]=key==='name'?String(value||''):Number(value)||0; savePerfumeState(); renderPerfumes(); updateGrandTotal(); }
+function deletePerfumeRow(index){ if(!requireManualEdit())return; if(!perfumes[index])return; perfumes.splice(index,1); savePerfumeState(); renderPerfumes(); updateGrandTotal(); }
 function getPerfumeTotal(){ return perfumes.reduce((sum,p)=>sum+(Number(p.qty)||0)*(Number(p.price)||0),0); }
 
 function renderVotes(){
   const tb=document.querySelector('#voteTable tbody'); if(!tb)return; tb.innerHTML='';
+  const editable=canEditManual();
   let total=0;
   votes.forEach((v,i)=>{
     const qty=Number(v.qty)||0, price=Number(v.price)||0, amount=qty*price; total+=amount;
     const tr=document.createElement('tr');
     tr.innerHTML='<td>'+(i+1)+'</td>'
-      +'<td><input class=\"edit-input\" type=\"number\" min=\"0\" step=\"1\" value=\"'+esc(qty)+'\" onchange=\"updateVoteRow('+i+',\'qty\',this.value)\"></td>'
-      +'<td><input class=\"edit-input\" type=\"number\" min=\"0\" step=\"1\" value=\"'+esc(price)+'\" onchange=\"updateVoteRow('+i+',\'price\',this.value)\"></td>'
-      +'<td class=\"money-cell\"><b>'+money(amount)+'</b></td>'
-      +'<td><button class=\"button btn-danger\" onclick=\"deleteVoteRow('+i+')\">🗑 Xóa</button></td>';
+      +'<td>'+(editable?'<input class="edit-input" type="number" min="0" step="1" value="'+esc(qty)+'" onchange="updateVoteRow('+i+',\'qty\',this.value)">':'<span>'+esc(qty)+'</span>')+'</td>'
+      +'<td>'+(editable?'<input class="edit-input" type="number" min="0" step="1" value="'+esc(price)+'" onchange="updateVoteRow('+i+',\'price\',this.value)">':'<span>'+esc(price)+'</span>')+'</td>'
+      +'<td class="money-cell"><b>'+money(amount)+'</b></td>'
+      +(editable?'<td><button class="button btn-danger" onclick="deleteVoteRow('+i+')">🗑 Xóa</button></td>':'');
     tb.appendChild(tr);
   });
   const totalRow=document.createElement('tr');
-  totalRow.innerHTML='<td><b>TỔNG</b></td><td><b>'+votes.reduce((s,v)=>s+(Number(v.qty)||0),0)+'</b></td><td></td><td class=\"money-cell\"><b>'+money(total)+'</b></td><td></td>';
+  totalRow.innerHTML='<td><b>TỔNG</b></td><td><b>'+votes.reduce((s,v)=>s+(Number(v.qty)||0),0)+'</b></td><td></td><td class="money-cell"><b>'+money(total)+'</b></td>'+(editable?'<td></td>':'');
   tb.appendChild(totalRow);
+  const head=document.querySelector('#voteTable thead tr');
+  if(head) head.lastElementChild.style.display=editable?'':'none';
+  const add=document.querySelector('#voteTable')?.closest('.card')?.querySelector('.btn-add');
+  if(add) add.style.display=editable?'':'none';
 }
-function addVoteRow(){ votes.push({qty:0,price:0}); saveVoteState(); renderVotes(); updateGrandTotal(); }
-function updateVoteRow(index,key,value){ if(!votes[index])return; votes[index][key]=Number(value)||0; saveVoteState(); renderVotes(); updateGrandTotal(); }
-function deleteVoteRow(index){ if(!votes[index])return; votes.splice(index,1); saveVoteState(); renderVotes(); updateGrandTotal(); }
+function addVoteRow(){ if(!requireManualEdit())return; votes.push({qty:0,price:0}); saveVoteState(); renderVotes(); updateGrandTotal(); }
+function updateVoteRow(index,key,value){ if(!requireManualEdit())return; if(!votes[index])return; votes[index][key]=Number(value)||0; saveVoteState(); renderVotes(); updateGrandTotal(); }
+function deleteVoteRow(index){ if(!requireManualEdit())return; if(!votes[index])return; votes.splice(index,1); saveVoteState(); renderVotes(); updateGrandTotal(); }
 function getVoteTotal(){ return votes.reduce((sum,v)=>sum+(Number(v.qty)||0)*(Number(v.price)||0),0); }
 
 function getProductTotal(){ return productGroups.reduce((sum,g)=>sum+(Number(g.total)||0)*(Number(g.price)||0),0); }
@@ -3096,6 +3131,950 @@ function updateGrandTotal(){
   const breakdown=document.getElementById('grandTotalBreakdown');
   if(breakdown)breakdown.textContent='Sản phẩm: '+money(productTotal)+' · Nước hoa: '+money(perfumeTotal)+' · Mua vote: '+money(voteTotal);
 }
+
+/* =====================================================
+   GITHUB API
+====================================================== */
+
+function ghHeaders(token){
+
+  return {
+
+    'Authorization':
+      'Bearer '+token,
+
+    'Accept':
+      'application/vnd.github+json',
+
+    'X-GitHub-Api-Version':
+      '2022-11-28',
+
+    'Content-Type':
+      'application/json'
+
+  };
+
+}
+
+
+async function ghGet(
+  owner,
+  repo,
+  path,
+  token
+){
+
+  const branch=
+    document.getElementById(
+      'ghBranch'
+    ).value.trim();
+
+
+  const url=
+    'https://api.github.com/repos/'+
+    encodeURIComponent(owner)+'/'+
+    encodeURIComponent(repo)+
+    '/contents/'+
+    path
+      .split('/')
+      .map(encodeURIComponent)
+      .join('/')+
+    '?ref='+
+    encodeURIComponent(branch);
+
+
+  const r=
+    await fetch(
+      url,
+      {
+        headers:
+          ghHeaders(token)
+      }
+    );
+
+
+  if(!r.ok){
+
+    if(r.status===404)
+      return null;
+
+
+    throw new Error(
+      'GitHub GET '+
+      path+
+      ' → '+
+      r.status+
+      ' '+
+      await r.text()
+    );
+
+  }
+
+
+  return r.json();
+
+}
+
+
+async function ghPut(
+  owner,
+  repo,
+  path,
+  token,
+  body,
+  sha,
+  msg
+){
+
+  const branch=
+    document.getElementById(
+      'ghBranch'
+    ).value.trim();
+
+
+  const url=
+    'https://api.github.com/repos/'+
+    encodeURIComponent(owner)+'/'+
+    encodeURIComponent(repo)+
+    '/contents/'+
+    path
+      .split('/')
+      .map(encodeURIComponent)
+      .join('/');
+
+
+  const payload={
+
+    message:msg,
+
+    content:
+      btoa(
+        unescape(
+          encodeURIComponent(body)
+        )
+      ),
+
+    branch
+
+  };
+
+
+  if(sha)
+    payload.sha=sha;
+
+
+  const r=
+    await fetch(
+      url,
+      {
+        method:'PUT',
+
+        headers:
+          ghHeaders(token),
+
+        body:
+          JSON.stringify(payload)
+      }
+    );
+
+
+  if(!r.ok){
+
+    throw new Error(
+      'GitHub PUT '+
+      path+
+      ' → '+
+      r.status+
+      ' '+
+      await r.text()
+    );
+
+  }
+
+
+  return r.json();
+
+}
+
+
+
+/* =====================================================
+   UPLOAD FILES
+====================================================== */
+
+function prepareUploadFiles(){
+
+  const files=
+    Array.from(
+      document.getElementById(
+        'jsonFiles'
+      ).files||[]
+    );
+
+
+  const list=
+    document.getElementById(
+      'uploadList'
+    );
+
+
+  if(!files.length){
+
+    list.innerHTML='';
+
+    return;
+
+  }
+
+
+  list.innerHTML=
+
+    '<div class="upload-head">'+
+      files.length+
+      ' file đã chọn — nhập Mail tương ứng'+
+    '</div>'+
+
+    files.map(
+      (f,i)=>`
+
+        <div class="upload-row">
+
+          <div
+            class="upload-file"
+            title="${esc(f.name)}"
+          >
+            📄 ${esc(f.name)}
+          </div>
+
+          <input
+            id="uploadMail_${i}"
+            type="email"
+            placeholder="Mail cho file này"
+          >
+
+        </div>
+
+      `
+    ).join('');
+
+}
+
+
+function getBatchItems(){
+
+  const files=
+    Array.from(
+      document.getElementById(
+        'jsonFiles'
+      ).files||[]
+    );
+
+
+  return files.map(
+    (file,i)=>({
+
+      file,
+
+      mail:
+        normMail(
+          document.getElementById(
+            'uploadMail_'+i
+          )?.value||''
+        )
+
+    })
+  );
+
+}
+
+
+
+/* =====================================================
+   UPLOAD DATASET
+====================================================== */
+
+async function uploadJsonBatch(){
+
+  const owner=
+    document.getElementById(
+      'ghOwner'
+    ).value.trim();
+
+
+  const repo=
+    document.getElementById(
+      'ghRepo'
+    ).value.trim();
+
+
+  const branch=
+    document.getElementById(
+      'ghBranch'
+    ).value.trim();
+
+
+  const token=
+    document.getElementById(
+      'ghToken'
+    ).value.trim();
+
+
+  if(
+    !owner||
+    !repo||
+    !branch||
+    !token
+  ){
+
+    return showAdmin(
+      '❌ Nhập đủ Owner, Repository, Branch và Token.',
+      false
+    );
+
+  }
+
+
+  const items=
+    getBatchItems();
+
+
+  if(!items.length){
+
+    return showAdmin(
+      '❌ Chưa chọn file JSON nào.',
+      false
+    );
+
+  }
+
+
+  const badMail=
+    items.find(
+      x=>
+        !x.mail||
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/
+          .test(x.mail)
+    );
+
+
+  if(badMail){
+
+    return showAdmin(
+      '❌ Mỗi file phải có một Mail hợp lệ.',
+      false
+    );
+
+  }
+
+
+  const mailSet=
+    new Set();
+
+
+  for(const x of items){
+
+    if(mailSet.has(x.mail)){
+
+      return showAdmin(
+        '❌ Mail bị trùng: '+
+        esc(x.mail),
+        false
+      );
+
+    }
+
+
+    mailSet.add(x.mail);
+
+  }
+
+
+  try{
+
+    showAdmin(
+      '⏳ Đang chuẩn bị dữ liệu...',
+      true
+    );
+
+
+    const prepared=[];
+
+
+    for(const x of items){
+
+      const text=
+        await x.file.text();
+
+
+      let parsed;
+
+
+      try{
+
+        parsed=
+          JSON.parse(text);
+
+      }catch(e){
+
+        throw new Error(
+          'File '+
+          x.file.name+
+          ' không phải JSON hợp lệ.'
+        );
+
+      }
+
+
+      const orders=
+        extractOrders(parsed);
+
+
+      if(!orders.length){
+
+        throw new Error(
+          'File '+
+          x.file.name+
+          ' không có orders hợp lệ.'
+        );
+
+      }
+
+
+      prepared.push({
+
+        mail:x.mail,
+
+        text,
+
+        path:
+          'data/'+
+          x.mail+
+          '.json',
+
+        orders
+
+      });
+
+    }
+
+
+    const apiBase=
+      'https://api.github.com/repos/'+
+      encodeURIComponent(owner)+'/'+
+      encodeURIComponent(repo);
+
+
+    const headers=
+      ghHeaders(token);
+
+
+    const api=
+      async(
+        path,
+        opts={}
+      )=>{
+
+        const r=
+          await fetch(
+            apiBase+path,
+            {
+              ...opts,
+
+              headers:{
+                ...headers,
+                ...(opts.headers||{})
+              }
+
+            }
+          );
+
+
+        if(!r.ok){
+
+          throw new Error(
+            'GitHub API '+
+            path+
+            ' → '+
+            r.status+
+            ' '+
+            await r.text()
+          );
+
+        }
+
+
+        return r.json();
+
+      };
+
+
+    /*
+      Commit hiện tại.
+    */
+
+    const ref=
+      await api(
+        '/git/ref/heads/'+
+        encodeURIComponent(branch)
+      );
+
+
+    const parentSha=
+      ref.object.sha;
+
+
+    const commit=
+      await api(
+        '/git/commits/'+
+        encodeURIComponent(parentSha)
+      );
+
+
+    const baseTreeSha=
+      commit.tree.sha;
+
+
+    /*
+      Index cũ.
+    */
+
+    let oldEntries=[];
+
+
+    const oldIndex=
+      await ghGet(
+        owner,
+        repo,
+        'index.json',
+        token
+      );
+
+
+    if(oldIndex?.content){
+
+      try{
+
+        const decoded=
+          decodeURIComponent(
+            escape(
+              atob(
+                oldIndex.content
+                  .replace(/\n/g,'')
+              )
+            )
+          );
+
+
+        const old=
+          JSON.parse(decoded);
+
+
+        if(Array.isArray(old)){
+
+          oldEntries=
+            old
+              .map(indexEntry)
+              .filter(Boolean);
+
+        }
+
+      }catch(e){
+
+        throw new Error(
+          'index.json cũ không hợp lệ.'
+        );
+
+      }
+
+    }
+
+
+    const newEntries=
+      prepared.map(
+        x=>({
+
+          mail:x.mail,
+
+          path:x.path
+
+        })
+      );
+
+
+    const newIndexText=
+      JSON.stringify(
+        newEntries,
+        null,
+        2
+      );
+
+
+    /*
+      Checkbox hiện tại.
+    */
+
+    const checksText=
+      JSON.stringify(
+        orderChecks,
+        null,
+        2
+      )+'\n';
+
+
+    showAdmin(
+      '⏳ Đang ghi dataset + checkbox...',
+      true
+    );
+
+
+    /*
+      Data blobs.
+    */
+
+    const blobItems=
+      await Promise.all(
+        prepared.map(
+          async x=>{
+
+            const b=
+              await api(
+                '/git/blobs',
+                {
+                  method:'POST',
+
+                  body:
+                    JSON.stringify({
+
+                      content:x.text,
+
+                      encoding:'utf-8'
+
+                    })
+
+                }
+              );
+
+
+            return {
+
+              path:x.path,
+
+              mode:'100644',
+
+              type:'blob',
+
+              sha:b.sha
+
+            };
+
+          }
+        )
+      );
+
+
+    /*
+      Index blob.
+    */
+
+    const indexBlob=
+      await api(
+        '/git/blobs',
+        {
+          method:'POST',
+
+          body:
+            JSON.stringify({
+
+              content:newIndexText,
+
+              encoding:'utf-8'
+
+            })
+
+        }
+      );
+
+
+    /*
+      Checkbox blob.
+    */
+
+    const checksBlob=
+      await api(
+        '/git/blobs',
+        {
+          method:'POST',
+
+          body:
+            JSON.stringify({
+
+              content:checksText,
+
+              encoding:'utf-8'
+
+            })
+
+        }
+      );
+
+
+    /*
+      Tree.
+    */
+
+    const tree=[];
+
+
+    const newPaths=
+      new Set([
+
+        'index.json',
+
+        CONFIG.checksPath,
+
+        ...prepared.map(
+          x=>x.path
+        )
+
+      ]);
+
+
+    /*
+      Xóa file data cũ.
+    */
+
+    oldEntries.forEach(
+      e=>{
+
+        if(
+          e.path&&
+          !newPaths.has(e.path)
+        ){
+
+          tree.push({
+
+            path:e.path,
+
+            mode:'100644',
+
+            type:'blob',
+
+            sha:null
+
+          });
+
+        }
+
+      }
+    );
+
+
+    /*
+      index.
+    */
+
+    tree.push({
+
+      path:'index.json',
+
+      mode:'100644',
+
+      type:'blob',
+
+      sha:indexBlob.sha
+
+    });
+
+
+    /*
+      checkbox.
+    */
+
+    tree.push({
+
+      path:CONFIG.checksPath,
+
+      mode:'100644',
+
+      type:'blob',
+
+      sha:checksBlob.sha
+
+    });
+
+
+    /*
+      data.
+    */
+
+    blobItems.forEach(
+      x=>
+        tree.push(x)
+    );
+
+
+    const newTree=
+      await api(
+        '/git/trees',
+        {
+          method:'POST',
+
+          body:
+            JSON.stringify({
+
+              base_tree:baseTreeSha,
+
+              tree
+
+            })
+
+        }
+      );
+
+
+    const newCommit=
+      await api(
+        '/git/commits',
+        {
+          method:'POST',
+
+          body:
+            JSON.stringify({
+
+              message:
+                'Replace order dataset and preserve order checks',
+
+              tree:newTree.sha,
+
+              parents:[
+                parentSha
+              ]
+
+            })
+
+        }
+      );
+
+
+    await api(
+      '/git/refs/heads/'+
+      encodeURIComponent(branch),
+      {
+        method:'PATCH',
+
+        body:
+          JSON.stringify({
+
+            sha:newCommit.sha,
+
+            force:false
+
+          })
+
+      }
+    );
+
+
+    /*
+      Cập nhật UI từ GitHub sau khi commit,
+      để cutoff 01/07/2026 và toàn bộ tab được tính lại.
+    */
+
+    await loadData();
+
+
+    showAdmin(
+      '✅ Upload thành công. Dataset mới đã được ghi và checkbox được giữ theo mã Order.',
+      true
+    );
+
+
+    document.getElementById(
+      'jsonFiles'
+    ).value='';
+
+
+    document.getElementById(
+      'uploadList'
+    ).innerHTML='';
+
+
+  }catch(e){
+
+    showAdmin(
+      '❌ '+esc(e.message),
+      false
+    );
+
+  }
+
+}
+
+
+
+
+
+function csvEsc(v){
+
+  return '"'+
+    String(v??'')
+      .replace(/"/g,'""')+
+    '"';
+
+}
+
+
+function downloadCSV(
+  rows,
+  name
+){
+
+  const blob=
+    new Blob(
+      [
+        '\uFEFF'+
+        rows
+          .map(
+            r=>
+              r
+                .map(csvEsc)
+                .join(',')
+          )
+          .join('\n')
+      ],
+      {
+        type:
+          'text/csv;charset=utf-8'
+      }
+    );
+
+
+  const a=
+    document.createElement(
+      'a'
+    );
+
+
+  a.href=
+    URL.createObjectURL(
+      blob
+    );
+
+
+  a.download=name;
+
+  a.click();
+
+
+  setTimeout(
+    ()=>URL.revokeObjectURL(a.href),
+    500
+  );
+
+}
+
+
+
 
 function exportProducts(){
   if(!productGroups.length){alert('Chưa có sản phẩm từ Order đặt từ 01/07/2026 trở đi.');return;}
@@ -3113,14 +4092,14 @@ function exportCards(){
 }
 
 function exportPerfumes(){
-  const rows=[['STT','NƯỚC HOA','SỐ LƯỢNG','GIÁ / 1 SẢN PHẨM','THÀNH TIỀN']];
+  const rows=[['STT','NƯỚC HOA','SỐ LƯỢNG','ĐƠN GIÁ','THÀNH TIỀN']];
   perfumes.forEach((p,i)=>rows.push([i+1,p.name,Number(p.qty)||0,Number(p.price)||0,(Number(p.qty)||0)*(Number(p.price)||0)]));
   rows.push(['','TỔNG','','',getPerfumeTotal()]);
   downloadCSV(rows,'nuoc-hoa.csv');
 }
 
 function exportVotes(){
-  const rows=[['STT','SỐ LƯỢNG VOTE','GIÁ','THÀNH TIỀN']];
+  const rows=[['STT','SỐ LƯỢNG VOTE','ĐƠN GIÁ','THÀNH TIỀN']];
   votes.forEach((v,i)=>rows.push([i+1,Number(v.qty)||0,Number(v.price)||0,(Number(v.qty)||0)*(Number(v.price)||0)]));
   rows.push(['TỔNG',votes.reduce((s,v)=>s+(Number(v.qty)||0),0),'',getVoteTotal()]);
   downloadCSV(rows,'mua-vote.csv');
@@ -3171,6 +4150,10 @@ function applyRoute(){
   ){
 
     renderOrders();
+    renderProducts();
+    renderCards();
+    renderPerfumes();
+    renderVotes();
 
   }
 
@@ -3228,6 +4211,10 @@ document.addEventListener(
         */
 
         renderOrders();
+        renderProducts();
+        renderCards();
+        renderPerfumes();
+        renderVotes();
 
       }
     );
