@@ -501,6 +501,48 @@ tr:nth-child(even){
 .tab-panel.active{display:block}
 .price-cell,.money-cell{text-align:right;white-space:nowrap}
 .card-count-cell{text-align:center;font-weight:bold}
+.edit-input{
+  width:100%;
+  min-width:120px;
+  padding:7px 9px;
+  border:1px solid #cbd5e1;
+  border-radius:7px;
+  background:#fff;
+  color:#1e293b;
+  font:inherit;
+}
+.edit-input:focus{
+  outline:none;
+  border-color:#2563eb;
+  box-shadow:0 0 0 2px rgba(37,99,235,.12);
+}
+.crud-actions{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.btn-add{background:#16a34a;color:#fff}
+.btn-danger{background:#dc2626;color:#fff}
+.btn-save{background:#0f766e;color:#fff}
+.total-highlight{
+  font-size:18px;
+  font-weight:800;
+  color:#166534;
+}
+.sub-total-note{
+  margin-top:10px;
+  padding:10px 12px;
+  border:1px solid #dbeafe;
+  background:#eff6ff;
+  border-radius:8px;
+  font-size:13px;
+  color:#1e40af;
+}
+@media(max-width:900px){
+  .edit-input{min-width:100px}
+}
+
 
 @media(max-width:900px){
 
@@ -743,7 +785,24 @@ Mail
 
 </div>
 
+<div class="summary-box" style="min-width:250px">
+
+<div
+  id="grandTotal"
+  class="summary-number total-highlight"
+>
+0đ
 </div>
+
+<div class="summary-label">
+Tổng tiền
+</div>
+
+</div>
+
+</div>
+
+<div id="grandTotalBreakdown" class="sub-total-note">Sản phẩm: 0đ · Nước hoa: 0đ · Mua vote: 0đ</div>
 
 </div>
 
@@ -756,6 +815,8 @@ Mail
   <button class="tab-btn active" data-tab="ordersTab" onclick="switchTab('ordersTab',this)">📦 Danh sách Order</button>
   <button class="tab-btn" data-tab="productsTab" onclick="switchTab('productsTab',this)">🛍️ Tổng hợp sản phẩm</button>
   <button class="tab-btn" data-tab="cardsTab" onclick="switchTab('cardsTab',this)">🎴 Chia card</button>
+  <button class="tab-btn" data-tab="perfumeTab" onclick="switchTab('perfumeTab',this)">🌸 Nước hoa</button>
+  <button class="tab-btn" data-tab="voteTab" onclick="switchTab('voteTab',this)">🗳️ Mua vote</button>
 </div>
 
 <div id="ordersTab" class="tab-panel active">
@@ -951,9 +1012,8 @@ Tổng bản ghi: 0
 <h2>🛍️ Tổng hợp sản phẩm</h2>
 
 <p class="small">
-Chỉ tổng hợp sản phẩm từ các Order <b>đã thanh toán (financial_status = paid)</b> và đặt từ <b>01/07/2026</b> trở đi. Giá và thành tiền được tính theo bảng giá đã cấu hình.
+Chỉ tổng hợp sản phẩm từ các Order <b>đã thanh toán (financial_status = paid)</b> và đặt từ <b>01/07/2026</b> trở đi. Đơn giá có thể sửa trực tiếp trong bảng; thay đổi được lưu trên trình duyệt.
 </p>
-
 
 <button
   class="button export"
@@ -961,7 +1021,6 @@ Chỉ tổng hợp sản phẩm từ các Order <b>đã thanh toán (financial_s
 >
 📥 Export tổng hợp sản phẩm
 </button>
-
 
 <div
   class="table-wrap"
@@ -998,11 +1057,54 @@ Chỉ tổng hợp sản phẩm từ các Order <b>đã thanh toán (financial_s
 <div id="cardsTab" class="tab-panel">
   <div class="card">
     <h2>🎴 Chia card</h2>
-    <p class="small">Số lượng card hiển thị đúng theo quy tắc m đã cấu hình (ví dụ: 1 hoặc 3 card No.8, 2 card No.7...). Không nhân theo số lượng sản phẩm.</p>
-    <button class="button export" onclick="exportCards()">📥 Export chia card</button>
-    <div class="table-wrap" style="margin-top:12px">
+    <p class="small">Tự thêm / sửa / xóa. Cả <b>Sản phẩm</b> và <b>Số lượng card</b> đều là ô nhập chữ (string). Nội dung mặc định là đúng quy tắc card m đã gửi.</p>
+    <div class="actions" style="margin-bottom:12px">
+      <button class="button btn-add" onclick="addCardRow()">＋ Thêm sản phẩm</button>
+      <button class="button export" onclick="exportCards()">📥 Export chia card</button>
+    </div>
+    <div class="table-wrap">
       <table id="cardsTable">
-        <thead><tr><th>STT</th><th>SẢN PHẨM</th><th>SỐ LƯỢNG CARD</th></tr></thead>
+        <thead><tr><th>STT</th><th>SẢN PHẨM</th><th>SỐ LƯỢNG CARD</th><th>Thao tác</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================
+     PERFUME
+====================================================== -->
+<div id="perfumeTab" class="tab-panel">
+  <div class="card">
+    <h2>🌸 Nước hoa</h2>
+    <p class="small">Tự thêm / sửa / xóa. Tổng tiền = số lượng × giá / 1 sản phẩm.</p>
+    <div class="actions" style="margin-bottom:12px">
+      <button class="button btn-add" onclick="addPerfumeRow()">＋ Thêm nước hoa</button>
+      <button class="button export" onclick="exportPerfumes()">📥 Export nước hoa</button>
+    </div>
+    <div class="table-wrap">
+      <table id="perfumeTable">
+        <thead><tr><th>STT</th><th>NƯỚC HOA</th><th>SỐ LƯỢNG</th><th>GIÁ / 1 SẢN PHẨM</th><th>THÀNH TIỀN</th><th>Thao tác</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================
+     VOTE
+====================================================== -->
+<div id="voteTab" class="tab-panel">
+  <div class="card">
+    <h2>🗳️ Mua vote</h2>
+    <p class="small">Tự thêm / sửa / xóa. Tổng tiền = số lượng vote × giá.</p>
+    <div class="actions" style="margin-bottom:12px">
+      <button class="button btn-add" onclick="addVoteRow()">＋ Thêm lượt vote</button>
+      <button class="button export" onclick="exportVotes()">📥 Export mua vote</button>
+    </div>
+    <div class="table-wrap">
+      <table id="voteTable">
+        <thead><tr><th>STT</th><th>SỐ LƯỢNG VOTE</th><th>GIÁ</th><th>THÀNH TIỀN</th><th>Thao tác</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -1055,6 +1157,16 @@ let filteredOrders=[];
 
 let productGroups=[];
 let cardGroups=[];
+let perfumes=[];
+let votes=[];
+let productPriceOverrides={};
+
+const STORAGE_KEYS={
+  cardGroups:'sfc_card_groups_v2',
+  perfumes:'sfc_perfumes_v1',
+  votes:'sfc_votes_v1',
+  productPrices:'sfc_product_prices_v2'
+};
 
 let orderChecks={};
 
@@ -1870,6 +1982,7 @@ async function loadData(){
 
 
     buildProducts();
+    updateGrandTotal();
 
     applyFilters();
 
@@ -2731,6 +2844,69 @@ function renderPagination(){
 
 
 /* =====================================================
+   MANUAL TABLES / LOCAL STORAGE
+====================================================== */
+
+const DEFAULT_CARD_RULES={
+  'TINH HÀ "SAY HI" Tote bag (Túi tote) / TOGETHER WE SHINE':'1 hoặc 3 card No.8',
+  'TINH HÀ "SAY HI" T-shirt (Áo thun) / TOGETHER WE SHINE 2':'2 hoặc 4 card No.8',
+  'TINH HÀ "SAY HI" Notebook (Sổ tay ghi chú) / TOGETHER WE SHINE':'1 card No.8',
+  'TINH HÀ "SAY HI" T-shirt (Áo thun) / TOGETHER WE SHINE':'4 card No.6',
+  'TINH HÀ "SAY HI" - File Ảnh Lời bài hát':'0 card',
+  'TINH HÀ "SAY HI" Cap (Nón kết) / TOGETHER WE SHINE':'1 hoặc 2 card No.8',
+  'Sách ảnh Liên Quân 2 (Photobook): Tinh Hà "Say Hi" – Together We Shine':'5 card No.6',
+  'TINH HÀ "SAY HI" Bandana (Khăn lụa) / TOGETHER WE SHINE':'2 card No.5',
+  'TINH HÀ "SAY HI" Jersey (Áo thun lưới) / TOGETHER WE SHINE':'4 card No.6',
+  'TINH HÀ "SAY HI" Body Fit T-Shirt (Áo thun ôm) / TOGETHER WE SHINE 2':'4 card No.6',
+  'TINH HÀ "SAY HI" Lanyard & cardholder set (Bộ dây đeo thẻ) / TOGETHER WE SHINE 2':'1 card No.8',
+  'TINH HÀ "SAY HI" Bandana (Khăn lụa) / TOGETHER WE SHINE 2':'1 hoặc 2 card No.8',
+  'TINH HÀ "SAY HI" Bandana (Khăn lụa) / TOGETHER WE SHINE - EP2':'2 card No.7',
+  'TINH HÀ "SAY HI" Bandana (Khăn lụa) / TOGETHER WE SHINE - EP1':'2 card No.7',
+  'TINH HÀ "SAY HI" T-shirt (Áo thun) / STARDUST':'3 card No.5',
+  'TINH HÀ "SAY HI" Crop-top/Babytee (Áo thun lửng) / STARDUST':'3 card No.5',
+  'TINH HÀ "SAY HI" Bandana (Khăn lụa) / ECLIPSE':'2 card No.5',
+  'TINH HÀ “SAY HI” - File Ảnh Mascot':'0 card',
+  'TINH HÀ "SAY HI" Figure (Mô hình) / GRAVITY - 10cm':'4 card No.5',
+  'Sách ảnh Liên Quân 1 (Photobook): Tinh Hà "Say Hi" – Together We Shine':'5 card No.6',
+  'TINH HÀ "SAY HI" Adult Sports Set (Bộ đồ thể thao) / STARDUST':'7 card No.7',
+  'TINH HÀ "SAY HI" / TOGETHER WE SHINE - CORE FAN (Bộ sản phẩm)':'0 card',
+  'TINH HÀ "SAY HI" Lightstick (Gậy cổ vũ) / TOGETHER WE SHINE':'3 hoặc 5 card No.8',
+  'TINH HÀ "SAY HI" Washed T-shirt (áo wash) / TOGETHER WE SHINE':'4 card No.6',
+  'TINH HÀ "SAY HI" Body Fit T-Shirt (Áo thun ôm) / TOGETHER WE SHINE 1':'4 card No.6',
+  'TINH HÀ "SAY HI" Lanyard & cardholder set (Bộ dây đeo thẻ) / TOGETHER WE SHINE':'1 card No.6',
+  'TINH HÀ "SAY HI" Polo Shirt (Áo polo) / TOGETHER WE SHINE':'5 card No.6',
+  'TINH HÀ "SAY HI" Long-sleeved T-shirt (Áo thun tay dài) / STARDUST':'3 card No.6'
+};
+
+function loadLocal(key,fallback){
+  try{
+    const raw=localStorage.getItem(key);
+    return raw===null?fallback:JSON.parse(raw);
+  }catch(e){ return fallback; }
+}
+function saveLocal(key,value){
+  localStorage.setItem(key,JSON.stringify(value));
+}
+function initManualState(){
+  const storedCards=loadLocal(STORAGE_KEYS.cardGroups,null);
+  cardGroups=storedCards===null
+    ? Object.entries(DEFAULT_CARD_RULES).map(([name,rule])=>({name,rule}))
+    : (Array.isArray(storedCards)?storedCards:[]);
+  const storedPerfumes=loadLocal(STORAGE_KEYS.perfumes,null);
+  perfumes=storedPerfumes===null?[]:(Array.isArray(storedPerfumes)?storedPerfumes:[]);
+  const storedVotes=loadLocal(STORAGE_KEYS.votes,null);
+  votes=storedVotes===null?[]:(Array.isArray(storedVotes)?storedVotes:[]);
+  const storedPrices=loadLocal(STORAGE_KEYS.productPrices,null);
+  productPriceOverrides=storedPrices && typeof storedPrices==='object' && !Array.isArray(storedPrices)?storedPrices:{};
+}
+
+function saveCardState(){ saveLocal(STORAGE_KEYS.cardGroups,cardGroups); }
+function savePerfumeState(){ saveLocal(STORAGE_KEYS.perfumes,perfumes); }
+function saveVoteState(){ saveLocal(STORAGE_KEYS.votes,votes); }
+
+initManualState();
+
+/* =====================================================
    PRODUCTS
 ====================================================== */
 
@@ -2766,41 +2942,15 @@ function productPrice(name){
     'TINH HÀ "SAY HI" Polo Shirt (Áo polo) / TOGETHER WE SHINE':590000,
     'TINH HÀ "SAY HI" Long-sleeved T-shirt (Áo thun tay dài) / STARDUST':469000
   };
-  return prices[String(name||'').trim()] ?? 0;
+  const key=String(name||'').trim();
+  return Object.prototype.hasOwnProperty.call(productPriceOverrides,key)
+    ? Number(productPriceOverrides[key]||0)
+    : (prices[key] ?? 0);
 }
 
 function cardRuleText(name){
-  const rules={
-    'TINH HÀ "SAY HI" Tote bag (Túi tote) / TOGETHER WE SHINE':'1 hoặc 3 card No.8',
-    'TINH HÀ "SAY HI" T-shirt (Áo thun) / TOGETHER WE SHINE 2':'2 hoặc 4 card No.8',
-    'TINH HÀ "SAY HI" Notebook (Sổ tay ghi chú) / TOGETHER WE SHINE':'1 card No.8',
-    'TINH HÀ "SAY HI" T-shirt (Áo thun) / TOGETHER WE SHINE':'4 card No.6',
-    'TINH HÀ "SAY HI" - File Ảnh Lời bài hát':'0 card',
-    'TINH HÀ "SAY HI" Cap (Nón kết) / TOGETHER WE SHINE':'1 hoặc 2 card No.8',
-    'Sách ảnh Liên Quân 2 (Photobook): Tinh Hà "Say Hi" – Together We Shine':'5 card No.6',
-    'TINH HÀ "SAY HI" Bandana (Khăn lụa) / TOGETHER WE SHINE':'2 card No.5',
-    'TINH HÀ "SAY HI" Jersey (Áo thun lưới) / TOGETHER WE SHINE':'4 card No.6',
-    'TINH HÀ "SAY HI" Body Fit T-Shirt (Áo thun ôm) / TOGETHER WE SHINE 2':'4 card No.6',
-    'TINH HÀ "SAY HI" Lanyard & cardholder set (Bộ dây đeo thẻ) / TOGETHER WE SHINE 2':'1 card No.8',
-    'TINH HÀ "SAY HI" Bandana (Khăn lụa) / TOGETHER WE SHINE 2':'1 hoặc 2 card No.8',
-    'TINH HÀ "SAY HI" Bandana (Khăn lụa) / TOGETHER WE SHINE - EP2':'2 card No.7',
-    'TINH HÀ "SAY HI" Bandana (Khăn lụa) / TOGETHER WE SHINE - EP1':'2 card No.7',
-    'TINH HÀ "SAY HI" T-shirt (Áo thun) / STARDUST':'3 card No.5',
-    'TINH HÀ "SAY HI" Crop-top/Babytee (Áo thun lửng) / STARDUST':'3 card No.5',
-    'TINH HÀ "SAY HI" Bandana (Khăn lụa) / ECLIPSE':'2 card No.5',
-    'TINH HÀ “SAY HI” - File Ảnh Mascot':'0 card',
-    'TINH HÀ "SAY HI" Figure (Mô hình) / GRAVITY - 10cm':'4 card No.5',
-    'Sách ảnh Liên Quân 1 (Photobook): Tinh Hà "Say Hi" – Together We Shine':'5 card No.6',
-    'TINH HÀ "SAY HI" Adult Sports Set (Bộ đồ thể thao) / STARDUST':'7 card No.7',
-    'TINH HÀ "SAY HI" / TOGETHER WE SHINE - CORE FAN (Bộ sản phẩm)':'0 card',
-    'TINH HÀ "SAY HI" Lightstick (Gậy cổ vũ) / TOGETHER WE SHINE':'3 hoặc 5 card No.8',
-    'TINH HÀ "SAY HI" Washed T-shirt (áo wash) / TOGETHER WE SHINE':'4 card No.6',
-    'TINH HÀ "SAY HI" Body Fit T-Shirt (Áo thun ôm) / TOGETHER WE SHINE 1':'4 card No.6',
-    'TINH HÀ "SAY HI" Lanyard & cardholder set (Bộ dây đeo thẻ) / TOGETHER WE SHINE':'1 card No.6',
-    'TINH HÀ "SAY HI" Polo Shirt (Áo polo) / TOGETHER WE SHINE':'5 card No.6',
-    'TINH HÀ "SAY HI" Long-sleeved T-shirt (Áo thun tay dài) / STARDUST':'3 card No.6'
-  };
-  return rules[String(name||'').trim()] ?? '';
+  const row=cardGroups.find(g=>String(g.name||'').trim()===String(name||'').trim());
+  return row ? String(row.rule||'') : '';
 }
 
 function money(v){ return Number(v||0).toLocaleString('vi-VN')+'đ'; }
@@ -2824,64 +2974,127 @@ function buildProducts(){
   });
   productGroups.sort((a,b)=>a.name.localeCompare(b.name,'vi'));
 
-  const cardNames=Object.keys({
-    'TINH HÀ "SAY HI" Tote bag (Túi tote) / TOGETHER WE SHINE':1,
-    'TINH HÀ "SAY HI" T-shirt (Áo thun) / TOGETHER WE SHINE 2':1,
-    'TINH HÀ "SAY HI" Notebook (Sổ tay ghi chú) / TOGETHER WE SHINE':1,
-    'TINH HÀ "SAY HI" T-shirt (Áo thun) / TOGETHER WE SHINE':1,
-    'TINH HÀ "SAY HI" - File Ảnh Lời bài hát':1,
-    'TINH HÀ "SAY HI" Cap (Nón kết) / TOGETHER WE SHINE':1,
-    'Sách ảnh Liên Quân 2 (Photobook): Tinh Hà "Say Hi" – Together We Shine':1,
-    'TINH HÀ "SAY HI" Bandana (Khăn lụa) / TOGETHER WE SHINE':1,
-    'TINH HÀ "SAY HI" Jersey (Áo thun lưới) / TOGETHER WE SHINE':1,
-    'TINH HÀ "SAY HI" Body Fit T-Shirt (Áo thun ôm) / TOGETHER WE SHINE 2':1,
-    'TINH HÀ "SAY HI" Lanyard & cardholder set (Bộ dây đeo thẻ) / TOGETHER WE SHINE 2':1,
-    'TINH HÀ "SAY HI" Bandana (Khăn lụa) / TOGETHER WE SHINE 2':1,
-    'TINH HÀ "SAY HI" Bandana (Khăn lụa) / TOGETHER WE SHINE - EP2':1,
-    'TINH HÀ "SAY HI" Bandana (Khăn lụa) / TOGETHER WE SHINE - EP1':1,
-    'TINH HÀ "SAY HI" T-shirt (Áo thun) / STARDUST':1,
-    'TINH HÀ "SAY HI" Crop-top/Babytee (Áo thun lửng) / STARDUST':1,
-    'TINH HÀ "SAY HI" Bandana (Khăn lụa) / ECLIPSE':1,
-    'TINH HÀ “SAY HI” - File Ảnh Mascot':1,
-    'TINH HÀ "SAY HI" Figure (Mô hình) / GRAVITY - 10cm':1,
-    'Sách ảnh Liên Quân 1 (Photobook): Tinh Hà "Say Hi" – Together We Shine':1,
-    'TINH HÀ "SAY HI" Adult Sports Set (Bộ đồ thể thao) / STARDUST':1,
-    'TINH HÀ "SAY HI" / TOGETHER WE SHINE - CORE FAN (Bộ sản phẩm)':1,
-    'TINH HÀ "SAY HI" Lightstick (Gậy cổ vũ) / TOGETHER WE SHINE':1,
-    'TINH HÀ "SAY HI" Washed T-shirt (áo wash) / TOGETHER WE SHINE':1,
-    'TINH HÀ "SAY HI" Body Fit T-Shirt (Áo thun ôm) / TOGETHER WE SHINE 1':1,
-    'TINH HÀ "SAY HI" Lanyard & cardholder set (Bộ dây đeo thẻ) / TOGETHER WE SHINE':1,
-    'TINH HÀ "SAY HI" Polo Shirt (Áo polo) / TOGETHER WE SHINE':1,
-    'TINH HÀ "SAY HI" Long-sleeved T-shirt (Áo thun tay dài) / STARDUST':1
-  });
-  cardGroups=cardNames.map(name=>({name,rule:cardRuleText(name)}));
-  renderProducts(); renderCards();
+  productGroups.forEach((g,idx)=>g._index=idx);
+  renderProducts();
+  renderCards();
+  renderPerfumes();
+  renderVotes();
+  updateGrandTotal();
 }
 
 function renderProducts(){
-  const tb=document.querySelector('#productsTable tbody'); tb.innerHTML='';
+  const tb=document.querySelector('#productsTable tbody'); if(!tb)return; tb.innerHTML='';
   let stt=1,totalQty=0,totalMoney=0;
   productGroups.forEach(g=>{
     const amount=g.total*g.price; totalMoney+=amount; totalQty+=g.total;
+    const priceInput='<input class=\"edit-input\" type=\"number\" min=\"0\" step=\"1\" value=\"'+esc(g.price)+'\" onchange=\"updateProductPrice('+g._index+',this.value)\">';
     g.variants.forEach((v,i)=>{
       const tr=document.createElement('tr');
-      tr.innerHTML=(i===0?'<td rowspan="'+g.variants.length+'">'+stt+'</td><td rowspan="'+g.variants.length+'"><b>'+esc(g.name)+'</b><div class="small">Tổng: '+g.total+'</div></td>':'')+'<td>'+esc(v.name||'Không có loại')+'</td><td><b>'+v.quantity+'</b></td>'+(i===0?'<td rowspan="'+g.variants.length+'" class="price-cell">'+money(g.price)+'</td><td rowspan="'+g.variants.length+'" class="money-cell"><b>'+money(amount)+'</b></td>':'');
+      tr.innerHTML=(i===0?'<td rowspan=\"'+g.variants.length+'\">'+stt+'</td><td rowspan=\"'+g.variants.length+'\"><b>'+esc(g.name)+'</b><div class=\"small\">Tổng: '+g.total+'</div></td>':'')+'<td>'+esc(v.name||'Không có loại')+'</td><td><b>'+v.quantity+'</b></td>'+(i===0?'<td rowspan=\"'+g.variants.length+'\" class=\"price-cell\">'+priceInput+'</td><td rowspan=\"'+g.variants.length+'\" class=\"money-cell\"><b>'+money(amount)+'</b></td>':'');
       tb.appendChild(tr);
     }); stt++;
   });
   const tr=document.createElement('tr');
-  tr.innerHTML='<td colspan="3"><b>TỔNG TẤT CẢ</b></td><td><b>'+totalQty+'</b></td><td></td><td class="money-cell"><b>'+money(totalMoney)+'</b></td>';
+  tr.innerHTML='<td colspan=\"3\"><b>TỔNG TẤT CẢ</b></td><td><b>'+totalQty+'</b></td><td></td><td class=\"money-cell\"><b>'+money(totalMoney)+'</b></td>';
   tb.appendChild(tr);
+}
+
+function updateProductPrice(index,value){
+  const g=productGroups[index]; if(!g)return;
+  const price=Math.max(0,Number(value)||0);
+  productPriceOverrides[g.name]=price;
+  saveLocal(STORAGE_KEYS.productPrices,productPriceOverrides);
+  g.price=price;
+  renderProducts();
+  updateGrandTotal();
 }
 
 function renderCards(){
   const tb=document.querySelector('#cardsTable tbody'); if(!tb)return; tb.innerHTML='';
-  let stt=1;
-  cardGroups.forEach(g=>{
+  cardGroups.forEach((g,i)=>{
     const tr=document.createElement('tr');
-    tr.innerHTML='<td>'+stt+'</td><td><b>'+esc(g.name.toUpperCase())+'</b></td><td class="card-count-cell">'+esc(g.rule)+'</td>';
-    tb.appendChild(tr); stt++;
+    tr.innerHTML='<td>'+(i+1)+'</td>'
+      +'<td><input class=\"edit-input\" type=\"text\" value=\"'+esc(String(g.name||'').toUpperCase())+'\" onchange=\"updateCardRow('+i+',\'name\',this.value)\"></td>'
+      +'<td><input class=\"edit-input\" type=\"text\" value=\"'+esc(String(g.rule||''))+'\" onchange=\"updateCardRow('+i+',\'rule\',this.value)\"></td>'
+      +'<td><button class=\"button btn-danger\" onclick=\"deleteCardRow('+i+')\">🗑 Xóa</button></td>';
+    tb.appendChild(tr);
   });
+  if(!cardGroups.length){
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td colspan=\"4\" class=\"small\">Chưa có dữ liệu card. Bấm “Thêm sản phẩm”.</td>';
+    tb.appendChild(tr);
+  }
+}
+
+function addCardRow(){
+  cardGroups.push({name:'',rule:''});
+  saveCardState(); renderCards();
+}
+function updateCardRow(index,key,value){
+  if(!cardGroups[index])return;
+  cardGroups[index][key]=key==='name'?String(value||'').toUpperCase():String(value||'');
+  saveCardState(); renderCards();
+}
+function deleteCardRow(index){
+  if(!cardGroups[index])return;
+  cardGroups.splice(index,1); saveCardState(); renderCards();
+}
+
+function renderPerfumes(){
+  const tb=document.querySelector('#perfumeTable tbody'); if(!tb)return; tb.innerHTML='';
+  let total=0;
+  perfumes.forEach((p,i)=>{
+    const qty=Number(p.qty)||0, price=Number(p.price)||0, amount=qty*price; total+=amount;
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td>'+(i+1)+'</td>'
+      +'<td><input class=\"edit-input\" type=\"text\" value=\"'+esc(p.name||'')+'\" onchange=\"updatePerfumeRow('+i+',\'name\',this.value)\"></td>'
+      +'<td><input class=\"edit-input\" type=\"number\" min=\"0\" step=\"1\" value=\"'+esc(qty)+'\" onchange=\"updatePerfumeRow('+i+',\'qty\',this.value)\"></td>'
+      +'<td><input class=\"edit-input\" type=\"number\" min=\"0\" step=\"1\" value=\"'+esc(price)+'\" onchange=\"updatePerfumeRow('+i+',\'price\',this.value)\"></td>'
+      +'<td class=\"money-cell\"><b>'+money(amount)+'</b></td>'
+      +'<td><button class=\"button btn-danger\" onclick=\"deletePerfumeRow('+i+')\">🗑 Xóa</button></td>';
+    tb.appendChild(tr);
+  });
+  const totalRow=document.createElement('tr');
+  totalRow.innerHTML='<td colspan=\"4\"><b>TỔNG TẤT CẢ NƯỚC HOA</b></td><td class=\"money-cell\"><b>'+money(total)+'</b></td><td></td>';
+  tb.appendChild(totalRow);
+}
+function addPerfumeRow(){ perfumes.push({name:'',qty:0,price:0}); savePerfumeState(); renderPerfumes(); updateGrandTotal(); }
+function updatePerfumeRow(index,key,value){ if(!perfumes[index])return; perfumes[index][key]=key==='name'?String(value||''):Number(value)||0; savePerfumeState(); renderPerfumes(); updateGrandTotal(); }
+function deletePerfumeRow(index){ if(!perfumes[index])return; perfumes.splice(index,1); savePerfumeState(); renderPerfumes(); updateGrandTotal(); }
+function getPerfumeTotal(){ return perfumes.reduce((sum,p)=>sum+(Number(p.qty)||0)*(Number(p.price)||0),0); }
+
+function renderVotes(){
+  const tb=document.querySelector('#voteTable tbody'); if(!tb)return; tb.innerHTML='';
+  let total=0;
+  votes.forEach((v,i)=>{
+    const qty=Number(v.qty)||0, price=Number(v.price)||0, amount=qty*price; total+=amount;
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td>'+(i+1)+'</td>'
+      +'<td><input class=\"edit-input\" type=\"number\" min=\"0\" step=\"1\" value=\"'+esc(qty)+'\" onchange=\"updateVoteRow('+i+',\'qty\',this.value)\"></td>'
+      +'<td><input class=\"edit-input\" type=\"number\" min=\"0\" step=\"1\" value=\"'+esc(price)+'\" onchange=\"updateVoteRow('+i+',\'price\',this.value)\"></td>'
+      +'<td class=\"money-cell\"><b>'+money(amount)+'</b></td>'
+      +'<td><button class=\"button btn-danger\" onclick=\"deleteVoteRow('+i+')\">🗑 Xóa</button></td>';
+    tb.appendChild(tr);
+  });
+  const totalRow=document.createElement('tr');
+  totalRow.innerHTML='<td><b>TỔNG</b></td><td><b>'+votes.reduce((s,v)=>s+(Number(v.qty)||0),0)+'</b></td><td></td><td class=\"money-cell\"><b>'+money(total)+'</b></td><td></td>';
+  tb.appendChild(totalRow);
+}
+function addVoteRow(){ votes.push({qty:0,price:0}); saveVoteState(); renderVotes(); updateGrandTotal(); }
+function updateVoteRow(index,key,value){ if(!votes[index])return; votes[index][key]=Number(value)||0; saveVoteState(); renderVotes(); updateGrandTotal(); }
+function deleteVoteRow(index){ if(!votes[index])return; votes.splice(index,1); saveVoteState(); renderVotes(); updateGrandTotal(); }
+function getVoteTotal(){ return votes.reduce((sum,v)=>sum+(Number(v.qty)||0)*(Number(v.price)||0),0); }
+
+function getProductTotal(){ return productGroups.reduce((sum,g)=>sum+(Number(g.total)||0)*(Number(g.price)||0),0); }
+function updateGrandTotal(){
+  const productTotal=getProductTotal();
+  const perfumeTotal=getPerfumeTotal();
+  const voteTotal=getVoteTotal();
+  const total=productTotal+perfumeTotal+voteTotal;
+  const totalEl=document.getElementById('grandTotal');
+  if(totalEl)totalEl.textContent=money(total);
+  const breakdown=document.getElementById('grandTotalBreakdown');
+  if(breakdown)breakdown.textContent='Sản phẩm: '+money(productTotal)+' · Nước hoa: '+money(perfumeTotal)+' · Mua vote: '+money(voteTotal);
 }
 
 function exportProducts(){
@@ -2897,6 +3110,20 @@ function exportCards(){
   let stt=1;
   cardGroups.forEach(g=>{rows.push([stt,g.name.toUpperCase(),g.rule]);stt++;});
   downloadCSV(rows,'chia-card.csv');
+}
+
+function exportPerfumes(){
+  const rows=[['STT','NƯỚC HOA','SỐ LƯỢNG','GIÁ / 1 SẢN PHẨM','THÀNH TIỀN']];
+  perfumes.forEach((p,i)=>rows.push([i+1,p.name,Number(p.qty)||0,Number(p.price)||0,(Number(p.qty)||0)*(Number(p.price)||0)]));
+  rows.push(['','TỔNG','','',getPerfumeTotal()]);
+  downloadCSV(rows,'nuoc-hoa.csv');
+}
+
+function exportVotes(){
+  const rows=[['STT','SỐ LƯỢNG VOTE','GIÁ','THÀNH TIỀN']];
+  votes.forEach((v,i)=>rows.push([i+1,Number(v.qty)||0,Number(v.price)||0,(Number(v.qty)||0)*(Number(v.price)||0)]));
+  rows.push(['TỔNG',votes.reduce((s,v)=>s+(Number(v.qty)||0),0),'',getVoteTotal()]);
+  downloadCSV(rows,'mua-vote.csv');
 }
 
 function switchTab(id,btn){
