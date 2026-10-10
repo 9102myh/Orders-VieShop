@@ -1865,11 +1865,7 @@ async function saveOrderChecksRealtime(){
         const isConflict=/\b409\b/.test(String(e?.message||''));
 
         if(isConflict && attempt<maxAttempts){
-          showAdmin(
-            '⚠️ GitHub vừa được cập nhật ở nơi khác. Đang đọc phiên bản mới và thử lưu lại ('+
-            attempt+'/'+(maxAttempts-1)+')...',
-            true
-          );
+          // Retry im lặng: vòng tiếp theo sẽ GET SHA mới nhất với cache đã tắt.
           continue;
         }
 
@@ -3296,8 +3292,13 @@ async function ghGet(
     await fetch(
       url,
       {
-        headers:
-          ghHeaders(token)
+        // Luôn lấy SHA mới nhất, tránh dùng response GET bị cache khi retry 409.
+        cache:'no-store',
+        headers:{
+          ...ghHeaders(token),
+          'Cache-Control':'no-cache',
+          'Pragma':'no-cache'
+        }
       }
     );
 
