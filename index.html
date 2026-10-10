@@ -1057,7 +1057,7 @@ Chỉ tổng hợp sản phẩm từ các Order <b>đã thanh toán (financial_s
 <div id="cardsTab" class="tab-panel">
   <div class="card">
     <h2>🎴 Chia card</h2>
-    <p class="small">Số lượng card thay đổi theo thời gian đặt</p>
+    <p class="small">Tự thêm / sửa / xóa. Cả <b>Sản phẩm</b> và <b>Số lượng card</b> đều là ô nhập chữ (string). Nội dung mặc định là đúng quy tắc card m đã gửi.</p>
     <div class="actions" style="margin-bottom:12px">
       <button class="button btn-add" onclick="addCardRow()">＋ Thêm sản phẩm</button>
       <button class="button export" onclick="exportCards()">📥 Export chia card</button>
@@ -1077,7 +1077,7 @@ Chỉ tổng hợp sản phẩm từ các Order <b>đã thanh toán (financial_s
 <div id="perfumeTab" class="tab-panel">
   <div class="card">
     <h2>🌸 Nước hoa</h2>
-    <p class="small">Tổng tiền = số lượng × đơn giá.</p>
+    <p class="small">Tự thêm / sửa / xóa. Tổng tiền = số lượng × đơn giá.</p>
     <div class="actions" style="margin-bottom:12px">
       <button class="button btn-add" onclick="addPerfumeRow()">＋ Thêm nước hoa</button>
       <button class="button export" onclick="exportPerfumes()">📥 Export nước hoa</button>
@@ -1097,7 +1097,7 @@ Chỉ tổng hợp sản phẩm từ các Order <b>đã thanh toán (financial_s
 <div id="voteTab" class="tab-panel">
   <div class="card">
     <h2>🗳️ Mua vote</h2>
-    <p class="small">Tổng tiền = số lượng vote × đơn giá.</p>
+    <p class="small">Tự thêm / sửa / xóa. Tổng tiền = số lượng vote × đơn giá.</p>
     <div class="actions" style="margin-bottom:12px">
       <button class="button btn-add" onclick="addVoteRow()">＋ Thêm lượt vote</button>
       <button class="button export" onclick="exportVotes()">📥 Export mua vote</button>
@@ -1169,6 +1169,9 @@ const STORAGE_KEYS={
 };
 
 let orderChecks={};
+
+/* Các checkbox thay đổi cục bộ chưa commit: true = tick, false = bỏ tick. */
+let orderCheckPendingChanges={};
 
 let currentPage=1;
 
@@ -1644,10 +1647,12 @@ function toggleOrderCheck(checkbox){
   if(checkbox.checked){
 
     orderChecks[key]=true;
+    orderCheckPendingChanges[key]=true;
 
   }else{
 
     delete orderChecks[key];
+    orderCheckPendingChanges[key]=false;
 
   }
 
@@ -1745,32 +1750,139 @@ async function saveOrderChecksRealtime(){
     );
 
 
-    const body=
-      JSON.stringify(
-        orderChecks,
-        null,
-        2
-      )+'\n';
+    const maxAttempts=4;
+    let saved=false;
+
+    for(let attempt=1;attempt<=maxAttempts;attempt++){
+
+      /*
+        Chỉ áp các checkbox vừa thay đổi lên bản mới nhất từ GitHub.
+        Nhờ vậy giữ được thay đổi của các tab/trình duyệt khác.
+      */
+      const changesToSave={...orderCheckPendingChanges};
+
+      if(!Object.keys(changesToSave).length){
+        saved=true;
+        break;
+      }
 
 
-    const existing=
-      await ghGet(
-        owner,
-        repo,
-        CONFIG.checksPath,
-        token
-      );
+      const existing=
+        await ghGet(
+          owner,
+          repo,
+          CONFIG.checksPath,
+          token
+        );
 
 
-    await ghPut(
-      owner,
-      repo,
-      CONFIG.checksPath,
-      token,
-      body,
-      existing?.sha,
-      'Auto-save order checkbox states'
-    );
+      let latestChecks={};
+
+      if(existing?.content){
+        try{
+          const decoded=
+            decodeURIComponent(
+              escape(
+                atob(
+                  existing.content.replace(/\n/g,'')
+                )
+              )
+            );
+
+          latestChecks=normalizeOrderChecks(JSON.parse(decoded));
+
+        }catch(e){
+          throw new Error('Không đọc được nội dung order_checks.json mới nhất trên GitHub.');
+        }
+      }
+
+
+      Object.entries(changesToSave).forEach(([key,checked])=>{
+        if(checked===true){
+          latestChecks[key]=true;
+        }else{
+          delete latestChecks[key];
+        }
+      });
+
+
+      const body=
+        JSON.stringify(
+          latestChecks,
+          null,
+          2
+        )+'\n';
+
+
+      try{
+
+        await ghPut(
+          owner,
+          repo,
+          CONFIG.checksPath,
+          token,
+          body,
+          existing?.sha,
+          'Auto-save order checkbox states'
+        );
+
+
+        /*
+          Bỏ khỏi hàng chờ chỉ những thay đổi đã được lưu đúng giá trị.
+          Nếu user tick lại trong lúc request đang chạy, thay đổi mới vẫn còn hàng chờ.
+        */
+        Object.entries(changesToSave).forEach(([key,checked])=>{
+          if(orderCheckPendingChanges[key]===checked){
+            delete orderCheckPendingChanges[key];
+          }
+        });
+
+
+        orderChecks={...latestChecks};
+
+        /* Áp lại các thay đổi mới phát sinh trong khi request đang chạy. */
+        Object.entries(orderCheckPendingChanges).forEach(([key,checked])=>{
+          if(checked===true){
+            orderChecks[key]=true;
+          }else{
+            delete orderChecks[key];
+          }
+        });
+
+
+        document.querySelectorAll('.order-check').forEach(box=>{
+          box.checked=!!orderChecks[box.dataset.orderKey];
+        });
+        updateCheckedOrderCount();
+
+
+        saved=true;
+        break;
+
+
+      }catch(e){
+
+        const isConflict=/\b409\b/.test(String(e?.message||''));
+
+        if(isConflict && attempt<maxAttempts){
+          showAdmin(
+            '⚠️ GitHub vừa được cập nhật ở nơi khác. Đang đọc phiên bản mới và thử lưu lại ('+
+            attempt+'/'+(maxAttempts-1)+')...',
+            true
+          );
+          continue;
+        }
+
+        throw e;
+
+      }
+
+    }
+
+
+    if(!saved){
+      throw new Error('Không thể lưu checkbox sau '+maxAttempts+' lần thử do file liên tục bị cập nhật ở nơi khác. Hãy thử tick lại.');
+    }
 
 
     showAdmin(
@@ -1795,15 +1907,13 @@ async function saveOrderChecksRealtime(){
     orderCheckSaving=false;
 
 
-    if(orderCheckSaveQueued){
+    if(orderCheckSaveQueued || Object.keys(orderCheckPendingChanges).length){
 
       orderCheckSaveQueued=false;
-
 
       clearTimeout(
         orderCheckSaveTimer
       );
-
 
       orderCheckSaveTimer=
         setTimeout(
@@ -1816,7 +1926,6 @@ async function saveOrderChecksRealtime(){
   }
 
 }
-
 
 
 /* =====================================================
