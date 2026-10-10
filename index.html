@@ -1891,9 +1891,14 @@ async function saveOrderChecksRealtime(){
 
   }catch(e){
 
+    const rawMessage=String(e?.message||e||'Lỗi không xác định');
+    const friendlyMessage=/failed to fetch|networkerror|load failed/i.test(rawMessage)
+      ?'Không kết nối được GitHub API (có thể do mạng hoặc CORS). Thay đổi vẫn đang chờ lưu; thử lại khi kết nối ổn định.'
+      :rawMessage;
+
     showAdmin(
       '❌ Không tự lưu được checkbox: '+
-      esc(e.message),
+      esc(friendlyMessage),
       false
     );
 
@@ -1903,7 +1908,9 @@ async function saveOrderChecksRealtime(){
     orderCheckSaving=false;
 
 
-    if(orderCheckSaveQueued || Object.keys(orderCheckPendingChanges).length){
+    // Chỉ chạy thêm lượt nếu người dùng thực sự phát sinh thay đổi
+    // trong lúc request đang chạy. Không retry vô hạn khi mạng/CORS lỗi.
+    if(orderCheckSaveQueued){
 
       orderCheckSaveQueued=false;
 
@@ -3294,11 +3301,9 @@ async function ghGet(
       {
         // Luôn lấy SHA mới nhất, tránh dùng response GET bị cache khi retry 409.
         cache:'no-store',
-        headers:{
-          ...ghHeaders(token),
-          'Cache-Control':'no-cache',
-          'Pragma':'no-cache'
-        }
+        // Không tự thêm Cache-Control/Pragma vào request cross-origin:
+        // các header này có thể làm CORS preflight của GitHub API thất bại.
+        headers:ghHeaders(token)
       }
     );
 
