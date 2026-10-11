@@ -578,6 +578,12 @@ tr:nth-child(even){
 .proof-link-wrap{margin-top:5px;font-size:12px;}
 .note-input{min-width:220px;min-height:38px;resize:vertical;}
 .note-text{min-width:160px;white-space:pre-wrap;overflow-wrap:anywhere;}
+@media (max-width: 760px) {
+  #productsTab .actions { flex-wrap: wrap !important; }
+  #productsTab .actions .field { flex-basis: 100%; flex-wrap: wrap; }
+  #productsTab .actions .field label { flex-basis: 100%; }
+  #productsTab .actions .button { max-width: 100%; }
+}
 </style>
 </head>
 
@@ -1018,14 +1024,20 @@ Tổng bản ghi: 0
 <h2>🛍️ Tổng hợp sản phẩm</h2>
 
 <p class="small">
+
 </p>
 
-<button
-  class="button export"
-  onclick="exportProducts()"
->
-📥 Export tổng hợp sản phẩm
-</button>
+<div style="margin:10px 0;display:flex;flex-direction:column;align-items:flex-start;gap:10px">
+  <div style="width:100%;display:flex;justify-content:flex-start">
+    <button class="button export" style="white-space:nowrap" onclick="exportProducts()">
+      📥 Export tổng hợp sản phẩm
+    </button>
+  </div>
+  <div class="field" style="width:100%;max-width:720px;display:flex;flex-direction:row;align-items:center;gap:10px;margin:0">
+    <label for="productNameSearch" style="white-space:nowrap;margin:0;flex:0 0 auto">Tìm theo tên sản phẩm</label>
+    <input id="productNameSearch" type="search" style="flex:1;min-width:120px" placeholder="Nhập tên sản phẩm cần tìm..." oninput="renderProducts()">
+  </div>
+</div>
 
 <div
   class="table-wrap"
@@ -3461,7 +3473,7 @@ function renderOrderPrices(){
       note.textContent='Không có Order đã thanh toán phù hợp bộ lọc từ 01/07/2026 trở đi.';
       note.style.color='';
     }else{
-      note.textContent='Có '+orderPriceRows.length.toLocaleString('vi-VN')+' Order đã thanh toán phù hợp bộ lọc. ';
+      note.textContent='Có '+orderPriceRows.length.toLocaleString('vi-VN')+' Order đã thanh toán phù hợp bộ lọc.';
       note.style.color='';
     }
   }
@@ -3564,7 +3576,14 @@ function renderProducts(){
   const tb=document.querySelector('#productsTable tbody'); if(!tb)return; tb.innerHTML='';
   let stt=1,totalQty=0,totalMoney=0;
   const editable=canEditManual();
-  productGroups.forEach(g=>{
+  const query=String(document.getElementById('productNameSearch')?.value||'').trim().toLocaleLowerCase('vi');
+  const visibleGroups=productGroups.filter(g=>!query||String(g.name||'').toLocaleLowerCase('vi').includes(query));
+  if(!visibleGroups.length){
+    const empty=document.createElement('tr');
+    empty.innerHTML='<td colspan="6" style="text-align:center;color:#64748b;padding:18px">Không tìm thấy sản phẩm phù hợp.</td>';
+    tb.appendChild(empty);
+  }
+  visibleGroups.forEach(g=>{
     g.variants.forEach((v,i)=>{
       const qty=Number(v.quantity)||0;
       const price=Math.max(0,Number(v.price)||0);
@@ -3584,7 +3603,7 @@ function renderProducts(){
     stt++;
   });
   const tr=document.createElement('tr');
-  tr.innerHTML='<td colspan="3"><b>TỔNG TẤT CẢ</b></td><td><b>'+totalQty+'</b></td><td></td><td class="money-cell"><b>'+money(totalMoney)+'</b></td>';
+  tr.innerHTML='<td colspan="3"><b>'+(query?'TỔNG KẾT QUẢ TÌM KIẾM':'TỔNG TẤT CẢ')+'</b></td><td><b>'+totalQty+'</b></td><td></td><td class="money-cell"><b>'+money(totalMoney)+'</b></td>';
   tb.appendChild(tr);
 }
 
