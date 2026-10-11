@@ -573,6 +573,9 @@ tr:nth-child(even){
   }
 
 }
+.proof-input{min-width:220px;}
+.note-input{min-width:220px;min-height:38px;resize:vertical;}
+.note-text{min-width:160px;white-space:pre-wrap;overflow-wrap:anywhere;}
 </style>
 </head>
 
@@ -1140,7 +1143,7 @@ Chỉ tổng hợp sản phẩm từ các Order <b>đã thanh toán (financial_s
     </div>
     <div class="table-wrap">
       <table id="perfumeTable">
-        <thead><tr><th>STT</th><th>NƯỚC HOA</th><th>SỐ LƯỢNG</th><th>ĐƠN GIÁ</th><th>THÀNH TIỀN</th><th>Thao tác</th></tr></thead>
+        <thead><tr><th>STT</th><th>NƯỚC HOA</th><th>SỐ LƯỢNG</th><th>ĐƠN GIÁ</th><th>THÀNH TIỀN</th><th>LINK PROOF</th><th>GHI CHÚ</th><th>Thao tác</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -1160,7 +1163,7 @@ Chỉ tổng hợp sản phẩm từ các Order <b>đã thanh toán (financial_s
     </div>
     <div class="table-wrap">
       <table id="voteTable">
-        <thead><tr><th>STT</th><th>SỐ LƯỢNG VOTE</th><th>ĐƠN GIÁ</th><th>THÀNH TIỀN</th><th>Thao tác</th></tr></thead>
+        <thead><tr><th>STT</th><th>SỐ LƯỢNG VOTE</th><th>ĐƠN GIÁ</th><th>THÀNH TIỀN</th><th>LINK PROOF</th><th>GHI CHÚ</th><th>Thao tác</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -3131,11 +3134,11 @@ function normalizeManualData(key,data){
   }
   if(key==='perfumes'){
     const rows=Array.isArray(data)?data:(Array.isArray(data?.items)?data.items:[]);
-    return rows.map(row=>({name:String(row?.name||''),qty:Math.max(0,Number(row?.qty)||0),price:Math.max(0,Number(row?.price)||0)}));
+    return rows.map(row=>({name:String(row?.name||''),qty:Math.max(0,Number(row?.qty)||0),price:Math.max(0,Number(row?.price)||0),proof:String(row?.proof||''),note:String(row?.note||'')}));
   }
   if(key==='votes'){
     const rows=Array.isArray(data)?data:(Array.isArray(data?.items)?data.items:[]);
-    return rows.map(row=>({qty:Math.max(0,Number(row?.qty)||0),price:Math.max(0,Number(row?.price)||0)}));
+    return rows.map(row=>({qty:Math.max(0,Number(row?.qty)||0),price:Math.max(0,Number(row?.price)||0),proof:String(row?.proof||''),note:String(row?.note||'')}));
   }
   return data;
 }
@@ -3611,31 +3614,44 @@ function deleteCardRow(index){
   cardGroups.splice(index,1); saveCardState(); renderCards();
 }
 
+function renderProofValue(proof){
+  const value=String(proof||'').trim();
+  if(!value)return '<span class="small">—</span>';
+  if(/^https?:\/\//i.test(value)){
+    return '<a href="'+esc(value)+'" target="_blank" rel="noopener noreferrer">Mở proof</a>';
+  }
+  return '<span>'+esc(value)+'</span>';
+}
+
 function renderPerfumes(){
   const tb=document.querySelector('#perfumeTable tbody'); if(!tb)return; tb.innerHTML='';
   const editable=canEditManual();
   let total=0;
   perfumes.forEach((p,i)=>{
     const qty=Number(p.qty)||0, price=Number(p.price)||0, amount=qty*price; total+=amount;
+    const proof=String(p.proof||'');
+    const note=String(p.note||'');
     const tr=document.createElement('tr');
     tr.innerHTML='<td>'+(i+1)+'</td>'
       +'<td>'+(editable?'<input class="edit-input" type="text" value="'+esc(p.name||'')+'" onchange="updatePerfumeRow('+i+',\'name\',this.value)">':'<span>'+esc(p.name||'')+'</span>')+'</td>'
       +'<td>'+(editable?'<input class="edit-input" type="number" min="0" step="1" value="'+esc(qty)+'" onchange="updatePerfumeRow('+i+',\'qty\',this.value)">':'<span>'+esc(qty)+'</span>')+'</td>'
       +'<td>'+(editable?'<input class="edit-input" type="number" min="0" step="1" value="'+esc(price)+'" onchange="updatePerfumeRow('+i+',\'price\',this.value)">':'<span>'+esc(price)+'</span>')+'</td>'
       +'<td class="money-cell"><b>'+money(amount)+'</b></td>'
+      +'<td>'+(editable?'<input class="edit-input proof-input" type="text" placeholder="https://..." value="'+esc(proof)+'" onchange="updatePerfumeRow('+i+',\'proof\',this.value)" title="Link proof">':renderProofValue(proof))+'</td>'
+      +'<td>'+(editable?'<textarea class="edit-input note-input" placeholder="Nhập ghi chú..." onchange="updatePerfumeRow('+i+',\'note\',this.value)">'+esc(note)+'</textarea>':'<div class="note-text">'+(esc(note)||'—')+'</div>')+'</td>'
       +(editable?'<td><button class="button btn-danger" onclick="deletePerfumeRow('+i+')">🗑 Xóa</button></td>':'');
     tb.appendChild(tr);
   });
   const totalRow=document.createElement('tr');
-  totalRow.innerHTML='<td colspan="4"><b>TỔNG TẤT CẢ NƯỚC HOA</b></td><td class="money-cell"><b>'+money(total)+'</b></td>'+(editable?'<td></td>':'');
+  totalRow.innerHTML='<td colspan="4"><b>TỔNG TẤT CẢ NƯỚC HOA</b></td><td class="money-cell"><b>'+money(total)+'</b></td><td></td><td></td>'+(editable?'<td></td>':'');
   tb.appendChild(totalRow);
   const head=document.querySelector('#perfumeTable thead tr');
   if(head) head.lastElementChild.style.display=editable?'':'none';
   const add=document.querySelector('#perfumeTable')?.closest('.card')?.querySelector('.btn-add');
   if(add) add.style.display=editable?'':'none';
 }
-function addPerfumeRow(){ if(!requireManualEdit())return; perfumes.push({name:'',qty:0,price:0}); savePerfumeState(); renderPerfumes(); updateGrandTotal(); }
-function updatePerfumeRow(index,key,value){ if(!requireManualEdit())return; if(!perfumes[index])return; perfumes[index][key]=key==='name'?String(value||''):Number(value)||0; savePerfumeState(); renderPerfumes(); updateGrandTotal(); }
+function addPerfumeRow(){ if(!requireManualEdit())return; perfumes.push({name:'',qty:0,price:0,proof:'',note:''}); savePerfumeState(); renderPerfumes(); updateGrandTotal(); }
+function updatePerfumeRow(index,key,value){ if(!requireManualEdit())return; if(!perfumes[index])return; perfumes[index][key]=(key==='name'||key==='proof'||key==='note')?String(value||''):Number(value)||0; savePerfumeState(); renderPerfumes(); updateGrandTotal(); }
 function deletePerfumeRow(index){ if(!requireManualEdit())return; if(!perfumes[index])return; perfumes.splice(index,1); savePerfumeState(); renderPerfumes(); updateGrandTotal(); }
 function getPerfumeTotal(){ return perfumes.reduce((sum,p)=>sum+(Number(p.qty)||0)*(Number(p.price)||0),0); }
 
@@ -3645,24 +3661,28 @@ function renderVotes(){
   let total=0;
   votes.forEach((v,i)=>{
     const qty=Number(v.qty)||0, price=Number(v.price)||0, amount=qty*price; total+=amount;
+    const proof=String(v.proof||'');
+    const note=String(v.note||'');
     const tr=document.createElement('tr');
     tr.innerHTML='<td>'+(i+1)+'</td>'
       +'<td>'+(editable?'<input class="edit-input" type="number" min="0" step="1" value="'+esc(qty)+'" onchange="updateVoteRow('+i+',\'qty\',this.value)">':'<span>'+esc(qty)+'</span>')+'</td>'
       +'<td>'+(editable?'<input class="edit-input" type="number" min="0" step="1" value="'+esc(price)+'" onchange="updateVoteRow('+i+',\'price\',this.value)">':'<span>'+esc(price)+'</span>')+'</td>'
       +'<td class="money-cell"><b>'+money(amount)+'</b></td>'
+      +'<td>'+(editable?'<input class="edit-input proof-input" type="text" placeholder="https://..." value="'+esc(proof)+'" onchange="updateVoteRow('+i+',\'proof\',this.value)" title="Link proof">':renderProofValue(proof))+'</td>'
+      +'<td>'+(editable?'<textarea class="edit-input note-input" placeholder="Nhập ghi chú..." onchange="updateVoteRow('+i+',\'note\',this.value)">'+esc(note)+'</textarea>':'<div class="note-text">'+(esc(note)||'—')+'</div>')+'</td>'
       +(editable?'<td><button class="button btn-danger" onclick="deleteVoteRow('+i+')">🗑 Xóa</button></td>':'');
     tb.appendChild(tr);
   });
   const totalRow=document.createElement('tr');
-  totalRow.innerHTML='<td><b>TỔNG</b></td><td><b>'+votes.reduce((s,v)=>s+(Number(v.qty)||0),0)+'</b></td><td></td><td class="money-cell"><b>'+money(total)+'</b></td>'+(editable?'<td></td>':'');
+  totalRow.innerHTML='<td><b>TỔNG</b></td><td><b>'+votes.reduce((s,v)=>s+(Number(v.qty)||0),0)+'</b></td><td></td><td class="money-cell"><b>'+money(total)+'</b></td><td></td><td></td>'+(editable?'<td></td>':'');
   tb.appendChild(totalRow);
   const head=document.querySelector('#voteTable thead tr');
   if(head) head.lastElementChild.style.display=editable?'':'none';
   const add=document.querySelector('#voteTable')?.closest('.card')?.querySelector('.btn-add');
   if(add) add.style.display=editable?'':'none';
 }
-function addVoteRow(){ if(!requireManualEdit())return; votes.push({qty:0,price:0}); saveVoteState(); renderVotes(); updateGrandTotal(); }
-function updateVoteRow(index,key,value){ if(!requireManualEdit())return; if(!votes[index])return; votes[index][key]=Number(value)||0; saveVoteState(); renderVotes(); updateGrandTotal(); }
+function addVoteRow(){ if(!requireManualEdit())return; votes.push({qty:0,price:0,proof:'',note:''}); saveVoteState(); renderVotes(); updateGrandTotal(); }
+function updateVoteRow(index,key,value){ if(!requireManualEdit())return; if(!votes[index])return; votes[index][key]=(key==='proof'||key==='note')?String(value||''):Number(value)||0; saveVoteState(); renderVotes(); updateGrandTotal(); }
 function deleteVoteRow(index){ if(!requireManualEdit())return; if(!votes[index])return; votes.splice(index,1); saveVoteState(); renderVotes(); updateGrandTotal(); }
 function getVoteTotal(){ return votes.reduce((sum,v)=>sum+(Number(v.qty)||0)*(Number(v.price)||0),0); }
 
@@ -4659,15 +4679,15 @@ function exportCards(){
 }
 
 function exportPerfumes(){
-  const rows=[['STT','NƯỚC HOA','SỐ LƯỢNG','ĐƠN GIÁ','THÀNH TIỀN']];
-  perfumes.forEach((p,i)=>rows.push([i+1,p.name,Number(p.qty)||0,Number(p.price)||0,(Number(p.qty)||0)*(Number(p.price)||0)]));
+  const rows=[['STT','NƯỚC HOA','SỐ LƯỢNG','ĐƠN GIÁ','THÀNH TIỀN','LINK PROOF','GHI CHÚ']];
+  perfumes.forEach((p,i)=>rows.push([i+1,p.name,Number(p.qty)||0,Number(p.price)||0,(Number(p.qty)||0)*(Number(p.price)||0),p.proof||'',p.note||'']));
   rows.push(['','TỔNG','','',getPerfumeTotal()]);
   downloadCSV(rows,'nuoc-hoa.csv');
 }
 
 function exportVotes(){
-  const rows=[['STT','SỐ LƯỢNG VOTE','ĐƠN GIÁ','THÀNH TIỀN']];
-  votes.forEach((v,i)=>rows.push([i+1,Number(v.qty)||0,Number(v.price)||0,(Number(v.qty)||0)*(Number(v.price)||0)]));
+  const rows=[['STT','SỐ LƯỢNG VOTE','ĐƠN GIÁ','THÀNH TIỀN','LINK PROOF','GHI CHÚ']];
+  votes.forEach((v,i)=>rows.push([i+1,Number(v.qty)||0,Number(v.price)||0,(Number(v.qty)||0)*(Number(v.price)||0),v.proof||'',v.note||'']));
   rows.push(['TỔNG',votes.reduce((s,v)=>s+(Number(v.qty)||0),0),'',getVoteTotal()]);
   downloadCSV(rows,'mua-vote.csv');
 }
