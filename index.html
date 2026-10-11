@@ -3668,7 +3668,10 @@ function getVoteTotal(){ return votes.reduce((sum,v)=>sum+(Number(v.qty)||0)*(Nu
 
 function getProductTotal(){ return productGroups.reduce((sum,g)=>sum+(Number(g.total)||0)*(Number(g.price)||0),0); }
 function getMerchOrderTotal(){
-  return allOrders.filter(isDisplayOrder).reduce((sum,order)=>sum+getOrderPriceDetails(order).total,0);
+  // Đồng bộ đúng bộ lọc của tab Đơn Merch VieShop: từ 01/07/2026 và đã thanh toán.
+  return allOrders
+    .filter(order => isDisplayOrder(order) && String(order?.financial_status||'').trim().toLowerCase()==='paid')
+    .reduce((sum,order)=>sum+getOrderPriceDetails(order).total,0);
 }
 function updateGrandTotal(){
   const merchTotal=getMerchOrderTotal();
