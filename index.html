@@ -3390,7 +3390,7 @@ function renderOrderPrices(){
     return;
   }
 
-  const rows=allOrders.filter(isDisplayOrder).filter(order=>{
+  const rows=allOrders.filter(order=>isDisplayOrder(order) && String(order?.financial_status||'').trim().toLowerCase()==='paid').filter(order=>{
     const code=orderKey(order).toLowerCase();
     const mail=String(order.__mail||'').toLowerCase();
     const created=new Date(order.created_at).getTime();
@@ -3440,10 +3440,10 @@ function renderOrderPrices(){
 
   if(note){
     if(!orderPriceRows.length){
-      note.textContent='Không có Order phù hợp bộ lọc từ 01/07/2026 trở đi.';
+      note.textContent='Không có Order đã thanh toán phù hợp bộ lọc từ 01/07/2026 trở đi.';
       note.style.color='';
     }else{
-      note.textContent='Có '+orderPriceRows.length.toLocaleString('vi-VN')+' Order phù hợp bộ lọc. Trang hiển thị tối đa 100 đơn; phí cố định 30.000đ đã được cộng vào từng đơn.';
+      note.textContent='Có '+orderPriceRows.length.toLocaleString('vi-VN')+' Order đã thanh toán phù hợp bộ lọc. Trang hiển thị tối đa 100 đơn; phí cố định 30.000đ đã được cộng vào từng đơn.';
       note.style.color='';
     }
   }
