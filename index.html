@@ -802,7 +802,7 @@ Tổng tiền
 
 </div>
 
-<div id="grandTotalBreakdown" class="sub-total-note">Sản phẩm: 0đ · Nước hoa: 0đ · Mua vote: 0đ</div>
+<div id="grandTotalBreakdown" class="sub-total-note">Đơn Merch VieShop: 0đ · Nước hoa: 0đ · Mua vote: 0đ</div>
 
 </div>
 
@@ -814,6 +814,7 @@ Tổng tiền
 <div class="tabs">
   <button class="tab-btn active" data-tab="ordersTab" onclick="switchTab('ordersTab',this)">📦 Danh sách Order</button>
   <button class="tab-btn" data-tab="productsTab" onclick="switchTab('productsTab',this)">🛍️ Tổng hợp sản phẩm</button>
+  <button class="tab-btn" data-tab="orderPricesTab" onclick="switchTab('orderPricesTab',this)">💰 Đơn Merch VieShop</button>
   <button class="tab-btn" data-tab="cardsTab" onclick="switchTab('cardsTab',this)">🎴 Chia card</button>
   <button class="tab-btn" data-tab="perfumeTab" onclick="switchTab('perfumeTab',this)">🌸 Nước hoa</button>
   <button class="tab-btn" data-tab="voteTab" onclick="switchTab('voteTab',this)">🗳️ Mua vote</button>
@@ -1052,6 +1053,61 @@ Chỉ tổng hợp sản phẩm từ các Order <b>đã thanh toán (financial_s
 </div>
 
 <!-- =====================================================
+     ORDER PRICES
+====================================================== -->
+<div id="orderPricesTab" class="tab-panel">
+  <div class="card">
+    <h2>💰 Đơn Merch VieShop</h2>
+    <div id="orderPriceNote" class="small" style="margin:8px 0 12px" aria-live="polite"></div>
+
+    <div class="filters" style="justify-content:flex-start;gap:12px;align-items:end;flex-wrap:wrap;margin:12px 0">
+      <div class="date-filter">
+        <span class="date-filter-title">🗓 Thời gian đặt</span>
+        <div class="date-filter-group">
+          <span class="date-filter-label">From</span>
+          <input id="orderPriceDateFrom" type="datetime-local" onchange="resetOrderPricePageAndRender()">
+        </div>
+        <span class="date-arrow">→</span>
+        <div class="date-filter-group">
+          <span class="date-filter-label">To</span>
+          <input id="orderPriceDateTo" type="datetime-local" onchange="resetOrderPricePageAndRender()">
+        </div>
+        <button type="button" class="clear-date" onclick="clearOrderPriceFilters()" title="Xoá bộ lọc">✕</button>
+      </div>
+    </div>
+
+
+    <div class="actions" style="margin-bottom:12px">
+      <button class="button export" onclick="exportOrderPrices()">📥 Export Đơn Merch VieShop</button>
+    </div>
+    <div class="table-wrap">
+      <table id="orderPricesTable">
+        <thead>
+          <tr>
+            <th><div class="th-filter"><div class="th-title">Mã đơn hàng</div><input id="orderPriceSearchOrder" type="search" placeholder="Search..." oninput="resetOrderPricePageAndRender()"></div></th>
+            <th><div class="th-filter"><div class="th-title">Mail</div><input id="orderPriceSearchMail" type="search" placeholder="Search..." oninput="resetOrderPricePageAndRender()"></div></th>
+            <th>Thời gian đặt</th>
+            <th>
+              <div class="th-filter">
+                <div class="th-title">Giá đơn hàng</div>
+                <select id="orderPriceAmountFilter" onchange="resetOrderPricePageAndRender()">
+                  <option value="all">Tất cả mức giá</option>
+                  <option value="gt1m">Lớn hơn 1.000.000đ</option>
+                  <option value="lt1m">Nhỏ hơn 1.000.000đ</option>
+                </select>
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div id="orderPricePagination" class="pagination" aria-label="Phân trang Đơn Merch VieShop"></div>
+  </div>
+</div>
+
+
+<!-- =====================================================
      CARDS
 ====================================================== -->
 <div id="cardsTab" class="tab-panel">
@@ -1110,6 +1166,8 @@ Chỉ tổng hợp sản phẩm từ các Order <b>đã thanh toán (financial_s
     </div>
   </div>
 </div>
+
+
 
 </div>
 
@@ -2104,6 +2162,9 @@ async function loadData(){
       ).length;
 
 
+    // Đọc dữ liệu dùng chung của các tab; file chưa tồn tại thì giữ dữ liệu dự phòng.
+    await loadManualDataFromGitHub();
+
     buildProducts();
     updateGrandTotal();
 
@@ -3023,11 +3084,179 @@ function initManualState(){
   productPriceOverrides=storedPrices && typeof storedPrices==='object' && !Array.isArray(storedPrices)?storedPrices:{};
 }
 
-function saveCardState(){ saveLocal(STORAGE_KEYS.cardGroups,cardGroups); }
-function savePerfumeState(){ saveLocal(STORAGE_KEYS.perfumes,perfumes); }
-function saveVoteState(){ saveLocal(STORAGE_KEYS.votes,votes); }
+function saveCardState(){
+  saveLocal(STORAGE_KEYS.cardGroups,cardGroups);
+  queueManualSave('cardGroups');
+}
+function savePerfumeState(){
+  saveLocal(STORAGE_KEYS.perfumes,perfumes);
+  queueManualSave('perfumes');
+}
+function saveVoteState(){
+  saveLocal(STORAGE_KEYS.votes,votes);
+  queueManualSave('votes');
+}
 
 initManualState();
+
+/* =====================================================
+   SHARED MANUAL DATA ON GITHUB
+   - JSON files are created automatically on first save.
+   - localStorage is only a local fallback/cache.
+====================================================== */
+
+const MANUAL_DATA_FILES={
+  productPrices:{path:'product_prices.json',label:'đơn giá sản phẩm'},
+  cardGroups:{path:'card_rules.json',label:'quy tắc chia card'},
+  perfumes:{path:'perfumes.json',label:'nước hoa'},
+  votes:{path:'votes.json',label:'mua vote'}
+};
+
+let manualSavePending=new Set();
+let manualSaveTimer=null;
+let manualSaveRunning=false;
+
+function normalizeManualData(key,data){
+  if(key==='productPrices'){
+    const source=data && typeof data==='object' && !Array.isArray(data) ? data : {};
+    const out={};
+    Object.entries(source).forEach(([name,price])=>{
+      out[String(name)]=Math.max(0,Number(price)||0);
+    });
+    return out;
+  }
+  if(key==='cardGroups'){
+    const rows=Array.isArray(data)?data:(Array.isArray(data?.items)?data.items:[]);
+    return rows.map(row=>({name:String(row?.name||''),rule:String(row?.rule??row?.quantity??'')}));
+  }
+  if(key==='perfumes'){
+    const rows=Array.isArray(data)?data:(Array.isArray(data?.items)?data.items:[]);
+    return rows.map(row=>({name:String(row?.name||''),qty:Math.max(0,Number(row?.qty)||0),price:Math.max(0,Number(row?.price)||0)}));
+  }
+  if(key==='votes'){
+    const rows=Array.isArray(data)?data:(Array.isArray(data?.items)?data.items:[]);
+    return rows.map(row=>({qty:Math.max(0,Number(row?.qty)||0),price:Math.max(0,Number(row?.price)||0)}));
+  }
+  return data;
+}
+
+function applyManualData(key,data){
+  const value=normalizeManualData(key,data);
+  if(key==='productPrices'){
+    productPriceOverrides=value;
+    saveLocal(STORAGE_KEYS.productPrices,productPriceOverrides);
+  }else if(key==='cardGroups'){
+    cardGroups=value;
+    saveLocal(STORAGE_KEYS.cardGroups,cardGroups);
+  }else if(key==='perfumes'){
+    perfumes=value;
+    saveLocal(STORAGE_KEYS.perfumes,perfumes);
+  }else if(key==='votes'){
+    votes=value;
+    saveLocal(STORAGE_KEYS.votes,votes);
+  }
+}
+
+async function loadManualDataFromGitHub(){
+  const keys=Object.keys(MANUAL_DATA_FILES);
+  const results=await Promise.all(keys.map(async key=>{
+    const path=MANUAL_DATA_FILES[key].path;
+    try{
+      const response=await fetch(rawUrl(CONFIG.owner,CONFIG.repo,CONFIG.branch,path),{cache:'no-store'});
+      if(response.status===404)return {key,missing:true};
+      if(!response.ok)throw new Error('HTTP '+response.status);
+      return {key,data:await response.json()};
+    }catch(error){
+      console.warn('Không tải được '+path+' từ GitHub; giữ dữ liệu dự phòng trên trình duyệt.',error);
+      return {key,error};
+    }
+  }));
+
+  results.forEach(result=>{
+    if(!result.error&&!result.missing&&Object.prototype.hasOwnProperty.call(result,'data')){
+      applyManualData(result.key,result.data);
+    }
+  });
+}
+
+function getManualDataForSave(key){
+  if(key==='productPrices'){
+    const result={...productPriceOverrides};
+    productGroups.forEach(group=>{result[group.name]=Math.max(0,Number(group.price)||0);});
+    return result;
+  }
+  if(key==='cardGroups')return cardGroups;
+  if(key==='perfumes')return perfumes;
+  if(key==='votes')return votes;
+  return null;
+}
+
+function queueManualSave(key){
+  if(!MANUAL_DATA_FILES[key]||!canEditManual())return;
+  manualSavePending.add(key);
+  clearTimeout(manualSaveTimer);
+  manualSaveTimer=setTimeout(flushManualSaves,500);
+  showAdmin('💾 Đã nhận thay đổi — đang chờ lưu dữ liệu lên GitHub...',true);
+}
+
+async function saveManualFileToGitHub(key){
+  const owner=document.getElementById('ghOwner')?.value.trim()||'';
+  const repo=document.getElementById('ghRepo')?.value.trim()||'';
+  const token=document.getElementById('ghToken')?.value.trim()||'';
+  if(!owner||!repo||!token)throw new Error('Thiếu Owner, Repository hoặc GitHub Token.');
+
+  const file=MANUAL_DATA_FILES[key];
+  const body=JSON.stringify(getManualDataForSave(key),null,2)+'\n';
+  let lastError=null;
+
+  // Gặp 409 thì lấy SHA mới nhất rồi thử lại có giới hạn.
+  for(let attempt=0;attempt<3;attempt++){
+    const existing=await ghGet(owner,repo,file.path,token);
+    try{
+      await ghPut(owner,repo,file.path,token,body,existing?.sha,'Update '+file.path);
+      return;
+    }catch(error){
+      lastError=error;
+      if(!String(error?.message||'').includes('→ 409')||attempt===2)throw error;
+    }
+  }
+  throw lastError||new Error('Không thể lưu '+file.path+'.');
+}
+
+async function flushManualSaves(){
+  if(manualSaveRunning||!manualSavePending.size)return;
+  if(!canEditManual())return;
+  manualSaveRunning=true;
+  const failures=[];
+  const saved=[];
+  try{
+    while(manualSavePending.size){
+      if(!canEditManual())break;
+      const key=manualSavePending.values().next().value;
+      manualSavePending.delete(key);
+      try{
+        await saveManualFileToGitHub(key);
+        saved.push(MANUAL_DATA_FILES[key].label);
+      }catch(error){
+        failures.push(MANUAL_DATA_FILES[key].path+': '+(error?.message||String(error)));
+      }
+    }
+  }finally{
+    manualSaveRunning=false;
+  }
+
+  if(failures.length){
+    showAdmin('❌ Không lưu được một số dữ liệu lên GitHub:<br>'+failures.map(esc).join('<br>')+'<br><span class="small">Dữ liệu vẫn còn ở trình duyệt này; m có thể sửa tiếp để thử lưu lại.</span>',false);
+  }else if(saved.length){
+    showAdmin('✅ Đã lưu lên GitHub: '+saved.map(esc).join(', ')+'.',true);
+  }
+
+  // Nếu người dùng sửa thêm trong lúc request chạy, xử lý theo hàng đợi một lần.
+  if(manualSavePending.size&&canEditManual()){
+    clearTimeout(manualSaveTimer);
+    manualSaveTimer=setTimeout(flushManualSaves,250);
+  }
+}
 
 /* =====================================================
    PRODUCTS
@@ -3078,6 +3307,208 @@ function cardRuleText(name){
 
 function money(v){ return Number(v||0).toLocaleString('vi-VN')+'đ'; }
 
+const ORDER_FIXED_FEE=30000;
+const ORDER_PRICE_PAGE_SIZE=100;
+let orderPricePage=1;
+let orderPriceRows=[];
+
+function orderItemLabel(item){
+  const title=String(item?.title||'').trim();
+  const variant=String(item?.variant_title||'').trim();
+  return title+(variant?' / '+variant:'');
+}
+
+function orderItemUnitPriceInfo(item){
+  const title=String(item?.title||'').trim();
+  const label=orderItemLabel(item);
+  // Có key trong product_prices.json thì giá 0đ cũng là giá đã nhập hợp lệ.
+  if(Object.prototype.hasOwnProperty.call(productPriceOverrides,title)){
+    return {price:Math.max(0,Number(productPriceOverrides[title])||0),found:true};
+  }
+  // Cho phép lưu giá riêng cho tên sản phẩm kèm variant; giá 0đ vẫn hợp lệ.
+  if(label!==title && Object.prototype.hasOwnProperty.call(productPriceOverrides,label)){
+    return {price:Math.max(0,Number(productPriceOverrides[label])||0),found:true};
+  }
+  // Dùng bảng giá mặc định/giá trong product_prices.json theo tên đầy đủ trước.
+  const detailedPrice=productPrice(label);
+  if(detailedPrice>0)return {price:detailedPrice,found:true};
+  // Dự phòng trường hợp dữ liệu Order đã gộp tên sản phẩm vào trường title.
+  const titlePrice=productPrice(title);
+  if(titlePrice>0)return {price:titlePrice,found:true};
+  return {price:0,found:false};
+}
+
+function orderItemUnitPrice(item){
+  return orderItemUnitPriceInfo(item).price;
+}
+
+function getOrderPriceDetails(order){
+  let subtotal=0;
+  const items=Array.isArray(order?.line_items)?order.line_items:[];
+  items.forEach(item=>{
+    const label=orderItemLabel(item);
+    const qty=Number(item?.quantity)||0;
+    if(!label || qty<=0)return;
+    const priceInfo=orderItemUnitPriceInfo(item);
+    subtotal+=priceInfo.price*qty;
+  });
+  return {subtotal,fee:ORDER_FIXED_FEE,total:subtotal+ORDER_FIXED_FEE};
+}
+
+function clearOrderPriceFilters(){
+  orderPricePage=1;
+  ['orderPriceSearchOrder','orderPriceSearchMail','orderPriceDateFrom','orderPriceDateTo'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.value='';
+  });
+  const amountFilter=document.getElementById('orderPriceAmountFilter');
+  if(amountFilter)amountFilter.value='all';
+  renderOrderPrices();
+}
+
+function renderOrderPrices(){
+  const tb=document.querySelector('#orderPricesTable tbody');
+  if(!tb)return;
+  tb.innerHTML='';
+
+  const val=id=>String(document.getElementById(id)?.value||'').trim().toLowerCase();
+  const qOrder=val('orderPriceSearchOrder');
+  const qMail=val('orderPriceSearchMail');
+  const amountFilter=document.getElementById('orderPriceAmountFilter')?.value||'all';
+  const fromValue=document.getElementById('orderPriceDateFrom')?.value||'';
+  const toValue=document.getElementById('orderPriceDateTo')?.value||'';
+  const fromTime=fromValue?new Date(fromValue).getTime():null;
+  const toTime=toValue?new Date(toValue).getTime():null;
+  const note=document.getElementById('orderPriceNote');
+
+  if(fromTime!==null&&toTime!==null&&fromTime>toTime){
+    orderPriceRows=[];
+    orderPricePage=1;
+    tb.innerHTML='<tr><td colspan="4" class="small">Khoảng thời gian không hợp lệ: Từ phải nhỏ hơn hoặc bằng Đến.</td></tr>';
+    renderOrderPricePagination(0);
+    if(note){note.textContent='Khoảng thời gian không hợp lệ.';note.style.color='#b45309';}
+    return;
+  }
+
+  const rows=allOrders.filter(isDisplayOrder).filter(order=>{
+    const code=orderKey(order).toLowerCase();
+    const mail=String(order.__mail||'').toLowerCase();
+    const created=new Date(order.created_at).getTime();
+    const hasDate=!isNaN(created);
+    return (!qOrder||code.includes(qOrder))
+      &&(!qMail||mail.includes(qMail))
+      &&(fromTime===null||(hasDate&&created>=fromTime))
+      &&(toTime===null||(hasDate&&created<=toTime));
+  });
+
+  orderPriceRows=rows.map(order=>({
+    order,
+    code:orderKey(order),
+    mail:String(order.__mail||''),
+    date:dateFmt(order.created_at)||'-',
+    ...getOrderPriceDetails(order)
+  }));
+
+  if(amountFilter==='gt1m')orderPriceRows=orderPriceRows.filter(row=>row.total>1000000);
+  else if(amountFilter==='lt1m')orderPriceRows=orderPriceRows.filter(row=>row.total<1000000);
+
+  const totalPages=Math.max(1,Math.ceil(orderPriceRows.length/ORDER_PRICE_PAGE_SIZE));
+  if(orderPricePage>totalPages)orderPricePage=totalPages;
+  if(orderPricePage<1)orderPricePage=1;
+  const startIndex=(orderPricePage-1)*ORDER_PRICE_PAGE_SIZE;
+  const visibleRows=orderPriceRows.slice(startIndex,startIndex+ORDER_PRICE_PAGE_SIZE);
+
+  let grandTotal=0;
+  orderPriceRows.forEach(row=>{
+    grandTotal+=row.total;
+  });
+
+  visibleRows.forEach(row=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td><b>'+esc(row.code||'-')+'</b></td>'
+      +'<td>'+esc(row.mail||'-')+'</td>'
+      +'<td>'+esc(row.date)+'</td>'
+      +'<td class="money-cell"><b>'+money(row.total)+'</b></td>';
+    tb.appendChild(tr);
+  });
+  const totalRow=document.createElement('tr');
+  totalRow.className='total-row';
+  totalRow.innerHTML='<td colspan="3"><b>TỔNG ĐƠN MERCH VIESHOP ('+orderPriceRows.length+' đơn đã lọc)</b></td>'
+    +'<td class="money-cell"><b>'+money(grandTotal)+'</b></td>';
+  tb.appendChild(totalRow);
+  renderOrderPricePagination(totalPages);
+
+  if(note){
+    if(!orderPriceRows.length){
+      note.textContent='Không có Order phù hợp bộ lọc từ 01/07/2026 trở đi.';
+      note.style.color='';
+    }else{
+      note.textContent='Có '+orderPriceRows.length.toLocaleString('vi-VN')+' Order phù hợp bộ lọc. Trang hiển thị tối đa 100 đơn; phí cố định 30.000đ đã được cộng vào từng đơn.';
+      note.style.color='';
+    }
+  }
+}
+
+function resetOrderPricePageAndRender(){
+  orderPricePage=1;
+  renderOrderPrices();
+}
+
+function renderOrderPricePagination(totalPages){
+  const box=document.getElementById('orderPricePagination');
+  if(!box)return;
+  box.innerHTML='';
+  const count=orderPriceRows.length;
+  const pages=Math.max(1,Number(totalPages)||1);
+  if(orderPricePage>pages)orderPricePage=pages;
+  const start=count?((orderPricePage-1)*ORDER_PRICE_PAGE_SIZE+1):0;
+  const end=Math.min(orderPricePage*ORDER_PRICE_PAGE_SIZE,count);
+
+  const makeButton=(label,page,disabled=false,active=false)=>{
+    const button=document.createElement('button');
+    button.type='button';
+    button.className='page-btn'+(active?' active':'');
+    button.textContent=label;
+    button.disabled=disabled;
+    button.onclick=()=>{
+      if(disabled||page===orderPricePage)return;
+      orderPricePage=page;
+      renderOrderPrices();
+    };
+    box.appendChild(button);
+  };
+  const makeDots=()=>{
+    const span=document.createElement('span');
+    span.className='page-info';
+    span.textContent='…';
+    box.appendChild(span);
+  };
+
+  makeButton('«',1,orderPricePage===1);
+  makeButton('‹',orderPricePage-1,orderPricePage===1);
+
+  let pageList=[];
+  if(pages<=7){
+    for(let p=1;p<=pages;p++)pageList.push(p);
+  }else{
+    pageList.push(1);
+    let from=Math.max(2,orderPricePage-2);
+    let to=Math.min(pages-1,orderPricePage+2);
+    if(from>2)pageList.push('dots');
+    for(let p=from;p<=to;p++)pageList.push(p);
+    if(to<pages-1)pageList.push('dots');
+    pageList.push(pages);
+  }
+  pageList.forEach(p=>p==='dots'?makeDots():makeButton(String(p),p,false,p===orderPricePage));
+  makeButton('›',orderPricePage+1,orderPricePage===pages);
+  makeButton('»',pages,orderPricePage===pages);
+
+  const info=document.createElement('span');
+  info.className='page-info';
+  info.textContent='Đơn '+start.toLocaleString('vi-VN')+'–'+end.toLocaleString('vi-VN')+' / '+count.toLocaleString('vi-VN')+' · 100 đơn/trang';
+  box.appendChild(info);
+}
+
 function buildProducts(){
   const m=new Map();
   allOrders.filter(o => isDisplayOrder(o) && String(o.financial_status||'').toLowerCase()==='paid').forEach(o=>{
@@ -3102,6 +3533,7 @@ function buildProducts(){
   renderCards();
   renderPerfumes();
   renderVotes();
+  renderOrderPrices();
   updateGrandTotal();
 }
 
@@ -3132,7 +3564,9 @@ function updateProductPrice(index,value){
   saveLocal(STORAGE_KEYS.productPrices,productPriceOverrides);
   g.price=price;
   renderProducts();
+  renderOrderPrices();
   updateGrandTotal();
+  queueManualSave('productPrices');
 }
 
 function renderCards(){
@@ -3233,15 +3667,18 @@ function deleteVoteRow(index){ if(!requireManualEdit())return; if(!votes[index])
 function getVoteTotal(){ return votes.reduce((sum,v)=>sum+(Number(v.qty)||0)*(Number(v.price)||0),0); }
 
 function getProductTotal(){ return productGroups.reduce((sum,g)=>sum+(Number(g.total)||0)*(Number(g.price)||0),0); }
+function getMerchOrderTotal(){
+  return allOrders.filter(isDisplayOrder).reduce((sum,order)=>sum+getOrderPriceDetails(order).total,0);
+}
 function updateGrandTotal(){
-  const productTotal=getProductTotal();
+  const merchTotal=getMerchOrderTotal();
   const perfumeTotal=getPerfumeTotal();
   const voteTotal=getVoteTotal();
-  const total=productTotal+perfumeTotal+voteTotal;
+  const total=merchTotal+perfumeTotal+voteTotal;
   const totalEl=document.getElementById('grandTotal');
   if(totalEl)totalEl.textContent=money(total);
   const breakdown=document.getElementById('grandTotalBreakdown');
-  if(breakdown)breakdown.textContent='Sản phẩm: '+money(productTotal)+' · Nước hoa: '+money(perfumeTotal)+' · Mua vote: '+money(voteTotal);
+  if(breakdown)breakdown.textContent='Đơn Merch VieShop: '+money(merchTotal)+' · Nước hoa: '+money(perfumeTotal)+' · Mua vote: '+money(voteTotal);
 }
 
 /* =====================================================
@@ -4191,6 +4628,18 @@ function downloadCSV(
 
 
 
+function exportOrderPrices(){
+  if(!orderPriceRows.length){alert('Chưa có Order phù hợp từ 01/07/2026 trở đi.');return;}
+  const rows=[['Mã đơn hàng','Mail','Thời gian đặt','Giá đơn hàng']];
+  let total=0;
+  orderPriceRows.forEach(row=>{
+    rows.push([row.code,row.mail,row.date,row.total]);
+    total+=row.total;
+  });
+  rows.push(['TỔNG ĐƠN MERCH VIESHOP','','',total]);
+  downloadCSV(rows,'don-merch-vieshop.csv');
+}
+
 function exportProducts(){
   if(!productGroups.length){alert('Chưa có sản phẩm từ Order đặt từ 01/07/2026 trở đi.');return;}
   const rows=[['STT','Tên sản phẩm','Loại sản phẩm','Số lượng','Đơn giá','Thành tiền']]; let stt=1,total=0;
@@ -4269,6 +4718,7 @@ function applyRoute(){
     renderCards();
     renderPerfumes();
     renderVotes();
+    renderOrderPrices();
 
   }
 
