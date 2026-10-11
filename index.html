@@ -1018,7 +1018,6 @@ Tổng bản ghi: 0
 <h2>🛍️ Tổng hợp sản phẩm</h2>
 
 <p class="small">
-
 </p>
 
 <button
@@ -3186,9 +3185,9 @@ async function loadManualDataFromGitHub(){
 
 function getManualDataForSave(key){
   if(key==='productPrices'){
-    const result={...productPriceOverrides};
-    productGroups.forEach(group=>{result[group.name]=Math.max(0,Number(group.price)||0);});
-    return result;
+    // Giữ cả giá chung cũ lẫn giá riêng theo "Tên sản phẩm / Loại sản phẩm".
+    // Không ghi đè giá từng variant bằng một giá chung.
+    return {...productPriceOverrides};
   }
   if(key==='cardGroups')return cardGroups;
   if(key==='perfumes')return perfumes;
@@ -3305,6 +3304,22 @@ function productPrice(name){
     : (prices[key] ?? 0);
 }
 
+function productVariantPriceKey(name,variant){
+  const productName=String(name||'').trim();
+  const variantName=String(variant||'').trim();
+  return variantName ? productName+' / '+variantName : productName;
+}
+
+function productVariantPrice(name,variant){
+  const key=productVariantPriceKey(name,variant);
+  // Giá theo cả tên và loại sản phẩm được ưu tiên, kể cả khi giá là 0đ.
+  if(Object.prototype.hasOwnProperty.call(productPriceOverrides,key)){
+    return Math.max(0,Number(productPriceOverrides[key])||0);
+  }
+  // Chưa có giá riêng theo loại thì dùng giá chung/giá mặc định.
+  return productPrice(name);
+}
+
 function cardRuleText(name){
   const row=cardGroups.find(g=>String(g.name||'').trim()===String(name||'').trim());
   return row ? String(row.rule||'') : '';
@@ -3326,18 +3341,16 @@ function orderItemLabel(item){
 function orderItemUnitPriceInfo(item){
   const title=String(item?.title||'').trim();
   const label=orderItemLabel(item);
-  // Có key trong product_prices.json thì giá 0đ cũng là giá đã nhập hợp lệ.
-  if(Object.prototype.hasOwnProperty.call(productPriceOverrides,title)){
-    return {price:Math.max(0,Number(productPriceOverrides[title])||0),found:true};
-  }
-  // Cho phép lưu giá riêng cho tên sản phẩm kèm variant; giá 0đ vẫn hợp lệ.
+  // Giá riêng theo variant luôn ưu tiên trước giá chung của tên sản phẩm.
   if(label!==title && Object.prototype.hasOwnProperty.call(productPriceOverrides,label)){
     return {price:Math.max(0,Number(productPriceOverrides[label])||0),found:true};
   }
-  // Dùng bảng giá mặc định/giá trong product_prices.json theo tên đầy đủ trước.
+  // Giá chung có thể là 0đ; vẫn xem là giá hợp lệ nếu key tồn tại.
+  if(Object.prototype.hasOwnProperty.call(productPriceOverrides,title)){
+    return {price:Math.max(0,Number(productPriceOverrides[title])||0),found:true};
+  }
   const detailedPrice=productPrice(label);
   if(detailedPrice>0)return {price:detailedPrice,found:true};
-  // Dự phòng trường hợp dữ liệu Order đã gộp tên sản phẩm vào trường title.
   const titlePrice=productPrice(title);
   if(titlePrice>0)return {price:titlePrice,found:true};
   return {price:0,found:false};
@@ -3448,7 +3461,7 @@ function renderOrderPrices(){
       note.textContent='Không có Order đã thanh toán phù hợp bộ lọc từ 01/07/2026 trở đi.';
       note.style.color='';
     }else{
-      note.textContent='Có '+orderPriceRows.length.toLocaleString('vi-VN')+' Order đã thanh toán phù hợp bộ lọc.';
+      note.textContent='Có '+orderPriceRows.length.toLocaleString('vi-VN')+' Order đã thanh toán phù hợp bộ lọc. ';
       note.style.color='';
     }
   }
@@ -3528,12 +3541,17 @@ function buildProducts(){
   productGroups=[];
   m.forEach((vm,name)=>{
     const variants=[]; let total=0;
-    vm.forEach((q,v)=>{variants.push({name:v,quantity:q}); total+=q;});
-    productGroups.push({name,variants,total,price:productPrice(name)});
+    vm.forEach((q,v)=>{
+      variants.push({name:v,quantity:q,price:productVariantPrice(name,v),priceKey:productVariantPriceKey(name,v)});
+      total+=q;
+    });
+    productGroups.push({name,variants,total});
   });
   productGroups.sort((a,b)=>a.name.localeCompare(b.name,'vi'));
-
-  productGroups.forEach((g,idx)=>g._index=idx);
+  productGroups.forEach((g,idx)=>{
+    g._index=idx;
+    g.variants.forEach((v,variantIndex)=>v._index=variantIndex);
+  });
   renderProducts();
   renderCards();
   renderPerfumes();
@@ -3545,29 +3563,42 @@ function buildProducts(){
 function renderProducts(){
   const tb=document.querySelector('#productsTable tbody'); if(!tb)return; tb.innerHTML='';
   let stt=1,totalQty=0,totalMoney=0;
+  const editable=canEditManual();
   productGroups.forEach(g=>{
-    const amount=g.total*g.price; totalMoney+=amount; totalQty+=g.total;
-    const priceInput=canEditManual()
-      ? '<input class=\"edit-input\" type=\"number\" min=\"0\" step=\"1\" value=\"'+esc(g.price)+'\" onchange=\"updateProductPrice('+g._index+',this.value)\">'
-      : '<span>'+esc(g.price)+'</span>';
     g.variants.forEach((v,i)=>{
+      const qty=Number(v.quantity)||0;
+      const price=Math.max(0,Number(v.price)||0);
+      const amount=qty*price;
+      totalMoney+=amount; totalQty+=qty;
+      const priceInput=editable
+        ? '<input class="edit-input" type="number" min="0" step="1" value="'+esc(price)+'" onchange="updateProductPrice('+g._index+','+v._index+',this.value)" title="Đơn giá riêng cho loại sản phẩm này">'
+        : '<span>'+esc(price)+'</span>';
       const tr=document.createElement('tr');
-      tr.innerHTML=(i===0?'<td rowspan=\"'+g.variants.length+'\">'+stt+'</td><td rowspan=\"'+g.variants.length+'\"><b>'+esc(g.name)+'</b><div class=\"small\">Tổng: '+g.total+'</div></td>':'')+'<td>'+esc(v.name||'Không có loại')+'</td><td><b>'+v.quantity+'</b></td>'+(i===0?'<td rowspan=\"'+g.variants.length+'\" class=\"price-cell\">'+priceInput+'</td><td rowspan=\"'+g.variants.length+'\" class=\"money-cell\"><b>'+money(amount)+'</b></td>':'');
+      tr.innerHTML=(i===0?'<td rowspan="'+g.variants.length+'">'+stt+'</td><td rowspan="'+g.variants.length+'"><b>'+esc(g.name)+'</b><div class="small">Tổng: '+g.total+'</div></td>':'')
+        +'<td>'+esc(v.name||'Không có loại')+'</td>'
+        +'<td><b>'+qty+'</b></td>'
+        +'<td class="price-cell">'+priceInput+'</td>'
+        +'<td class="money-cell"><b>'+money(amount)+'</b></td>';
       tb.appendChild(tr);
-    }); stt++;
+    });
+    stt++;
   });
   const tr=document.createElement('tr');
-  tr.innerHTML='<td colspan=\"3\"><b>TỔNG TẤT CẢ</b></td><td><b>'+totalQty+'</b></td><td></td><td class=\"money-cell\"><b>'+money(totalMoney)+'</b></td>';
+  tr.innerHTML='<td colspan="3"><b>TỔNG TẤT CẢ</b></td><td><b>'+totalQty+'</b></td><td></td><td class="money-cell"><b>'+money(totalMoney)+'</b></td>';
   tb.appendChild(tr);
 }
 
-function updateProductPrice(index,value){
+function updateProductPrice(groupIndex,variantIndex,value){
   if(!requireManualEdit())return;
-  const g=productGroups[index]; if(!g)return;
+  const g=productGroups[groupIndex]; if(!g)return;
+  const v=g.variants[variantIndex]; if(!v)return;
   const price=Math.max(0,Number(value)||0);
-  productPriceOverrides[g.name]=price;
+  const key=productVariantPriceKey(g.name,v.name);
+  // Lưu theo "Tên sản phẩm / Loại sản phẩm" để các variant cùng tên có giá riêng.
+  productPriceOverrides[key]=price;
+  v.price=price;
+  v.priceKey=key;
   saveLocal(STORAGE_KEYS.productPrices,productPriceOverrides);
-  g.price=price;
   renderProducts();
   renderOrderPrices();
   updateGrandTotal();
@@ -3688,7 +3719,7 @@ function updateVoteRow(index,key,value){ if(!requireManualEdit())return; if(!vot
 function deleteVoteRow(index){ if(!requireManualEdit())return; if(!votes[index])return; votes.splice(index,1); saveVoteState(); renderVotes(); updateGrandTotal(); }
 function getVoteTotal(){ return votes.reduce((sum,v)=>sum+(Number(v.qty)||0)*(Number(v.price)||0),0); }
 
-function getProductTotal(){ return productGroups.reduce((sum,g)=>sum+(Number(g.total)||0)*(Number(g.price)||0),0); }
+function getProductTotal(){ return productGroups.reduce((sum,g)=>sum+g.variants.reduce((variantSum,v)=>variantSum+(Number(v.quantity)||0)*(Number(v.price)||0),0),0); }
 function getMerchOrderTotal(){
   // Đồng bộ đúng bộ lọc của tab Đơn Merch VieShop: từ 01/07/2026 và đã thanh toán.
   return allOrders
@@ -4667,9 +4698,19 @@ function exportOrderPrices(){
 
 function exportProducts(){
   if(!productGroups.length){alert('Chưa có sản phẩm từ Order đặt từ 01/07/2026 trở đi.');return;}
-  const rows=[['STT','Tên sản phẩm','Loại sản phẩm','Số lượng','Đơn giá','Thành tiền']]; let stt=1,total=0;
-  productGroups.forEach(g=>{const amount=g.total*g.price; total+=amount; g.variants.forEach((v,i)=>rows.push([i===0?stt:'',i===0?g.name:'',v.name,v.quantity,i===0?g.price:'',i===0?amount:'']));stt++;});
-  rows.push(['','','TỔNG',productGroups.reduce((s,g)=>s+g.total,0),'',total]); downloadCSV(rows,'tong-hop-san-pham.csv');
+  const rows=[['STT','Tên sản phẩm','Loại sản phẩm','Số lượng','Đơn giá','Thành tiền']]; let stt=1,total=0,totalQty=0;
+  productGroups.forEach(g=>{
+    g.variants.forEach((v,i)=>{
+      const qty=Number(v.quantity)||0;
+      const price=Math.max(0,Number(v.price)||0);
+      const amount=qty*price;
+      total+=amount; totalQty+=qty;
+      rows.push([i===0?stt:'',i===0?g.name:'',v.name,qty,price,amount]);
+    });
+    stt++;
+  });
+  rows.push(['','','TỔNG',totalQty,'',total]);
+  downloadCSV(rows,'tong-hop-san-pham.csv');
 }
 
 function exportCards(){
