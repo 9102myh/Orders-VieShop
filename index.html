@@ -574,6 +574,8 @@ tr:nth-child(even){
 
 }
 .proof-input{min-width:220px;}
+.proof-link{display:inline-block;max-width:320px;color:#2563eb;text-decoration:underline;overflow-wrap:anywhere;word-break:break-word;}
+.proof-link-wrap{margin-top:5px;font-size:12px;}
 .note-input{min-width:220px;min-height:38px;resize:vertical;}
 .note-text{min-width:160px;white-space:pre-wrap;overflow-wrap:anywhere;}
 </style>
@@ -1016,7 +1018,7 @@ Tổng bản ghi: 0
 <h2>🛍️ Tổng hợp sản phẩm</h2>
 
 <p class="small">
-Chỉ tổng hợp sản phẩm từ các Order <b>đã thanh toán (financial_status = paid)</b> và đặt từ <b>01/07/2026</b> trở đi. Đơn giá có thể sửa trực tiếp trong bảng; thay đổi được lưu trên trình duyệt.
+
 </p>
 
 <button
@@ -1116,7 +1118,7 @@ Chỉ tổng hợp sản phẩm từ các Order <b>đã thanh toán (financial_s
 <div id="cardsTab" class="tab-panel">
   <div class="card">
     <h2>🎴 Chia card</h2>
-    <p class="small">Tự thêm / sửa / xóa. Cả <b>Sản phẩm</b> và <b>Số lượng card</b> đều là ô nhập chữ (string). Nội dung mặc định là đúng quy tắc card m đã gửi.</p>
+    <p class="small"></p>
     <div class="actions" style="margin-bottom:12px">
       <button class="button btn-add" onclick="addCardRow()">＋ Thêm sản phẩm</button>
       <button class="button export" onclick="exportCards()">📥 Export chia card</button>
@@ -1136,7 +1138,7 @@ Chỉ tổng hợp sản phẩm từ các Order <b>đã thanh toán (financial_s
 <div id="perfumeTab" class="tab-panel">
   <div class="card">
     <h2>🌸 Nước hoa</h2>
-    <p class="small">Tự thêm / sửa / xóa. Tổng tiền = số lượng × đơn giá.</p>
+    <p class="small"></p>
     <div class="actions" style="margin-bottom:12px">
       <button class="button btn-add" onclick="addPerfumeRow()">＋ Thêm nước hoa</button>
       <button class="button export" onclick="exportPerfumes()">📥 Export nước hoa</button>
@@ -1156,7 +1158,7 @@ Chỉ tổng hợp sản phẩm từ các Order <b>đã thanh toán (financial_s
 <div id="voteTab" class="tab-panel">
   <div class="card">
     <h2>🗳️ Mua vote</h2>
-    <p class="small">Tự thêm / sửa / xóa. Tổng tiền = số lượng vote × đơn giá.</p>
+    <p class="small"></p>
     <div class="actions" style="margin-bottom:12px">
       <button class="button btn-add" onclick="addVoteRow()">＋ Thêm lượt vote</button>
       <button class="button export" onclick="exportVotes()">📥 Export mua vote</button>
@@ -3618,7 +3620,7 @@ function renderProofValue(proof){
   const value=String(proof||'').trim();
   if(!value)return '<span class="small">—</span>';
   if(/^https?:\/\//i.test(value)){
-    return '<a href="'+esc(value)+'" target="_blank" rel="noopener noreferrer">Mở proof</a>';
+    return '<a class="proof-link" href="'+esc(value)+'" target="_blank" rel="noopener noreferrer" title="Mở link proof">'+esc(value)+'</a>';
   }
   return '<span>'+esc(value)+'</span>';
 }
@@ -3637,7 +3639,7 @@ function renderPerfumes(){
       +'<td>'+(editable?'<input class="edit-input" type="number" min="0" step="1" value="'+esc(qty)+'" onchange="updatePerfumeRow('+i+',\'qty\',this.value)">':'<span>'+esc(qty)+'</span>')+'</td>'
       +'<td>'+(editable?'<input class="edit-input" type="number" min="0" step="1" value="'+esc(price)+'" onchange="updatePerfumeRow('+i+',\'price\',this.value)">':'<span>'+esc(price)+'</span>')+'</td>'
       +'<td class="money-cell"><b>'+money(amount)+'</b></td>'
-      +'<td>'+(editable?'<input class="edit-input proof-input" type="text" placeholder="https://..." value="'+esc(proof)+'" onchange="updatePerfumeRow('+i+',\'proof\',this.value)" title="Link proof">':renderProofValue(proof))+'</td>'
+      +'<td>'+(editable?'<input class="edit-input proof-input" type="text" placeholder="https://..." value="'+esc(proof)+'" onchange="updatePerfumeRow('+i+',\'proof\',this.value)" title="Link proof">'+(proof.trim()?'<div class="proof-link-wrap">'+renderProofValue(proof)+'</div>':''):renderProofValue(proof))+'</td>'
       +'<td>'+(editable?'<textarea class="edit-input note-input" placeholder="Nhập ghi chú..." onchange="updatePerfumeRow('+i+',\'note\',this.value)">'+esc(note)+'</textarea>':'<div class="note-text">'+(esc(note)||'—')+'</div>')+'</td>'
       +(editable?'<td><button class="button btn-danger" onclick="deletePerfumeRow('+i+')">🗑 Xóa</button></td>':'');
     tb.appendChild(tr);
@@ -3668,7 +3670,7 @@ function renderVotes(){
       +'<td>'+(editable?'<input class="edit-input" type="number" min="0" step="1" value="'+esc(qty)+'" onchange="updateVoteRow('+i+',\'qty\',this.value)">':'<span>'+esc(qty)+'</span>')+'</td>'
       +'<td>'+(editable?'<input class="edit-input" type="number" min="0" step="1" value="'+esc(price)+'" onchange="updateVoteRow('+i+',\'price\',this.value)">':'<span>'+esc(price)+'</span>')+'</td>'
       +'<td class="money-cell"><b>'+money(amount)+'</b></td>'
-      +'<td>'+(editable?'<input class="edit-input proof-input" type="text" placeholder="https://..." value="'+esc(proof)+'" onchange="updateVoteRow('+i+',\'proof\',this.value)" title="Link proof">':renderProofValue(proof))+'</td>'
+      +'<td>'+(editable?'<input class="edit-input proof-input" type="text" placeholder="https://..." value="'+esc(proof)+'" onchange="updateVoteRow('+i+',\'proof\',this.value)" title="Link proof">'+(proof.trim()?'<div class="proof-link-wrap">'+renderProofValue(proof)+'</div>':''):renderProofValue(proof))+'</td>'
       +'<td>'+(editable?'<textarea class="edit-input note-input" placeholder="Nhập ghi chú..." onchange="updateVoteRow('+i+',\'note\',this.value)">'+esc(note)+'</textarea>':'<div class="note-text">'+(esc(note)||'—')+'</div>')+'</td>'
       +(editable?'<td><button class="button btn-danger" onclick="deleteVoteRow('+i+')">🗑 Xóa</button></td>':'');
     tb.appendChild(tr);
