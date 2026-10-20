@@ -825,7 +825,7 @@ Tổng tiền
 Tổng bản ghi: 0
 </b>
 <span class="selected-count" aria-live="polite">
-  ☑ SFC đã nhận: <b id="checkedOrderCount">0</b> Order
+  ☑ SFC đã nhận: <b id="checkedOrderCount">0</b> đơn
 </span>
 </div>
 
@@ -3208,7 +3208,7 @@ function renderOrderPrices(){
   orderPriceRows=rows.map(order=>({
     order,
     code:orderKey(order),
-    mail:String(order.__mail||''),
+    mail:maskMail(order.__mail||''),
     date:dateFmt(order.created_at)||'-',
     ...getOrderPriceDetails(order)
   }));
