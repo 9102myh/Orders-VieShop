@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -744,7 +746,20 @@ Mail
 
 </div>
 
+<div class="summary-box">
 
+<div
+  id="deliveredCount"
+  class="summary-number"
+>
+0
+</div>
+
+<div class="summary-label">
+Đã giao hàng
+</div>
+
+</div>
 
 <div class="summary-box">
 
@@ -756,7 +771,7 @@ Mail
 </div>
 
 <div class="summary-label">
-Tổng đơn
+Đã thanh toán
 </div>
 
 </div>
@@ -789,6 +804,7 @@ Tổng tiền
   <button class="tab-btn active" data-tab="ordersTab" onclick="switchTab('ordersTab',this)">📦 Danh sách Order</button>
   <button class="tab-btn" data-tab="productsTab" onclick="switchTab('productsTab',this)">🛍️ Tổng hợp sản phẩm</button>
   <button class="tab-btn" data-tab="orderPricesTab" onclick="switchTab('orderPricesTab',this)">💰 Đơn Merch VieShop</button>
+  <button class="tab-btn" data-tab="cardsTab" onclick="switchTab('cardsTab',this)">🎴 Chia card</button>
   <button class="tab-btn" data-tab="perfumeTab" onclick="switchTab('perfumeTab',this)">🌸 Nước hoa</button>
   <button class="tab-btn" data-tab="voteTab" onclick="switchTab('voteTab',this)">🗳️ Mua vote</button>
 </div>
@@ -859,7 +875,12 @@ Tổng bản ghi: 0
 
 </div>
 
-
+<button
+  class="button export"
+  onclick="exportOrders()"
+>
+📥 Export danh sách Order
+</button>
 
 <div
   class="table-wrap"
@@ -904,10 +925,30 @@ Tổng bản ghi: 0
 <th>
   <div class="th-filter">
     <div class="th-title">Thanh toán</div>
+    <select
+      id="paymentFilter"
+      onchange="applyFilters()"
+    >
+      <option value="">Tất cả</option>
+      <option value="paid">Đã thanh toán</option>
+      <option value="pending">Chờ thanh toán</option>
+    </select>
   </div>
 </th>
 
-
+<th>
+  <div class="th-filter">
+    <div class="th-title">Giao hàng</div>
+    <select
+      id="fulfillmentFilter"
+      onchange="applyFilters()"
+    >
+      <option value="">Tất cả</option>
+      <option value="fulfilled">Đã giao hàng</option>
+      <option value="notfulfilled">Chưa giao hàng</option>
+    </select>
+  </div>
+</th>
 
 <th>
   <div class="th-filter">
@@ -957,6 +998,9 @@ Tổng bản ghi: 0
 
 <div style="margin:10px 0;display:flex;flex-direction:column;align-items:flex-start;gap:10px">
   <div style="width:100%;display:flex;justify-content:flex-start">
+    <button class="button export" style="white-space:nowrap" onclick="exportProducts()">
+      📥 Export tổng hợp sản phẩm
+    </button>
   </div>
   <div class="field" style="width:100%;max-width:720px;display:flex;flex-direction:row;align-items:center;gap:10px;margin:0">
     <label for="productNameSearch" style="white-space:nowrap;margin:0;flex:0 0 auto">Tìm theo tên sản phẩm</label>
@@ -1018,6 +1062,7 @@ Tổng bản ghi: 0
     </div>
 
     <div class="actions" style="margin-bottom:12px">
+      <button class="button export" onclick="exportOrderPrices()">📥 Export Đơn Merch VieShop</button>
     </div>
     <div class="table-wrap">
       <table id="orderPricesTable">
@@ -1046,6 +1091,26 @@ Tổng bản ghi: 0
 </div>
 
 <!-- =====================================================
+     CARDS
+====================================================== -->
+<div id="cardsTab" class="tab-panel">
+  <div class="card">
+    <h2>🎴 Chia card</h2>
+    <p class="small"></p>
+    <div class="actions" style="margin-bottom:12px">
+      <button class="button btn-add" onclick="addCardRow()">＋ Thêm sản phẩm</button>
+      <button class="button export" onclick="exportCards()">📥 Export chia card</button>
+    </div>
+    <div class="table-wrap">
+      <table id="cardsTable">
+        <thead><tr><th>STT</th><th>SẢN PHẨM</th><th>SỐ LƯỢNG CARD</th><th>Thao tác</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================
      PERFUME
 ====================================================== -->
 <div id="perfumeTab" class="tab-panel">
@@ -1054,6 +1119,7 @@ Tổng bản ghi: 0
     <p class="small"></p>
     <div class="actions" style="margin-bottom:12px">
       <button class="button btn-add" onclick="addPerfumeRow()">＋ Thêm nước hoa</button>
+      <button class="button export" onclick="exportPerfumes()">📥 Export nước hoa</button>
     </div>
     <div class="table-wrap">
       <table id="perfumeTable">
@@ -1073,6 +1139,7 @@ Tổng bản ghi: 0
     <p class="small"></p>
     <div class="actions" style="margin-bottom:12px">
       <button class="button btn-add" onclick="addVoteRow()">＋ Thêm lượt vote</button>
+      <button class="button export" onclick="exportVotes()">📥 Export mua vote</button>
     </div>
     <div class="table-wrap">
       <table id="voteTable">
@@ -1179,16 +1246,6 @@ function esc(v){
 
 }
 
-function maskMail(v){
-  const mail=String(v||'').trim();
-  const at=mail.lastIndexOf('@');
-  if(at<=0)return mail;
-  const local=mail.slice(0,at);
-  const domain=mail.slice(at+1);
-  if(local.length<=4)return local[0]+'*'.repeat(Math.max(3,local.length-2))+local.slice(-1)+'@'+domain;
-  return local.slice(0,2)+'*'.repeat(Math.max(3,local.length-4))+local.slice(-2)+'@'+domain;
-}
-
 function normMail(v){
 
   return String(v||'')
@@ -1244,6 +1301,15 @@ function dateFmt(v){
     }
   );
 
+}
+
+function maskMail(v){
+  const mail=String(v||'').trim();
+  const at=mail.lastIndexOf('@');
+  if(at<=0)return mail;
+  const local=mail.slice(0,at), domain=mail.slice(at+1);
+  if(local.length<=4)return local[0]+'*'.repeat(Math.max(3,local.length-2))+local.slice(-1)+'@'+domain;
+  return local.slice(0,2)+'*'.repeat(Math.max(3,local.length-4))+local.slice(-2)+'@'+domain;
 }
 
 function showAdmin(msg,ok=true){
@@ -1962,12 +2028,22 @@ async function loadData(){
         new Date(a.created_at)
     );
 
-    const displayOrders=allOrders.filter(o=>isDisplayOrder(o) && String(o?.financial_status||'').trim().toLowerCase()==='paid');
+    const displayOrders=allOrders.filter(isDisplayOrder);
     const displayMails=new Set(displayOrders.map(o=>String(o.__mail||'').trim().toLowerCase()).filter(Boolean));
 
     document.getElementById(
       'mailCount'
     ).textContent=displayMails.size;
+
+    document.getElementById(
+      'deliveredCount'
+    ).textContent=
+      displayOrders.filter(
+        o=>
+          String(
+            o.fulfillment_status||''
+          ).toLowerCase()==='fulfilled'
+      ).length;
 
     document.getElementById(
       'paidCount'
@@ -2073,9 +2149,15 @@ function applyFilters(){
       ? new Date(dateToValue).getTime()
       : null;
 
-  const p='paid';
+  const p=
+    document.getElementById(
+      'paymentFilter'
+    ).value;
 
-  const f='';
+  const f=
+    document.getElementById(
+      'fulfillmentFilter'
+    ).value;
 
   if(
     dateFrom!==null &&
@@ -2096,8 +2178,10 @@ function applyFilters(){
   }
 
   filteredOrders=
-    allOrders.filter(isDisplayOrder).filter(o=>String(o?.financial_status||'').trim().toLowerCase()==='paid').filter(
+    allOrders.filter(isDisplayOrder).filter(
       o=>
+        (isAdminMode() || String(o?.financial_status||'').trim().toLowerCase()==='paid')
+        &&
 
         (!q1||
           orderKey(o)
@@ -2165,6 +2249,13 @@ function applyFilters(){
           ).toLowerCase()===p
         )
 
+        &&
+
+        (!f||
+          String(
+            o.fulfillment_status||''
+          ).toLowerCase()===f
+        )
 
     );
 
@@ -2350,7 +2441,7 @@ function renderOrders(){
               '<td rowspan="'+
                 rowspan+
               '">'+
-                esc(maskMail(o.__mail||''))+
+                esc(isAdminMode() ? (o.__mail||'') : maskMail(o.__mail||''))+
               '</td>';
 
             cells+=
@@ -2370,6 +2461,15 @@ function renderOrders(){
               '">'+
                 paymentBadge(
                   o.financial_status
+                )+
+              '</td>';
+
+            cells+=
+              '<td rowspan="'+
+                rowspan+
+              '">'+
+                fulfillmentBadge(
+                  o.fulfillment_status
                 )+
               '</td>';
 
@@ -3129,7 +3229,7 @@ function renderOrderPrices(){
   orderPriceRows=rows.map(order=>({
     order,
     code:orderKey(order),
-    mail:maskMail(order.__mail||''),
+    mail:String(order.__mail||''),
     date:dateFmt(order.created_at)||'-',
     ...getOrderPriceDetails(order)
   }));
@@ -3260,6 +3360,7 @@ function buildProducts(){
     g.variants.forEach((v,variantIndex)=>v._index=variantIndex);
   });
   renderProducts();
+  renderCards();
   renderPerfumes();
   renderVotes();
   renderOrderPrices();
@@ -4337,6 +4438,14 @@ function exportProducts(){
   downloadCSV(rows,'tong-hop-san-pham.csv');
 }
 
+function exportCards(){
+  if(!cardGroups.length){alert('Chưa có quy tắc card.');return;}
+  const rows=[['STT','SẢN PHẨM','SỐ LƯỢNG CARD']];
+  let stt=1;
+  cardGroups.forEach(g=>{rows.push([stt,g.name.toUpperCase(),g.rule]);stt++;});
+  downloadCSV(rows,'chia-card.csv');
+}
+
 function exportPerfumes(){
   const rows=[['STT','NƯỚC HOA','SỐ LƯỢNG','ĐƠN GIÁ','THÀNH TIỀN','LINK PROOF','GHI CHÚ']];
   perfumes.forEach((p,i)=>rows.push([i+1,p.name,Number(p.qty)||0,Number(p.price)||0,(Number(p.qty)||0)*(Number(p.price)||0),p.proof||'',p.note||'']));
@@ -4393,7 +4502,8 @@ function applyRoute(){
 
     renderOrders();
     renderProducts();
-      renderPerfumes();
+    renderCards();
+    renderPerfumes();
     renderVotes();
     renderOrderPrices();
 
@@ -4448,7 +4558,8 @@ document.addEventListener(
 
         renderOrders();
         renderProducts();
-              renderPerfumes();
+        renderCards();
+        renderPerfumes();
         renderVotes();
 
       }
@@ -4463,5 +4574,26 @@ document.addEventListener(
 
 </script>
 
+<script>
+(function(){
+  function applyPublicUi(){
+    const admin=location.hash.toLowerCase()==='#admin';
+    const paidLabel=document.querySelector('#paidCount')?.parentElement?.querySelector('.summary-label');
+    if(paidLabel) paidLabel.textContent=admin?'Đã thanh toán':'Tổng đơn';
+    if(admin) return;
+    document.getElementById('deliveredCount')?.closest('.summary-box')?.remove();
+    document.querySelector('[data-tab="cardsTab"]')?.remove();
+    document.getElementById('cardsTab')?.remove();
+    document.querySelectorAll('.export').forEach(el=>el.remove());
+    document.getElementById('fulfillmentFilter')?.closest('label, .filter-group, .filter-item')?.remove();
+    document.querySelectorAll('#ordersTable thead th').forEach(th=>{if(th.textContent.trim().toLowerCase().includes('giao hàng')) th.remove();});
+    document.querySelectorAll('#ordersTable tbody tr').forEach(tr=>{const cells=[...tr.children]; cells.forEach(td=>{if(td.textContent.trim()==='Đã giao hàng'||td.textContent.trim()==='Chưa giao hàng') td.remove();});});
+  }
+  document.addEventListener('DOMContentLoaded',applyPublicUi);
+  window.addEventListener('hashchange',()=>location.reload());
+  const oldRender=window.renderOrders;
+  if(typeof oldRender==='function') window.renderOrders=function(){oldRender.apply(this,arguments);applyPublicUi();};
+})();
+</script>
 </body>
 </html>
