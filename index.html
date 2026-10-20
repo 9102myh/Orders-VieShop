@@ -825,7 +825,7 @@ Tổng tiền
 Tổng bản ghi: 0
 </b>
 <span class="selected-count" aria-live="polite">
-  ☑ SFC đã nhận: <b id="checkedOrderCount">0</b> đơn
+  ☑ SFC đã nhận: <b id="checkedOrderCount">0</b> Order
 </span>
 </div>
 
@@ -2035,25 +2035,8 @@ async function loadData(){
       'mailCount'
     ).textContent=displayMails.size;
 
-    document.getElementById(
-      'deliveredCount'
-    ).textContent=
-      displayOrders.filter(
-        o=>
-          String(
-            o.fulfillment_status||''
-          ).toLowerCase()==='fulfilled'
-      ).length;
-
-    document.getElementById(
-      'paidCount'
-    ).textContent=
-      displayOrders.filter(
-        o=>
-          String(
-            o.financial_status||''
-          ).toLowerCase()==='paid'
-      ).length;
+    const paidCountEl=document.getElementById('paidCount');
+    if(paidCountEl) paidCountEl.textContent=displayOrders.filter(o=>String(o.financial_status||'').trim().toLowerCase()==='paid').length;
 
     // Đọc dữ liệu dùng chung của các tab; file chưa tồn tại thì giữ dữ liệu dự phòng.
     await loadManualDataFromGitHub();
@@ -2149,15 +2132,11 @@ function applyFilters(){
       ? new Date(dateToValue).getTime()
       : null;
 
-  const p=
-    document.getElementById(
-      'paymentFilter'
-    ).value;
+  const paymentFilterEl=document.getElementById('paymentFilter');
+  const p='paid';
 
-  const f=
-    document.getElementById(
-      'fulfillmentFilter'
-    ).value;
+  const fulfillmentFilterEl=document.getElementById('fulfillmentFilter');
+  const f=fulfillmentFilterEl ? fulfillmentFilterEl.value : '';
 
   if(
     dateFrom!==null &&
@@ -2178,7 +2157,7 @@ function applyFilters(){
   }
 
   filteredOrders=
-    allOrders.filter(isDisplayOrder).filter(
+    allOrders.filter(isDisplayOrder).filter(o=>String(o?.financial_status||'').trim().toLowerCase()==='paid').filter(
       o=>
         (isAdminMode() || String(o?.financial_status||'').trim().toLowerCase()==='paid')
         &&
