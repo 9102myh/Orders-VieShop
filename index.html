@@ -1240,11 +1240,9 @@ const CONFIG={
    DISPLAY CUTOFF
 ====================================================== */
 
-const DISPLAY_CUTOFF=new Date(2026,6,1,0,0,0,0);
-
 function isDisplayOrder(o){
-  const d=new Date(o?.created_at);
-  return !isNaN(d.getTime()) && d>=DISPLAY_CUTOFF;
+  // Hiển thị mọi đơn hàng, không giới hạn ngày tạo.
+  return true;
 }
 
 /* =====================================================
@@ -2100,7 +2098,7 @@ async function loadData(){
     ).textContent=displayMails.size;
 
     const paidCountEl=document.getElementById('paidCount');
-    if(paidCountEl) paidCountEl.textContent=displayOrders.filter(o=>String(o.financial_status||'').trim().toLowerCase()==='paid').length;
+    if(paidCountEl) paidCountEl.textContent=isAdminMode()?displayOrders.filter(o=>String(o.financial_status||'').trim().toLowerCase()==='paid').length:displayOrders.length;
 
     // Đọc dữ liệu dùng chung của các tab; file chưa tồn tại thì giữ dữ liệu dự phòng.
     await loadManualDataFromGitHub();
@@ -2219,10 +2217,8 @@ function applyFilters(){
   }
 
   filteredOrders=
-    allOrders.filter(isDisplayOrder).filter(o=>String(o?.financial_status||'').trim().toLowerCase()==='paid').filter(
+    allOrders.filter(isDisplayOrder).filter(
       o=>
-        (isAdminMode() || String(o?.financial_status||'').trim().toLowerCase()==='paid')
-        &&
 
         (!q1||
           orderKey(o)
@@ -3252,7 +3248,7 @@ function renderOrderPrices(){
     return;
   }
 
-  const rows=allOrders.filter(order=>isDisplayOrder(order) && String(order?.financial_status||'').trim().toLowerCase()==='paid').filter(order=>{
+  const rows=allOrders.filter(order=>isDisplayOrder(order)).filter(order=>{
     const code=orderKey(order).toLowerCase();
     const mail=String(order.__mail||'').toLowerCase();
     const created=new Date(order.created_at).getTime();
@@ -3362,7 +3358,7 @@ function renderOrderPricePagination(totalPages){
 
 function buildProducts(){
   const m=new Map();
-  allOrders.filter(o => isDisplayOrder(o) && String(o.financial_status||'').toLowerCase()==='paid').forEach(o=>{
+  allOrders.filter(o => isDisplayOrder(o)).forEach(o=>{
     (o.line_items||[]).forEach(i=>{
       const name=String(i.title||'').trim(); if(!name)return;
       const variant=String(i.variant_title||'').trim();
@@ -3561,9 +3557,9 @@ function getVoteTotal(){ return votes.reduce((sum,v)=>sum+(Number(v.qty)||0)*(Nu
 
 function getProductTotal(){ return productGroups.reduce((sum,g)=>sum+g.variants.reduce((variantSum,v)=>variantSum+(Number(v.quantity)||0)*(Number(v.price)||0),0),0); }
 function getMerchOrderTotal(){
-  // Đồng bộ đúng bộ lọc của tab Đơn Merch VieShop: từ 01/07/2026 và đã thanh toán.
+  // Tính tổng trên toàn bộ đơn hàng, không giới hạn ngày hoặc trạng thái thanh toán.
   return allOrders
-    .filter(order => isDisplayOrder(order) && String(order?.financial_status||'').trim().toLowerCase()==='paid')
+    .filter(isDisplayOrder)
     .reduce((sum,order)=>sum+getOrderPriceDetails(order).total,0);
 }
 function updateGrandTotal(){
